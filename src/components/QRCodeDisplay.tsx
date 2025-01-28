@@ -12,6 +12,8 @@ interface QRCodeDisplayProps {
 
 export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
   const [qrSize, setQrSize] = useState(200);
+  const [fgColor, setFgColor] = useState("#000000");
+  const [bgColor, setBgColor] = useState("#ffffff");
 
   const generateVCardData = (data: VCardData): string => {
     const vcard = [
@@ -72,19 +74,69 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
           size={qrSize}
           level="H"
           includeMargin={true}
+          fgColor={fgColor}
+          bgColor={bgColor}
         />
       </div>
-      <div className="w-full max-w-xs space-y-2">
-        <Label htmlFor="size">QR-Code Größe ({qrSize}px)</Label>
-        <Input
-          id="size"
-          type="range"
-          min="100"
-          max="400"
-          value={qrSize}
-          onChange={handleSizeChange}
-          className="w-full"
-        />
+      <div className="w-full max-w-xs space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="size">QR-Code Größe ({qrSize}px)</Label>
+          <Input
+            id="size"
+            type="range"
+            min="100"
+            max="400"
+            value={qrSize}
+            onChange={handleSizeChange}
+            className="w-full"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="fgColor">QR-Code Farbe</Label>
+          <div className="flex gap-2">
+            <Input
+              id="fgColor"
+              type="color"
+              value={fgColor}
+              onChange={(e) => setFgColor(e.target.value)}
+              className="w-12 h-12 p-1 cursor-pointer"
+            />
+            <div className="flex-1 grid grid-cols-5 gap-2">
+              {["#000000", "#ff7e0c", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setFgColor(color)}
+                  className="w-full h-12 rounded border"
+                  style={{ backgroundColor: color }}
+                  aria-label={`Wähle Farbe ${color}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="bgColor">Hintergrundfarbe</Label>
+          <div className="flex gap-2">
+            <Input
+              id="bgColor"
+              type="color"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+              className="w-12 h-12 p-1 cursor-pointer"
+            />
+            <div className="flex-1 grid grid-cols-5 gap-2">
+              {["#ffffff", "#F2FCE2", "#FEF7CD", "#E5DEFF", "#FFDEE2"].map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setBgColor(color)}
+                  className="w-full h-12 rounded border"
+                  style={{ backgroundColor: color }}
+                  aria-label={`Wähle Hintergrundfarbe ${color}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
       <Button 
         onClick={handleDownload}
