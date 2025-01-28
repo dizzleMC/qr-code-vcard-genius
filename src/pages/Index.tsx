@@ -21,7 +21,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="container py-8 px-4">
-        <h1 className="text-3xl font-bold text-center mb-2">vCard QR-Code Generator</h1>
+        <h1 className="text-3xl font-bold text-center mb-2">Your vCard QR-Code Generator</h1>
         <p className="text-center text-gray-600 mb-8">
           Erstellen Sie einen QR-Code für Ihre Kontaktdaten
         </p>
