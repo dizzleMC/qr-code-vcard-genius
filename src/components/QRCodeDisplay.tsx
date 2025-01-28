@@ -91,7 +91,7 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
             max="400"
             value={qrSize}
             onChange={handleSizeChange}
-            className="w-full accent-[#9b87f5]"
+            className="w-full accent-[#ff7e0c]"
           />
         </div>
         
@@ -106,7 +106,7 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
               className="w-12 h-12 p-1 cursor-pointer rounded-lg"
             />
             <div className="flex-1 grid grid-cols-5 gap-2">
-              {["#1A1F2C", "#9b87f5", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
+              {["#1A1F2C", "#ff7e0c", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
                 <button
                   key={color}
                   onClick={() => setFgColor(color)}
@@ -146,7 +146,7 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
       
       <Button 
         onClick={handleDownload}
-        className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white font-medium py-2.5"
+        className="w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium py-2.5"
       >
         QR-Code Herunterladen
       </Button>
