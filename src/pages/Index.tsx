@@ -19,16 +19,20 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container py-8 px-4">
-        <h1 className="text-3xl font-bold text-center mb-2">Your vCard QR-Code Generator</h1>
-        <p className="text-center text-gray-600 mb-8">
-          Erstellen Sie einen QR-Code für Ihre Kontaktdaten
-        </p>
+    <div className="min-h-screen bg-[#F9FAFB]">
+      <div className="container py-12 px-4">
+        <div className="max-w-3xl mx-auto text-center mb-12">
+          <h1 className="text-4xl font-semibold text-[#1A1F2C] mb-3">Your vCard QR-Code Generator</h1>
+          <p className="text-[#8E9196] text-lg">
+            Erstellen Sie einen QR-Code für Ihre Kontaktdaten
+          </p>
+        </div>
         
-        <div className="flex flex-col lg:flex-row gap-12 items-start justify-center">
-          <VCardForm onDataChange={setVCardData} />
-          <div className="lg:sticky lg:top-8">
+        <div className="flex flex-col lg:flex-row gap-16 items-start justify-center">
+          <div className="w-full lg:w-1/2 bg-white rounded-xl shadow-sm p-8">
+            <VCardForm onDataChange={setVCardData} />
+          </div>
+          <div className="w-full lg:w-1/2 lg:sticky lg:top-8">
             <QRCodeDisplay data={vCardData} />
           </div>
         </div>

@@ -12,7 +12,7 @@ interface QRCodeDisplayProps {
 
 export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
   const [qrSize, setQrSize] = useState(200);
-  const [fgColor, setFgColor] = useState("#000000");
+  const [fgColor, setFgColor] = useState("#1A1F2C");
   const [bgColor, setBgColor] = useState("#ffffff");
 
   const generateVCardData = (data: VCardData): string => {
@@ -67,20 +67,23 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div id="qr-code" className="p-4 bg-white rounded-lg shadow-lg">
-        <QRCodeSVG
-          value={generateVCardData(data)}
-          size={qrSize}
-          level="H"
-          includeMargin={true}
-          fgColor={fgColor}
-          bgColor={bgColor}
-        />
+    <div className="bg-white rounded-xl shadow-sm p-8 space-y-8">
+      <div id="qr-code" className="flex justify-center">
+        <div className="p-6 bg-[#F9FAFB] rounded-lg">
+          <QRCodeSVG
+            value={generateVCardData(data)}
+            size={qrSize}
+            level="H"
+            includeMargin={true}
+            fgColor={fgColor}
+            bgColor={bgColor}
+          />
+        </div>
       </div>
-      <div className="w-full max-w-xs space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="size">QR-Code Größe ({qrSize}px)</Label>
+      
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <Label htmlFor="size" className="text-[#1A1F2C]">QR-Code Größe ({qrSize}px)</Label>
           <Input
             id="size"
             type="range"
@@ -88,25 +91,26 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
             max="400"
             value={qrSize}
             onChange={handleSizeChange}
-            className="w-full"
+            className="w-full accent-[#9b87f5]"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="fgColor">QR-Code Farbe</Label>
-          <div className="flex gap-2">
+        
+        <div className="space-y-3">
+          <Label htmlFor="fgColor" className="text-[#1A1F2C]">QR-Code Farbe</Label>
+          <div className="flex gap-3">
             <Input
               id="fgColor"
               type="color"
               value={fgColor}
               onChange={(e) => setFgColor(e.target.value)}
-              className="w-12 h-12 p-1 cursor-pointer"
+              className="w-12 h-12 p-1 cursor-pointer rounded-lg"
             />
             <div className="flex-1 grid grid-cols-5 gap-2">
-              {["#000000", "#ff7e0c", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
+              {["#1A1F2C", "#9b87f5", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
                 <button
                   key={color}
                   onClick={() => setFgColor(color)}
-                  className="w-full h-12 rounded border"
+                  className="w-full h-12 rounded-lg border border-gray-200 transition-transform hover:scale-105"
                   style={{ backgroundColor: color }}
                   aria-label={`Wähle Farbe ${color}`}
                 />
@@ -114,22 +118,23 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
             </div>
           </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="bgColor">Hintergrundfarbe</Label>
-          <div className="flex gap-2">
+        
+        <div className="space-y-3">
+          <Label htmlFor="bgColor" className="text-[#1A1F2C]">Hintergrundfarbe</Label>
+          <div className="flex gap-3">
             <Input
               id="bgColor"
               type="color"
               value={bgColor}
               onChange={(e) => setBgColor(e.target.value)}
-              className="w-12 h-12 p-1 cursor-pointer"
+              className="w-12 h-12 p-1 cursor-pointer rounded-lg"
             />
             <div className="flex-1 grid grid-cols-5 gap-2">
               {["#ffffff", "#F2FCE2", "#FEF7CD", "#E5DEFF", "#FFDEE2"].map((color) => (
                 <button
                   key={color}
                   onClick={() => setBgColor(color)}
-                  className="w-full h-12 rounded border"
+                  className="w-full h-12 rounded-lg border border-gray-200 transition-transform hover:scale-105"
                   style={{ backgroundColor: color }}
                   aria-label={`Wähle Hintergrundfarbe ${color}`}
                 />
@@ -138,9 +143,10 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
           </div>
         </div>
       </div>
+      
       <Button 
         onClick={handleDownload}
-        className="bg-accent hover:bg-accent/90 text-white"
+        className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white font-medium py-2.5"
       >
         QR-Code Herunterladen
       </Button>
