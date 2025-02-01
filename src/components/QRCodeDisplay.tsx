@@ -44,8 +44,22 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
     
     img.onload = () => {
       canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.height = img.height + 40; // Added extra height for the text
+      
+      // Draw white background
+      ctx?.fillStyle = bgColor;
+      ctx?.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw QR code
       ctx?.drawImage(img, 0, 0);
+      
+      // Add text
+      if (ctx) {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#ff7e0c";
+        ctx.textAlign = "center";
+        ctx.fillText("www.yourvcard.de", canvas.width / 2, img.height + 25);
+      }
       
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
@@ -68,7 +82,7 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-8 space-y-8">
-      <div id="qr-code" className="flex justify-center">
+      <div id="qr-code" className="flex flex-col items-center">
         <div className="p-6 bg-[#F9FAFB] rounded-lg">
           <QRCodeSVG
             value={generateVCardData(data)}
@@ -78,6 +92,9 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
             fgColor={fgColor}
             bgColor={bgColor}
           />
+        </div>
+        <div className="mt-4 text-[#ff7e0c] font-medium">
+          www.yourvcard.de
         </div>
       </div>
       
