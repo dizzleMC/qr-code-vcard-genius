@@ -15,6 +15,8 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
   const [fgColor, setFgColor] = useState("#1A1F2C");
   const [bgColor, setBgColor] = useState("#ffffff");
 
+  const isFormEmpty = Object.values(data).every(value => value === "");
+
   const generateVCardData = (data: VCardData): string => {
     const vcard = [
       "BEGIN:VCARD",
@@ -163,7 +165,8 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
       
       <Button 
         onClick={handleDownload}
-        className="w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium py-2.5"
+        disabled={isFormEmpty}
+        className={`w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium py-2.5 ${isFormEmpty ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         QR-Code Herunterladen
       </Button>
