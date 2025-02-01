@@ -30,143 +30,175 @@ export const VCardForm = ({ onDataChange }) => {
     }
   };
 
+  const inputStyle = {
+    marginTop: "0.25rem",
+    width: "100%",
+    padding: "0.5rem",
+    border: "1px solid #e2e8f0",
+    borderRadius: "0.375rem",
+    fontSize: "1rem"
+  };
+
+  const labelStyle = {
+    display: "block",
+    marginBottom: "0.25rem",
+    fontSize: "0.875rem",
+    fontWeight: "500",
+    color: "#1A1F2C"
+  };
+
+  const formGroupStyle = {
+    marginBottom: "1rem"
+  };
+
+  const gridContainerStyle = {
+    display: "grid",
+    gap: "1rem"
+  };
+
+  const twoColumnGridStyle = {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "1rem"
+  };
+
   return (
-    <div className="grid gap-6 w-full max-w-xl">
-      <div className="grid gap-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="firstName">Vorname</Label>
+    <div style={{ width: "100%", maxWidth: "36rem" }}>
+      <div style={gridContainerStyle}>
+        <div style={twoColumnGridStyle}>
+          <div style={formGroupStyle}>
+            <label style={labelStyle} htmlFor="firstName">Vorname</label>
             <Input
               id="firstName"
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className="mt-1"
+              style={inputStyle}
             />
           </div>
-          <div>
-            <Label htmlFor="lastName">Nachname</Label>
+          <div style={formGroupStyle}>
+            <label style={labelStyle} htmlFor="lastName">Nachname</label>
             <Input
               id="lastName"
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className="mt-1"
+              style={inputStyle}
             />
           </div>
         </div>
         
-        <div>
-          <Label htmlFor="title">Titel/Position</Label>
+        <div style={formGroupStyle}>
+          <label style={labelStyle} htmlFor="title">Titel/Position</label>
           <Input
             id="title"
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className="mt-1"
+            style={inputStyle}
           />
         </div>
 
-        <div>
-          <Label htmlFor="company">Unternehmen</Label>
+        <div style={formGroupStyle}>
+          <label style={labelStyle} htmlFor="company">Unternehmen</label>
           <Input
             id="company"
             name="company"
             value={formData.company}
             onChange={handleChange}
-            className="mt-1"
+            style={inputStyle}
           />
         </div>
 
-        <div>
-          <Label htmlFor="email">E-Mail</Label>
+        <div style={formGroupStyle}>
+          <label style={labelStyle} htmlFor="email">E-Mail</label>
           <Input
             id="email"
             name="email"
             type="email"
             value={formData.email}
             onChange={handleChange}
-            className="mt-1"
+            style={inputStyle}
           />
         </div>
 
-        <div>
-          <Label htmlFor="phone">Telefon</Label>
+        <div style={formGroupStyle}>
+          <label style={labelStyle} htmlFor="phone">Telefon</label>
           <Input
             id="phone"
             name="phone"
             type="tel"
             value={formData.phone}
             onChange={handleChange}
-            className="mt-1"
+            style={inputStyle}
           />
         </div>
 
-        <div>
-          <Label htmlFor="website">Website</Label>
+        <div style={formGroupStyle}>
+          <label style={labelStyle} htmlFor="website">Website</label>
           <Input
             id="website"
             name="website"
             type="url"
             value={formData.website}
             onChange={handleChange}
-            className="mt-1"
+            style={inputStyle}
           />
         </div>
 
-        <div>
-          <Label htmlFor="street">Straße</Label>
+        <div style={formGroupStyle}>
+          <label style={labelStyle} htmlFor="street">Straße</label>
           <Input
             id="street"
             name="street"
             value={formData.street}
             onChange={handleChange}
-            className="mt-1"
+            style={inputStyle}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="city">Stadt</Label>
+        <div style={twoColumnGridStyle}>
+          <div style={formGroupStyle}>
+            <label style={labelStyle} htmlFor="city">Stadt</label>
             <Input
               id="city"
               name="city"
               value={formData.city}
               onChange={handleChange}
-              className="mt-1"
+              style={inputStyle}
             />
           </div>
-          <div>
-            <Label htmlFor="state">Bundesland</Label>
+          <div style={formGroupStyle}>
+            <label style={labelStyle} htmlFor="state">Bundesland</label>
             <Input
               id="state"
               name="state"
               value={formData.state}
               onChange={handleChange}
-              className="mt-1"
+              style={inputStyle}
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="zip">PLZ</Label>
+        <div style={twoColumnGridStyle}>
+          <div style={formGroupStyle}>
+            <label style={labelStyle} htmlFor="zip">PLZ</label>
             <Input
               id="zip"
               name="zip"
               value={formData.zip}
               onChange={handleChange}
-              className="mt-1"
+              style={inputStyle}
             />
           </div>
-          <div>
-            <Label htmlFor="country">Land</Label>
+          <div style={formGroupStyle}>
+            <label style={labelStyle} htmlFor="country">Land</label>
             <Input
               id="country"
               name="country"
               value={formData.country}
               onChange={handleChange}
-              className="mt-1"
+              style={inputStyle}
             />
           </div>
         </div>

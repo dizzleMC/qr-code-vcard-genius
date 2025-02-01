@@ -74,10 +74,71 @@ export const QRCodeDisplay = ({ data }) => {
     }
   };
 
+  const containerStyle = {
+    backgroundColor: "white",
+    borderRadius: "0.75rem",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    padding: "2rem",
+    display: "flex",
+    flexDirection: "column",
+    gap: "2rem"
+  };
+
+  const qrContainerStyle = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
+  };
+
+  const qrWrapperStyle = {
+    padding: "1.5rem",
+    backgroundColor: "#F9FAFB",
+    borderRadius: "0.5rem"
+  };
+
+  const urlStyle = {
+    marginTop: "1rem",
+    color: "#ff7e0c",
+    fontWeight: "500"
+  };
+
+  const controlsContainerStyle = {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1.5rem"
+  };
+
+  const labelStyle = {
+    display: "block",
+    marginBottom: "0.75rem",
+    color: "#1A1F2C"
+  };
+
+  const colorPickerContainerStyle = {
+    display: "flex",
+    gap: "0.75rem"
+  };
+
+  const colorGridStyle = {
+    flex: 1,
+    display: "grid",
+    gridTemplateColumns: "repeat(5, 1fr)",
+    gap: "0.5rem"
+  };
+
+  const colorButtonStyle = {
+    width: "100%",
+    height: "3rem",
+    borderRadius: "0.5rem",
+    border: "1px solid #e2e8f0",
+    transition: "transform 0.2s",
+    cursor: "pointer"
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-sm p-8 space-y-8">
-      <div id="qr-code" className="flex flex-col items-center">
-        <div className="p-6 bg-[#F9FAFB] rounded-lg">
+    <div style={containerStyle}>
+      <div id="qr-code" style={qrContainerStyle}>
+        <div style={qrWrapperStyle}>
           <QRCodeSVG
             value={generateVCardData(data)}
             size={qrSize}
@@ -87,14 +148,14 @@ export const QRCodeDisplay = ({ data }) => {
             bgColor={bgColor}
           />
         </div>
-        <div className="mt-4 text-[#ff7e0c] font-medium">
+        <div style={urlStyle}>
           www.yourvcard.de
         </div>
       </div>
       
-      <div className="space-y-6">
-        <div className="space-y-3">
-          <Label htmlFor="size" className="text-[#1A1F2C]">QR-Code Größe ({qrSize}px)</Label>
+      <div style={controlsContainerStyle}>
+        <div>
+          <Label htmlFor="size" style={labelStyle}>QR-Code Größe ({qrSize}px)</Label>
           <Input
             id="size"
             type="range"
@@ -102,27 +163,35 @@ export const QRCodeDisplay = ({ data }) => {
             max="400"
             value={qrSize}
             onChange={handleSizeChange}
-            className="w-full accent-[#ff7e0c]"
+            style={{ width: "100%" }}
           />
         </div>
         
-        <div className="space-y-3">
-          <Label htmlFor="fgColor" className="text-[#1A1F2C]">QR-Code Farbe</Label>
-          <div className="flex gap-3">
+        <div>
+          <Label htmlFor="fgColor" style={labelStyle}>QR-Code Farbe</Label>
+          <div style={colorPickerContainerStyle}>
             <Input
               id="fgColor"
               type="color"
               value={fgColor}
               onChange={(e) => setFgColor(e.target.value)}
-              className="w-12 h-12 p-1 cursor-pointer rounded-lg"
+              style={{
+                width: "3rem",
+                height: "3rem",
+                padding: "0.25rem",
+                cursor: "pointer",
+                borderRadius: "0.5rem"
+              }}
             />
-            <div className="flex-1 grid grid-cols-5 gap-2">
+            <div style={colorGridStyle}>
               {["#1A1F2C", "#ff7e0c", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
                 <button
                   key={color}
                   onClick={() => setFgColor(color)}
-                  className="w-full h-12 rounded-lg border border-gray-200 transition-transform hover:scale-105"
-                  style={{ backgroundColor: color }}
+                  style={{
+                    ...colorButtonStyle,
+                    backgroundColor: color
+                  }}
                   aria-label={`Wähle Farbe ${color}`}
                 />
               ))}
@@ -130,23 +199,31 @@ export const QRCodeDisplay = ({ data }) => {
           </div>
         </div>
         
-        <div className="space-y-3">
-          <Label htmlFor="bgColor" className="text-[#1A1F2C]">Hintergrundfarbe</Label>
-          <div className="flex gap-3">
+        <div>
+          <Label htmlFor="bgColor" style={labelStyle}>Hintergrundfarbe</Label>
+          <div style={colorPickerContainerStyle}>
             <Input
               id="bgColor"
               type="color"
               value={bgColor}
               onChange={(e) => setBgColor(e.target.value)}
-              className="w-12 h-12 p-1 cursor-pointer rounded-lg"
+              style={{
+                width: "3rem",
+                height: "3rem",
+                padding: "0.25rem",
+                cursor: "pointer",
+                borderRadius: "0.5rem"
+              }}
             />
-            <div className="flex-1 grid grid-cols-5 gap-2">
+            <div style={colorGridStyle}>
               {["#ffffff", "#F2FCE2", "#FEF7CD", "#E5DEFF", "#FFDEE2"].map((color) => (
                 <button
                   key={color}
                   onClick={() => setBgColor(color)}
-                  className="w-full h-12 rounded-lg border border-gray-200 transition-transform hover:scale-105"
-                  style={{ backgroundColor: color }}
+                  style={{
+                    ...colorButtonStyle,
+                    backgroundColor: color
+                  }}
                   aria-label={`Wähle Hintergrundfarbe ${color}`}
                 />
               ))}
@@ -158,7 +235,15 @@ export const QRCodeDisplay = ({ data }) => {
       <Button 
         onClick={handleDownload}
         disabled={isFormEmpty}
-        className={`w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium py-2.5 ${isFormEmpty ? 'opacity-50 cursor-not-allowed' : ''}`}
+        style={{
+          width: "100%",
+          backgroundColor: "#ff7e0c",
+          color: "white",
+          fontWeight: "500",
+          padding: "0.625rem",
+          opacity: isFormEmpty ? "0.5" : "1",
+          cursor: isFormEmpty ? "not-allowed" : "pointer"
+        }}
       >
         QR-Code Herunterladen
       </Button>
