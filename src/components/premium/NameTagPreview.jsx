@@ -1,6 +1,6 @@
-
 import React from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { getDimensions } from "@/utils/nameTagGenerator";
 
 export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   // Set default values if name or company are empty
@@ -8,20 +8,8 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   const displayCompany = company || "Beispiel GmbH";
   const displayTitle = title || "";
   
-  // Get dimensions based on size setting
-  const getDimensions = () => {
-    switch(settings.size) {
-      case "small": 
-        return { width: "350px", height: "175px", qrSize: 110, fontSize: 18 };
-      case "large": 
-        return { width: "450px", height: "225px", qrSize: 160, fontSize: 26 };
-      case "medium":
-      default: 
-        return { width: "400px", height: "200px", qrSize: 140, fontSize: 22 };
-    }
-  };
-  
-  const dimensions = getDimensions();
+  // Get dimensions based on size setting using the same function as the generator
+  const dimensions = getDimensions(settings.size || "medium");
   
   // Base styles for the name tag with adjusted font size based on dimensions
   const nameTagStyle = {
@@ -30,8 +18,8 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
     borderWidth: "2px",
     borderStyle: "solid",
     fontFamily: settings.font || "Inter",
-    width: dimensions.width,
-    height: dimensions.height,
+    width: `${dimensions.width}px`,
+    height: `${dimensions.height}px`,
     borderRadius: "8px",
     display: "flex",
     padding: "1rem",

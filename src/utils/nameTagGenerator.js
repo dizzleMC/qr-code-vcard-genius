@@ -1,4 +1,3 @@
-
 import { generateVCardData, truncateText } from './qrCodeUtils';
 
 /**
@@ -151,165 +150,201 @@ export const createTemplateBackground = (ctx, template, width, height, backgroun
  * @returns {Promise<Blob>} Generated name tag as a blob
  */
 export const generateNameTag = async (contact, nameTagSettings) => {
+  console.log("generateNameTag called with settings:", nameTagSettings);
+  
+  if (!nameTagSettings) {
+    console.error("nameTagSettings is undefined");
+    throw new Error("Name tag settings are required");
+  }
+  
+  if (!nameTagSettings.size) {
+    console.warn("Size not specified in nameTagSettings, defaulting to medium");
+    nameTagSettings.size = "medium";
+  }
+  
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   
   if (!ctx) {
+    console.error("Canvas context could not be created");
     throw new Error("Canvas context could not be created");
   }
   
-  const { width, height, fontSize } = getDimensions(nameTagSettings.size || "medium");
-  canvas.width = width;
-  canvas.height = height;
-  
-  // Draw background with template-specific styling
-  const template = nameTagSettings.template || "classic";
-  const backgroundColor = nameTagSettings.backgroundColor || "#ffffff";
-  const borderColor = nameTagSettings.borderColor || "#e2e8f0";
-  
-  createTemplateBackground(ctx, template, width, height, backgroundColor, borderColor);
-  
-  // Calculate template-specific positions
-  const qrSize = template === "business" ? height * 0.65 : height * 0.7;
-  const templatePosition = getTemplatePosition(template, width, height, qrSize);
-  
-  // Set text alignment based on template
-  ctx.textAlign = templatePosition.textAlign;
-  
-  // Draw QR code background
-  const qrBackgroundPadding = 10;
-  ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
-  ctx.fillRect(
-    templatePosition.qrX - (templatePosition.qrSize / 2) - qrBackgroundPadding/2, 
-    templatePosition.qrY - (templatePosition.qrSize / 2) - qrBackgroundPadding/2, 
-    templatePosition.qrSize + qrBackgroundPadding, 
-    templatePosition.qrSize + qrBackgroundPadding
-  );
-  
-  // Add logo if available
-  if (nameTagSettings.logo) {
-    const img = new Image();
+  try {
+    // Get dimensions based on size setting with fallbacks
+    const sizeSetting = nameTagSettings.size || "medium";
+    console.log("Using size setting:", sizeSetting);
+    
+    const dimensions = getDimensions(sizeSetting);
+    console.log("Calculated dimensions:", dimensions);
+    
+    if (!dimensions) {
+      throw new Error(`Failed to get dimensions for size: ${sizeSetting}`);
+    }
+    
+    const { width, height, fontSize } = dimensions;
+    canvas.width = width;
+    canvas.height = height;
+    
+    // Draw background with template-specific styling
+    const template = nameTagSettings.template || "classic";
+    const backgroundColor = nameTagSettings.backgroundColor || "#ffffff";
+    const borderColor = nameTagSettings.borderColor || "#e2e8f0";
+    
+    console.log("Drawing template background:", template);
+    createTemplateBackground(ctx, template, width, height, backgroundColor, borderColor);
+    
+    // Calculate template-specific positions
+    const qrSize = template === "business" ? height * 0.65 : height * 0.7;
+    const templatePosition = getTemplatePosition(template, width, height, qrSize);
+    
+    // Set text alignment based on template
+    ctx.textAlign = templatePosition.textAlign;
+    
+    // Draw QR code background
+    const qrBackgroundPadding = 10;
+    ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
+    ctx.fillRect(
+      templatePosition.qrX - (templatePosition.qrSize / 2) - qrBackgroundPadding/2, 
+      templatePosition.qrY - (templatePosition.qrSize / 2) - qrBackgroundPadding/2, 
+      templatePosition.qrSize + qrBackgroundPadding, 
+      templatePosition.qrSize + qrBackgroundPadding
+    );
+    
+    // Add logo if available
+    if (nameTagSettings.logo) {
+      const img = new Image();
+      try {
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = nameTagSettings.logo;
+        });
+        
+        if (img.complete && img.naturalWidth > 0) {
+          const scale = nameTagSettings.logoScale / 100;
+          const logoWidth = img.width * scale;
+          const logoHeight = img.height * scale;
+          const maxLogoHeight = height * 0.3;
+          const maxLogoWidth = width * 0.6;
+          
+          const ratio = Math.min(
+            maxLogoHeight / logoHeight, 
+            maxLogoWidth / logoWidth, 
+            1
+          );
+          
+          const finalLogoWidth = logoWidth * ratio;
+          const finalLogoHeight = logoHeight * ratio;
+          
+          let logoXPos;
+          if (templatePosition.logoAlign === "center") {
+            logoXPos = templatePosition.logoX - (finalLogoWidth / 2);
+          } else if (templatePosition.logoAlign === "right") {
+            logoXPos = templatePosition.logoX - finalLogoWidth;
+          } else {
+            logoXPos = templatePosition.logoX;
+          }
+            
+          ctx.drawImage(
+            img, 
+            logoXPos,
+            templatePosition.logoY - (finalLogoHeight / 2),
+            finalLogoWidth,
+            finalLogoHeight
+          );
+        }
+      } catch (err) {
+        console.error("Error loading logo:", err);
+      }
+    }
+    
+    // Generate QR code
     try {
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = nameTagSettings.logo;
+      const { toCanvas } = await import('qrcode');
+      const vcard = generateVCardData(contact);
+      
+      const qrCanvas = document.createElement("canvas");
+      
+      await toCanvas(qrCanvas, vcard, {
+        width: templatePosition.qrSize,
+        margin: 1,
+        color: {
+          dark: nameTagSettings.qrFgColor || "#000000",
+          light: nameTagSettings.qrBgColor || "#ffffff"
+        },
+        errorCorrectionLevel: 'M'
       });
       
-      if (img.complete && img.naturalWidth > 0) {
-        const scale = nameTagSettings.logoScale / 100;
-        const logoWidth = img.width * scale;
-        const logoHeight = img.height * scale;
-        const maxLogoHeight = height * 0.3;
-        const maxLogoWidth = width * 0.6;
-        
-        const ratio = Math.min(
-          maxLogoHeight / logoHeight, 
-          maxLogoWidth / logoWidth, 
-          1
-        );
-        
-        const finalLogoWidth = logoWidth * ratio;
-        const finalLogoHeight = logoHeight * ratio;
-        
-        let logoXPos;
-        if (templatePosition.logoAlign === "center") {
-          logoXPos = templatePosition.logoX - (finalLogoWidth / 2);
-        } else if (templatePosition.logoAlign === "right") {
-          logoXPos = templatePosition.logoX - finalLogoWidth;
-        } else {
-          logoXPos = templatePosition.logoX;
-        }
-          
-        ctx.drawImage(
-          img, 
-          logoXPos,
-          templatePosition.logoY - (finalLogoHeight / 2),
-          finalLogoWidth,
-          finalLogoHeight
-        );
-      }
-    } catch (err) {
-      console.error("Error loading logo:", err);
+      ctx.drawImage(
+        qrCanvas, 
+        templatePosition.qrX - (templatePosition.qrSize / 2), 
+        templatePosition.qrY - (templatePosition.qrSize / 2), 
+        templatePosition.qrSize, 
+        templatePosition.qrSize
+      );
+    } catch (error) {
+      console.error("Error generating QR code for name tag:", error);
     }
-  }
-  
-  // Generate QR code
-  try {
-    const { toCanvas } = await import('qrcode');
-    const vcard = generateVCardData(contact);
     
-    const qrCanvas = document.createElement("canvas");
+    // Add text content
+    const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
+    const company = (contact.company || '').trim();
+    const title = (contact.title || '').trim();
     
-    await toCanvas(qrCanvas, vcard, {
-      width: templatePosition.qrSize,
-      margin: 1,
-      color: {
-        dark: nameTagSettings.qrFgColor || "#000000",
-        light: nameTagSettings.qrBgColor || "#ffffff"
-      },
-      errorCorrectionLevel: 'M'
+    // Calculate font sizes
+    const nameFontSize = Math.max(fontSize, 18);
+    const titleFontSize = Math.max(fontSize - 6, 12);
+    const companyFontSize = Math.max(fontSize - 4, 14);
+    
+    const nameFont = `bold ${nameFontSize}px ${nameTagSettings.font || 'Arial'}`;
+    const titleFont = `${titleFontSize}px ${nameTagSettings.font || 'Arial'}`;
+    const companyFont = `${companyFontSize}px ${nameTagSettings.font || 'Arial'}`;
+    
+    // Calculate max widths for text
+    const textPadding = 20;
+    const maxNameWidth = template === "business" ? width * 0.8 : 
+      templatePosition.textAlign === "center" ? width * 0.6 : 
+      templatePosition.textAlign === "right" ? width * 0.5 : 
+      width - templatePosition.qrSize - textPadding * 3;
+    
+    // Draw name
+    ctx.font = nameFont;
+    ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
+    const truncatedName = truncateText(ctx, fullName, maxNameWidth, nameFont);
+    ctx.fillText(truncatedName, templatePosition.nameX, templatePosition.nameY);
+    
+    // Draw title
+    if (title) {
+      ctx.font = titleFont;
+      ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
+      const truncatedTitle = truncateText(ctx, title, maxNameWidth, titleFont);
+      ctx.fillText(truncatedTitle, templatePosition.titleX, templatePosition.titleY);
+    }
+    
+    // Draw company
+    if (company) {
+      ctx.font = companyFont;
+      ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
+      const truncatedCompany = truncateText(ctx, company, maxNameWidth, companyFont);
+      ctx.fillText(truncatedCompany, templatePosition.companyX, templatePosition.companyY);
+    }
+    
+    // Convert canvas to blob
+    console.log("Generating blob from canvas");
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          console.log("Blob created successfully:", blob.size, "bytes");
+          resolve(blob);
+        } else {
+          console.error("Failed to create blob from canvas");
+          reject(new Error("Failed to create name tag"));
+        }
+      }, "image/png");
     });
-    
-    ctx.drawImage(
-      qrCanvas, 
-      templatePosition.qrX - (templatePosition.qrSize / 2), 
-      templatePosition.qrY - (templatePosition.qrSize / 2), 
-      templatePosition.qrSize, 
-      templatePosition.qrSize
-    );
   } catch (error) {
-    console.error("Error generating QR code for name tag:", error);
+    console.error("Error in generateNameTag:", error);
+    throw new Error(`Failed to generate name tag: ${error.message}`);
   }
-  
-  // Add text content
-  const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
-  const company = (contact.company || '').trim();
-  const title = (contact.title || '').trim();
-  
-  // Calculate font sizes
-  const nameFontSize = Math.max(fontSize, 18);
-  const titleFontSize = Math.max(fontSize - 6, 12);
-  const companyFontSize = Math.max(fontSize - 4, 14);
-  
-  const nameFont = `bold ${nameFontSize}px ${nameTagSettings.font || 'Arial'}`;
-  const titleFont = `${titleFontSize}px ${nameTagSettings.font || 'Arial'}`;
-  const companyFont = `${companyFontSize}px ${nameTagSettings.font || 'Arial'}`;
-  
-  // Calculate max widths for text
-  const textPadding = 20;
-  const maxNameWidth = template === "business" ? width * 0.8 : 
-    templatePosition.textAlign === "center" ? width * 0.6 : 
-    templatePosition.textAlign === "right" ? width * 0.5 : 
-    width - templatePosition.qrSize - textPadding * 3;
-  
-  // Draw name
-  ctx.font = nameFont;
-  ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
-  const truncatedName = truncateText(ctx, fullName, maxNameWidth, nameFont);
-  ctx.fillText(truncatedName, templatePosition.nameX, templatePosition.nameY);
-  
-  // Draw title
-  if (title) {
-    ctx.font = titleFont;
-    ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-    const truncatedTitle = truncateText(ctx, title, maxNameWidth, titleFont);
-    ctx.fillText(truncatedTitle, templatePosition.titleX, templatePosition.titleY);
-  }
-  
-  // Draw company
-  if (company) {
-    ctx.font = companyFont;
-    ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-    const truncatedCompany = truncateText(ctx, company, maxNameWidth, companyFont);
-    ctx.fillText(truncatedCompany, templatePosition.companyX, templatePosition.companyY);
-  }
-  
-  // Convert canvas to blob
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error("Failed to create name tag"));
-    }, "image/png");
-  });
 };

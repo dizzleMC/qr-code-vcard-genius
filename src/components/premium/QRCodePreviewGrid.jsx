@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -79,12 +80,33 @@ export const QRCodePreviewGrid = ({
       img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
     } else if (type === 'nametag' && templateSettings.nameTag?.enabled) {
       try {
+        console.log("Starting name tag download for:", contact);
+        console.log("Using template settings:", templateSettings.nameTag);
+        
+        // Ensure all required settings are present
+        const nameTagSettings = {
+          ...templateSettings.nameTag,
+          // Ensure we have default values for any missing properties
+          template: templateSettings.nameTag.template || "classic",
+          size: templateSettings.nameTag.size || "medium",
+          font: templateSettings.nameTag.font || "Inter",
+          nameColor: templateSettings.nameTag.nameColor || "#1A1F2C",
+          companyColor: templateSettings.nameTag.companyColor || "#8E9196",
+          backgroundColor: templateSettings.nameTag.backgroundColor || "#ffffff",
+          borderColor: templateSettings.nameTag.borderColor || "#e2e8f0",
+          qrFgColor: templateSettings.nameTag.qrFgColor || "#000000",
+          qrBgColor: templateSettings.nameTag.qrBgColor || "#ffffff",
+          logoScale: templateSettings.nameTag.logoScale || 100
+        };
+        
         // Use the dedicated nameTagGenerator utility
-        const nameTagBlob = await generateNameTag(contact, templateSettings.nameTag);
+        const nameTagBlob = await generateNameTag(contact, nameTagSettings);
         
         if (!nameTagBlob) {
           throw new Error("Name tag blob creation failed");
         }
+        
+        console.log("Name tag blob created successfully");
         
         // Create download link and trigger download
         const url = URL.createObjectURL(nameTagBlob);
