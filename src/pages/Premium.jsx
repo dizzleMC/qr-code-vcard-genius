@@ -46,89 +46,143 @@ const Premium = () => {
     setCurrentStep(2);
   };
   
+  // Modified to handle generation of only selected contacts
+  const handleGenerateSelected = async (selectedContacts) => {
+    if (selectedContacts.length === 0) {
+      toast.error("Keine Kontakte ausgewählt.");
+      return;
+    }
+    
+    await generateQRCodes(selectedContacts);
+  };
+  
+  // Modified to handle generation of all contacts
   const handleBulkGenerate = async () => {
     if (importedData.length === 0) {
       toast.error("Keine Daten zum Generieren vorhanden.");
       return;
     }
     
+    await generateQRCodes(importedData);
+  };
+  
+  // Extracted QR code generation logic into a separate function
+  const generateQRCodes = async (contactsToGenerate) => {
     setIsGenerating(true);
     setGenerationProgress(0);
     
     try {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
-      const worker = new Worker(new URL('../workers/qrWorker.js', import.meta.url), { type: 'module' });
       
-      let completedTasks = 0;
+      // Use direct QR code generation instead of a web worker
+      // This helps debug and ensure proper generation
+      const { toCanvas } = await import('qrcode');
       
-      worker.onmessage = async (e) => {
-        const { success, fileName, blob, progress, error } = e.data;
-        
-        if (success) {
-          if (blob instanceof Blob && blob.size > 0) {
-            zip.file(fileName, blob);
-            console.log(`Added to zip: ${fileName}, size: ${blob.size} bytes`);
-          } else {
-            console.error(`Invalid blob for ${fileName}:`, blob);
-            toast.error(`Fehler beim Generieren von ${fileName}`);
-          }
-        } else {
-          console.error(`Error generating QR code: ${error}`);
-          toast.error(`Fehler beim Generieren eines QR-Codes: ${error}`);
-        }
-        
-        setGenerationProgress(progress);
-        completedTasks++;
-        
-        if (completedTasks === importedData.length) {
-          const filesInZip = Object.keys(zip.files).length;
-          console.log(`Files in zip: ${filesInZip}`);
-          
-          if (filesInZip > 0) {
-            const content = await zip.generateAsync({ 
-              type: "blob",
-              compression: "DEFLATE",
-              compressionOptions: { level: 6 }
+      let completedCount = 0;
+      const totalContacts = contactsToGenerate.length;
+      
+      // Process in smaller batches for better UI responsiveness
+      const batchSize = 5;
+      const batches = [];
+      
+      for (let i = 0; i < totalContacts; i += batchSize) {
+        batches.push(contactsToGenerate.slice(i, i + batchSize));
+      }
+      
+      for (const batch of batches) {
+        await Promise.all(batch.map(async (contact) => {
+          try {
+            // Generate vCard data
+            const vcard = [
+              "BEGIN:VCARD",
+              "VERSION:3.0",
+              `N:${contact.lastName || ''};${contact.firstName || ''};;;`,
+              `FN:${contact.firstName || ''} ${contact.lastName || ''}`,
+              contact.title && `TITLE:${contact.title}`,
+              contact.company && `ORG:${contact.company}`,
+              contact.email && `EMAIL:${contact.email}`,
+              contact.phone && `TEL:${contact.phone}`,
+              contact.website && `URL:${contact.website}`,
+              (contact.street || contact.city) && 
+                `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`,
+              "END:VCARD"
+            ].filter(Boolean).join("\n");
+            
+            // Create a canvas element
+            const canvas = document.createElement("canvas");
+            const options = {
+              width: templateSettings.size,
+              margin: 4,
+              color: {
+                dark: templateSettings.fgColor,
+                light: templateSettings.bgColor
+              }
+            };
+            
+            // Generate QR code on canvas
+            await toCanvas(canvas, vcard, options);
+            
+            // Convert to blob
+            const blob = await new Promise(resolve => {
+              canvas.toBlob(resolve, "image/png");
             });
             
-            if (content.size > 0) {
-              const downloadLink = document.createElement("a");
-              const url = URL.createObjectURL(content);
-              downloadLink.href = url;
-              downloadLink.download = "qr-codes.zip";
-              downloadLink.click();
-              
-              setTimeout(() => {
-                URL.revokeObjectURL(url);
-              }, 1000);
-              
-              toast.success("QR-Codes wurden erfolgreich generiert und heruntergeladen!");
-              setCurrentStep(3);
+            if (blob && blob.size > 0) {
+              const fileName = `${contact.firstName || 'contact'}-${contact.lastName || ''}-qr.png`;
+              zip.file(fileName, blob);
+              console.log(`Added to zip: ${fileName}, size: ${blob.size} bytes`);
             } else {
-              toast.error("Die generierte ZIP-Datei ist leer. Bitte versuchen Sie es erneut.");
+              console.error(`Failed to create blob for contact: ${contact.firstName} ${contact.lastName}`);
+              toast.error(`Fehler beim Generieren des QR-Codes für ${contact.firstName} ${contact.lastName}`);
             }
-          } else {
-            toast.error("Es konnten keine QR-Codes generiert werden. Bitte versuchen Sie es erneut.");
+          } catch (error) {
+            console.error(`Error generating QR code for contact ${contact.firstName} ${contact.lastName}:`, error);
+            toast.error(`Fehler beim Erstellen des QR-Codes für ${contact.firstName} ${contact.lastName}`);
+          } finally {
+            completedCount++;
+            const progress = (completedCount / totalContacts) * 100;
+            setGenerationProgress(progress);
           }
-          
-          worker.terminate();
-          setIsGenerating(false);
-        }
-      };
+        }));
+      }
       
-      importedData.forEach((contact, index) => {
-        worker.postMessage({
-          contact,
-          settings: templateSettings,
-          index: index,
-          total: importedData.length
+      // Create and download ZIP file
+      const filesInZip = Object.keys(zip.files).length;
+      console.log(`Files in zip: ${filesInZip}`);
+      
+      if (filesInZip > 0) {
+        const content = await zip.generateAsync({ 
+          type: "blob",
+          compression: "DEFLATE",
+          compressionOptions: { level: 6 }
         });
-      });
-      
+        
+        if (content && content.size > 0) {
+          const downloadLink = document.createElement("a");
+          const url = URL.createObjectURL(content);
+          downloadLink.href = url;
+          downloadLink.download = "qr-codes.zip";
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          
+          setTimeout(() => {
+            URL.revokeObjectURL(url);
+          }, 1000);
+          
+          toast.success(`${filesInZip} QR-Codes wurden erfolgreich generiert und heruntergeladen!`);
+        } else {
+          console.error("Generated ZIP has no size");
+          toast.error("Die generierte ZIP-Datei ist leer. Bitte versuchen Sie es erneut.");
+        }
+      } else {
+        toast.error("Es konnten keine QR-Codes generiert werden. Bitte versuchen Sie es erneut.");
+      }
     } catch (error) {
       console.error("Fehler beim Generieren der QR-Codes:", error);
       toast.error("Fehler beim Generieren der QR-Codes. Bitte versuchen Sie es erneut.");
+    } finally {
       setIsGenerating(false);
     }
   };
@@ -196,9 +250,11 @@ const Premium = () => {
         {currentStep === 3 && (
           <GenerateStep
             importedData={importedData}
+            templateSettings={templateSettings}
             isGenerating={isGenerating}
             generationProgress={generationProgress}
             onGenerate={handleBulkGenerate}
+            onGenerateSelected={handleGenerateSelected}
             onReset={resetProcess}
           />
         )}

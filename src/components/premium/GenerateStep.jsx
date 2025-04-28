@@ -2,12 +2,15 @@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Loader } from "lucide-react";
+import { QRCodePreviewGrid } from "./QRCodePreviewGrid";
 
 export const GenerateStep = ({
   importedData,
   isGenerating,
   generationProgress,
+  templateSettings,
   onGenerate,
+  onGenerateSelected,
   onReset
 }) => {
   return (
@@ -16,15 +19,14 @@ export const GenerateStep = ({
         Schritt 3: QR-Codes generieren
       </h2>
       
-      <div className="flex-1 bg-white rounded-xl shadow-sm p-8">
-        <h3 className="text-xl font-semibold mb-6">Zusammenfassung</h3>
+      <div className="flex-1 bg-white rounded-xl shadow-sm p-6 mb-6">
+        <h3 className="text-lg font-semibold mb-4">Zusammenfassung</h3>
         
         <ul className="list-none p-0 m-0">
           <li className="flex justify-between mb-2">
             <span>Anzahl Kontakte:</span>
             <span className="font-medium">{importedData.length}</span>
           </li>
-          {/* ... Additional summary items are handled in the parent component */}
         </ul>
       </div>
       
@@ -38,6 +40,16 @@ export const GenerateStep = ({
         </div>
       )}
       
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-4">QR-Code Vorschau</h3>
+        <QRCodePreviewGrid 
+          contacts={importedData}
+          templateSettings={templateSettings}
+          onGenerateSelected={onGenerateSelected}
+          isGenerating={isGenerating}
+        />
+      </div>
+      
       <div className="flex gap-4">
         <Button
           onClick={onReset}
@@ -49,7 +61,7 @@ export const GenerateStep = ({
         
         <Button
           onClick={onGenerate}
-          disabled={isGenerating}
+          disabled={isGenerating || importedData.length === 0}
           className="flex-2 bg-[#ff7e0c] text-white font-medium"
         >
           {isGenerating ? (
