@@ -3,7 +3,8 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Upload } from "lucide-react";
+import { Upload, Download, FileSpreadsheet } from "lucide-react";
+import { downloadExcelTemplate } from "@/utils/excelTemplate";
 
 export const ExcelImporter = ({ onImportSuccess }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -150,19 +151,34 @@ export const ExcelImporter = ({ onImportSuccess }) => {
           </div>
           
           {!fileName && (
-            <Button
-              style={{
-                backgroundColor: "#ff7e0c",
-                color: "white",
-                fontWeight: "500"
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current.click();
-              }}
-            >
-              Datei auswählen
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                style={{
+                  backgroundColor: "#ff7e0c",
+                  color: "white",
+                  fontWeight: "500"
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current.click();
+                }}
+              >
+                Datei auswählen
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  downloadExcelTemplate();
+                }}
+                className="flex items-center gap-1"
+              >
+                <FileSpreadsheet size={16} />
+                Vorlage
+                <Download size={16} />
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -217,7 +233,20 @@ export const ExcelImporter = ({ onImportSuccess }) => {
           fontSize: "1rem",
           fontWeight: "600",
           marginBottom: "0.75rem"
-        }}>Hinweise zum Import</h3>
+        }}>
+          Hinweise zum Import
+          <Button 
+            variant="link" 
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadExcelTemplate();
+            }}
+            className="text-orange-500 p-0 h-auto flex items-center gap-1 ml-2"
+          >
+            <FileSpreadsheet size={14} />
+            Excel-Vorlage herunterladen
+          </Button>
+        </h3>
         
         <ul style={{
           paddingLeft: "1.25rem",
@@ -228,6 +257,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
           <li>Die Excel-Datei sollte eine Kopfzeile mit Spaltenbezeichnungen haben</li>
           <li>Folgende Felder werden erkannt: Vorname, Nachname, Email, Telefon, Firma, etc.</li>
           <li>Leere Zeilen oder Zeilen ohne Namen werden übersprungen</li>
+          <li>Für ein optimales Ergebnis verwenden Sie die Excel-Vorlage</li>
         </ul>
       </div>
     </div>

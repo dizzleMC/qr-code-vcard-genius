@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { ExcelImporter } from "@/components/ExcelImporter";
 import { Upload } from "lucide-react";
+import { GuideSection } from "@/components/GuideSection";
+import { Link } from "react-router-dom";
 
 const Premium = () => {
   const [templateSettings, setTemplateSettings] = useState({
@@ -145,6 +147,40 @@ const Premium = () => {
         maxWidth: "1200px",
         margin: "0 auto"
       }}>
+        <nav style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "2rem"
+        }}>
+          <ul style={{
+            display: "flex",
+            gap: "2rem",
+            listStyle: "none",
+            padding: 0
+          }}>
+            <li>
+              <Link to="/" style={{
+                fontWeight: "500",
+                color: "#8E9196",
+                textDecoration: "none"
+              }}>
+                Einzel QR-Code
+              </Link>
+            </li>
+            <li>
+              <Link to="/premium" style={{
+                fontWeight: "600",
+                color: "#ff7e0c",
+                textDecoration: "none",
+                borderBottom: "2px solid #ff7e0c",
+                paddingBottom: "0.25rem"
+              }}>
+                Premium Bulk-Generator
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        
         <div style={{
           maxWidth: "768px",
           margin: "0 auto",
@@ -164,6 +200,9 @@ const Premium = () => {
             Erstellen Sie QR-Codes für mehrere Kontakte auf einmal
           </p>
         </div>
+        
+        {/* Add the new guide component */}
+        <GuideSection />
         
         <div style={{
           display: "flex",
