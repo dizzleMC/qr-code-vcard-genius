@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { PremiumLayout } from "@/components/premium/PremiumLayout";
@@ -206,21 +207,23 @@ const Premium = () => {
             qrY: height / 2,
             logoX: width * 0.08,
             logoY: height * 0.15,
+            logoAlign: "left",
             textAlign: "left",
             qrSize: qrSize
           };
         case "business":
           return {
             nameX: width / 2,
-            nameY: height * 0.35,
+            nameY: height * 0.5, // Adjusted to match preview
             titleX: width / 2,
-            titleY: height * 0.35 + titleFontSize + 8,
+            titleY: height * 0.5 + titleFontSize + 8,
             companyX: width / 2,
-            companyY: height * 0.35 + titleFontSize + companyFontSize + 16,
+            companyY: height * 0.5 + titleFontSize + companyFontSize + 16,
             qrX: width - qrSize/2 - 15,
             qrY: height - qrSize/2 - 15,
             logoX: width / 2,
-            logoY: height * 0.12,
+            logoY: height * 0.22, // Increased vertical space for logo
+            logoAlign: "center",
             textAlign: "center",
             qrSize: qrSize
           };
@@ -236,6 +239,7 @@ const Premium = () => {
             qrY: height / 2,
             logoX: width * 0.15,
             logoY: height * 0.15,
+            logoAlign: "center",
             textAlign: "center",
             qrSize: qrSize
           };
@@ -252,6 +256,7 @@ const Premium = () => {
             qrY: height / 2,
             logoX: width * 0.08,
             logoY: height * 0.15,
+            logoAlign: "left",
             textAlign: "left",
             qrSize: qrSize
           };
@@ -261,9 +266,7 @@ const Premium = () => {
     const templatePosition = getTemplatePosition();
     ctx.textAlign = templatePosition.textAlign;
     
-    // IMPROVED: Drawing elements in correct order
-    
-    // 1. Create white background for QR code first
+    // Create white background for QR code first
     const qrBackgroundPadding = 8;
     ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
     ctx.fillRect(
@@ -273,7 +276,7 @@ const Premium = () => {
       qrSize + qrBackgroundPadding
     );
     
-    // 2. Draw LOGO first, before QR code
+    // Draw LOGO first, before QR code - with improved positioning
     if (nameTagSettings.logo) {
       const img = new Image();
       await new Promise((resolve, reject) => {
@@ -288,30 +291,39 @@ const Premium = () => {
         const scale = nameTagSettings.logoScale / 100;
         const logoWidth = img.width * scale;
         const logoHeight = img.height * scale;
-        const maxLogoHeight = height * 0.25;
+        // Ensure logo isn't too large for the name tag
+        const maxLogoHeight = height * 0.3; // Increased from 0.25 to 0.3
+        const maxLogoWidth = width * 0.6; // Add max width constraint
         
-        const ratio = Math.min(maxLogoHeight / logoHeight, 1);
+        // Apply both height and width constraints for proper scaling
+        const ratio = Math.min(
+          maxLogoHeight / logoHeight, 
+          maxLogoWidth / logoWidth, 
+          1
+        );
+        
         const finalLogoWidth = logoWidth * ratio;
         const finalLogoHeight = logoHeight * ratio;
         
         let logoXPos;
-        if (template === "business" || template === "minimal") {
+        if (templatePosition.logoAlign === "center") {
           logoXPos = templatePosition.logoX - (finalLogoWidth / 2);
         } else {
           logoXPos = templatePosition.logoX;
         }
-        
+          
+        // Draw logo at the calculated position
         ctx.drawImage(
           img, 
           logoXPos,
-          templatePosition.logoY,
+          templatePosition.logoY - (finalLogoHeight / 2), // Center logo vertically
           finalLogoWidth,
           finalLogoHeight
         );
       }
     }
     
-    // 3. Generate and draw QR code
+    // Generate and draw QR code
     try {
       const { toCanvas } = await import('qrcode');
       
@@ -352,7 +364,7 @@ const Premium = () => {
       console.error("Error generating QR code for name tag:", error);
     }
     
-    // 4. IMPROVED: Text truncation to prevent overflow
+    // Text truncation to prevent overflow
     const truncateText = (text, maxWidth) => {
       if (!text) return '';
       
@@ -384,7 +396,7 @@ const Premium = () => {
     
     // Draw name with truncation if needed
     const textPadding = 15; // Padding from edge
-    const maxNameWidth = (template === "business" || template === "minimal") 
+    const maxNameWidth = (templatePosition.textAlign === "center") 
       ? width * 0.8 
       : width - qrSize - textPadding * 3;
     
@@ -395,7 +407,7 @@ const Premium = () => {
     if (title) {
       ctx.font = titleFont;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-      const maxTitleWidth = (template === "business" || template === "minimal")
+      const maxTitleWidth = (templatePosition.textAlign === "center")
         ? width * 0.8
         : width - qrSize - textPadding * 3;
       const truncatedTitle = truncateText(title, maxTitleWidth);
@@ -406,7 +418,7 @@ const Premium = () => {
     if (company) {
       ctx.font = companyFont;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-      const maxCompanyWidth = (template === "business" || template === "minimal")
+      const maxCompanyWidth = (templatePosition.textAlign === "center")
         ? width * 0.8
         : width - qrSize - textPadding * 3;
       const truncatedCompany = truncateText(company, maxCompanyWidth);

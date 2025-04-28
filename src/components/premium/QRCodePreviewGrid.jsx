@@ -177,7 +177,7 @@ export const QRCodePreviewGrid = ({
         // Define QR size consistently before use
         const qrSize = height * 0.7;
         
-        // IMPROVED: Template-specific layout exactly matching preview
+        // Improved template-specific layout exactly matching preview
         const getTemplatePosition = () => {
           switch(template) {
             case "modern":
@@ -192,21 +192,23 @@ export const QRCodePreviewGrid = ({
                 qrY: height / 2,
                 logoX: width * 0.08,
                 logoY: height * 0.15,
+                logoAlign: "left",
                 textAlign: "left",
                 qrSize: qrSize
               };
             case "business":
               return {
                 nameX: width / 2,
-                nameY: height * 0.35,
+                nameY: height * 0.5, // Adjusted to match preview
                 titleX: width / 2,
-                titleY: height * 0.35 + titleFontSize + 8,
+                titleY: height * 0.5 + titleFontSize + 8,
                 companyX: width / 2,
-                companyY: height * 0.35 + titleFontSize + companyFontSize + 16,
+                companyY: height * 0.5 + titleFontSize + companyFontSize + 16,
                 qrX: width - qrSize/2 - 15,
                 qrY: height - qrSize/2 - 15,
                 logoX: width / 2,
-                logoY: height * 0.12,
+                logoY: height * 0.22, // Increased vertical space for logo
+                logoAlign: "center", 
                 textAlign: "center",
                 qrSize: qrSize
               };
@@ -222,6 +224,7 @@ export const QRCodePreviewGrid = ({
                 qrY: height / 2,
                 logoX: width * 0.15,
                 logoY: height * 0.15,
+                logoAlign: "center",
                 textAlign: "center",
                 qrSize: qrSize
               };
@@ -238,6 +241,7 @@ export const QRCodePreviewGrid = ({
                 qrY: height / 2,
                 logoX: width * 0.08,
                 logoY: height * 0.15,
+                logoAlign: "left",
                 textAlign: "left",
                 qrSize: qrSize
               };
@@ -247,9 +251,7 @@ export const QRCodePreviewGrid = ({
         const templatePosition = getTemplatePosition();
         ctx.textAlign = templatePosition.textAlign;
         
-        // IMPROVED: Draw elements in the correct order to ensure proper layering
-        
-        // 1. Create white background for QR code first
+        // Create white background for QR code first
         const qrBackgroundPadding = 8;
         ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
         ctx.fillRect(
@@ -259,7 +261,7 @@ export const QRCodePreviewGrid = ({
           qrSize + qrBackgroundPadding
         );
         
-        // 2. Draw LOGO first if needed
+        // Draw LOGO first if needed - with improved positioning
         if (nameTagSettings.logo) {
           const img = new Image();
           await new Promise((resolve, reject) => {
@@ -274,30 +276,40 @@ export const QRCodePreviewGrid = ({
             const scale = nameTagSettings.logoScale / 100;
             const logoWidth = img.width * scale;
             const logoHeight = img.height * scale;
-            const maxLogoHeight = height * 0.25;
+            // Ensure logo isn't too large for the name tag
+            const maxLogoHeight = height * 0.3; // Increased from 0.25 to 0.3
+            const maxLogoWidth = width * 0.6; // Add max width constraint
             
-            const ratio = Math.min(maxLogoHeight / logoHeight, 1);
+            // Apply both height and width constraints for proper scaling
+            const ratio = Math.min(
+              maxLogoHeight / logoHeight, 
+              maxLogoWidth / logoWidth, 
+              1
+            );
+            
             const finalLogoWidth = logoWidth * ratio;
             const finalLogoHeight = logoHeight * ratio;
             
+            // Logo X position based on template
             let logoXPos;
-            if (template === "business" || template === "minimal") {
+            if (templatePosition.logoAlign === "center") {
               logoXPos = templatePosition.logoX - (finalLogoWidth / 2);
             } else {
               logoXPos = templatePosition.logoX;
             }
               
+            // Draw the logo at the calculated position
             ctx.drawImage(
               img, 
               logoXPos,
-              templatePosition.logoY,
+              templatePosition.logoY - (finalLogoHeight / 2), // Center logo vertically
               finalLogoWidth,
               finalLogoHeight
             );
           }
         }
         
-        // 3. Generate and draw QR code on canvas
+        // Generate and draw QR code on canvas
         try {
           const vcard = generateVCardData(contact);
           const { toCanvas } = await import('qrcode');
@@ -325,8 +337,7 @@ export const QRCodePreviewGrid = ({
           console.error("Error generating QR code for name tag:", qrError);
         }
         
-        // 4. Draw text AFTER QR code and logo
-        // IMPROVED: Text truncation function for better overflow handling
+        // Draw text AFTER QR code and logo with improved truncation
         const truncateText = (text, maxWidth) => {
           if (!text) return '';
           
@@ -354,7 +365,7 @@ export const QRCodePreviewGrid = ({
         
         // Draw name with truncation
         const textPadding = 15; // Padding from edge
-        const maxNameWidth = (template === "business" || template === "minimal") 
+        const maxNameWidth = (templatePosition.textAlign === "center") 
           ? width * 0.8 
           : width - qrSize - textPadding * 3;
         
@@ -366,7 +377,7 @@ export const QRCodePreviewGrid = ({
         if (title) {
           ctx.font = titleFont;
           ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-          const maxTitleWidth = (template === "business" || template === "minimal")
+          const maxTitleWidth = (templatePosition.textAlign === "center")
             ? width * 0.8
             : width - qrSize - textPadding * 3;
           const truncatedTitle = truncateText(title, maxTitleWidth);
@@ -376,7 +387,7 @@ export const QRCodePreviewGrid = ({
         if (company) {
           ctx.font = companyFont;
           ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-          const maxCompanyWidth = (template === "business" || template === "minimal")
+          const maxCompanyWidth = (templatePosition.textAlign === "center")
             ? width * 0.8
             : width - qrSize - textPadding * 3;
           const truncatedCompany = truncateText(company, maxCompanyWidth);
