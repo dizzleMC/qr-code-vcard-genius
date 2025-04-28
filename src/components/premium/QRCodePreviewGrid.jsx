@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
+import { toast } from "sonner";
 import {
   Pagination,
   PaginationContent,
@@ -24,7 +24,6 @@ export const QRCodePreviewGrid = ({
   const [currentPage, setCurrentPage] = useState(1);
   const contactsPerPage = 9;
   
-  // Generate vCard data string for QR code
   const generateVCardData = (contact) => {
     const vcard = [
       "BEGIN:VCARD",
@@ -44,13 +43,11 @@ export const QRCodePreviewGrid = ({
     return vcard;
   };
 
-  // Calculate pagination
   const totalPages = Math.ceil(contacts.length / contactsPerPage);
   const indexOfLastContact = currentPage * contactsPerPage;
   const indexOfFirstContact = indexOfLastContact - contactsPerPage;
   const currentContacts = contacts.slice(indexOfFirstContact, indexOfLastContact);
 
-  // Handle checkbox changes
   const toggleSelectAll = () => {
     if (selectedContacts.length === contacts.length) {
       setSelectedContacts([]);
@@ -73,6 +70,44 @@ export const QRCodePreviewGrid = ({
     onGenerateSelected(selectedContactsData);
   };
 
+  const handleDownloadSingle = (contact) => {
+    const svg = document.querySelector(`#qr-code-${contact.firstName}-${contact.lastName} svg`);
+    if (!svg) {
+      toast.error("QR-Code konnte nicht generiert werden.");
+      return;
+    }
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      toast.error("Browser unterstützt keine Canvas-Funktionalität.");
+      return;
+    }
+    
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      ctx.fillStyle = templateSettings.bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.drawImage(img, 0, 0);
+      
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `${contact.firstName || 'qrcode'}-${contact.lastName || 'contact'}-qr.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+      
+      toast.success("QR-Code wurde heruntergeladen!");
+    };
+    
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-4">
@@ -81,14 +116,17 @@ export const QRCodePreviewGrid = ({
             id="select-all"
             checked={selectedContacts.length === contacts.length}
             onCheckedChange={toggleSelectAll}
+            className="text-[#ff7e0c]"
           />
-          <label htmlFor="select-all">Alle auswählen ({selectedContacts.length}/{contacts.length})</label>
+          <label htmlFor="select-all" className="text-[#8E9196]">
+            Alle auswählen ({selectedContacts.length}/{contacts.length})
+          </label>
         </div>
         
         <Button
           onClick={handleGenerateSelected}
           disabled={isGenerating || selectedContacts.length === 0}
-          className="bg-[#ff7e0c] text-white font-medium"
+          className="bg-[#ff7e0c] text-white font-medium transition-colors hover:bg-[#e67008]"
         >
           {isGenerating ? (
             <span className="flex items-center gap-2">
@@ -101,48 +139,63 @@ export const QRCodePreviewGrid = ({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {currentContacts.map((contact, index) => {
           const actualIndex = indexOfFirstContact + index;
           return (
             <div 
               key={actualIndex}
-              className={`bg-white p-4 rounded-lg shadow-sm border ${
-                selectedContacts.includes(actualIndex) ? 'border-[#ff7e0c]' : 'border-gray-200'
+              className={`bg-white rounded-lg transition-all duration-200 hover:shadow-md ${
+                selectedContacts.includes(actualIndex) 
+                  ? 'ring-2 ring-[#ff7e0c] ring-opacity-50' 
+                  : 'border border-gray-100'
               }`}
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center">
-                  <Checkbox 
-                    id={`contact-${actualIndex}`}
-                    checked={selectedContacts.includes(actualIndex)}
-                    onCheckedChange={() => toggleContactSelection(index)}
-                    className="mr-2"
-                  />
-                  <div>
-                    <h3 className="font-medium truncate max-w-[180px]">
-                      {contact.firstName} {contact.lastName}
-                    </h3>
-                    {contact.company && (
-                      <p className="text-sm text-gray-500 truncate max-w-[180px]">
-                        {contact.company}
-                      </p>
-                    )}
+              <div className="p-4 space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <Checkbox 
+                      id={`contact-${actualIndex}`}
+                      checked={selectedContacts.includes(actualIndex)}
+                      onCheckedChange={() => toggleContactSelection(index)}
+                      className="text-[#ff7e0c]"
+                    />
+                    <div>
+                      <h3 className="font-medium text-[#1A1F2C] truncate max-w-[180px]">
+                        {contact.firstName} {contact.lastName}
+                      </h3>
+                      {contact.company && (
+                        <p className="text-sm text-[#8E9196] truncate max-w-[180px]">
+                          {contact.company}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex justify-center my-3">
-                <div className="p-2 bg-[#F9FAFB] rounded-lg">
-                  <QRCodeSVG
-                    value={generateVCardData(contact)}
-                    size={120}
-                    level="H"
-                    includeMargin={true}
-                    fgColor={templateSettings.fgColor}
-                    bgColor={templateSettings.bgColor}
-                  />
+                
+                <div className="flex justify-center">
+                  <div 
+                    id={`qr-code-${contact.firstName}-${contact.lastName}`}
+                    className="p-4 bg-[#F9FAFB] rounded-lg transition-all duration-200 hover:shadow-sm"
+                  >
+                    <QRCodeSVG
+                      value={generateVCardData(contact)}
+                      size={120}
+                      level="H"
+                      includeMargin={true}
+                      fgColor={templateSettings.fgColor}
+                      bgColor={templateSettings.bgColor}
+                    />
+                  </div>
                 </div>
+
+                <Button
+                  variant="secondary"
+                  onClick={() => handleDownloadSingle(contact)}
+                  className="w-full text-sm bg-gray-50 hover:bg-gray-100 text-[#1A1F2C] transition-colors"
+                >
+                  QR-Code herunterladen
+                </Button>
               </div>
             </div>
           );
