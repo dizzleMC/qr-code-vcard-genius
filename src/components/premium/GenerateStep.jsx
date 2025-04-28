@@ -15,26 +15,20 @@ export const GenerateStep = ({
   onReset
 }) => {
   return (
-    <Card className="border-0 shadow-sm">
+    <Card className="border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-200 bg-white h-full">
       <CardHeader className="border-b bg-white pb-6">
         <h2 className="text-xl font-medium text-gray-900">
-          Schritt 3: QR-Codes generieren
+          QR-Codes generieren
         </h2>
       </CardHeader>
       
-      <CardContent className="p-8 space-y-12 bg-[#FCFCFD]">
-        <Card className="border border-gray-100 shadow-none">
-          <CardContent className="p-6">
-            <h3 className="text-sm font-medium text-gray-900 mb-4">Zusammenfassung</h3>
-            
-            <ul className="space-y-2">
-              <li className="flex justify-between text-sm">
-                <span className="text-gray-600">Anzahl Kontakte:</span>
-                <span className="font-medium text-gray-900">{importedData.length}</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+      <CardContent className="p-6 space-y-6">
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-gray-900 mb-2">Zusammenfassung</h3>
+          <p className="text-sm text-gray-600">
+            {importedData.length} Kontakte zum Generieren
+          </p>
+        </div>
         
         {isGenerating && (
           <div className="space-y-3">
@@ -45,16 +39,6 @@ export const GenerateStep = ({
             </p>
           </div>
         )}
-        
-        <div className="space-y-6">
-          <h3 className="text-sm font-medium text-gray-900">QR-Code Vorschau</h3>
-          <QRCodePreviewGrid 
-            contacts={importedData}
-            templateSettings={templateSettings}
-            onGenerateSelected={onGenerateSelected}
-            isGenerating={isGenerating}
-          />
-        </div>
         
         <div className="flex gap-4">
           <Button
@@ -76,7 +60,7 @@ export const GenerateStep = ({
                 Generiere...
               </span>
             ) : (
-              "Alle QR-Codes generieren & herunterladen"
+              "Alle QR-Codes generieren"
             )}
           </Button>
         </div>

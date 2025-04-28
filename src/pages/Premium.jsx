@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { PremiumLayout } from "@/components/premium/PremiumLayout";
@@ -46,7 +45,6 @@ const Premium = () => {
     setCurrentStep(2);
   };
   
-  // Modified to handle generation of only selected contacts
   const handleGenerateSelected = async (selectedContacts) => {
     if (selectedContacts.length === 0) {
       toast.error("Keine Kontakte ausgewählt.");
@@ -56,7 +54,6 @@ const Premium = () => {
     await generateQRCodes(selectedContacts);
   };
   
-  // Modified to handle generation of all contacts
   const handleBulkGenerate = async () => {
     if (importedData.length === 0) {
       toast.error("Keine Daten zum Generieren vorhanden.");
@@ -66,7 +63,6 @@ const Premium = () => {
     await generateQRCodes(importedData);
   };
   
-  // Improved QR code generation logic into a separate function
   const generateQRCodes = async (contactsToGenerate) => {
     setIsGenerating(true);
     setGenerationProgress(0);
@@ -75,14 +71,12 @@ const Premium = () => {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       
-      // Import qrcode library
       const { toCanvas } = await import('qrcode');
       
       let completedCount = 0;
       const totalContacts = contactsToGenerate.length;
       console.log(`Starting generation of ${totalContacts} QR codes`);
       
-      // Process in smaller batches for better UI responsiveness
       const batchSize = 3;
       const batches = [];
       
@@ -92,14 +86,11 @@ const Premium = () => {
       
       console.log(`Split into ${batches.length} batches of max ${batchSize} contacts each`);
       
-      // Process each batch sequentially to avoid memory issues
       for (const [batchIndex, batch] of batches.entries()) {
         console.log(`Processing batch ${batchIndex + 1}/${batches.length}`);
         
-        // Process contacts within each batch in parallel
         const batchPromises = batch.map(async (contact) => {
           try {
-            // Generate vCard data
             const vcard = [
               "BEGIN:VCARD",
               "VERSION:3.0",
@@ -115,7 +106,6 @@ const Premium = () => {
               "END:VCARD"
             ].filter(Boolean).join("\n");
             
-            // Create a canvas element
             const canvas = document.createElement("canvas");
             const options = {
               width: templateSettings.size || 200,
@@ -129,10 +119,8 @@ const Premium = () => {
             
             console.log(`Generating QR code for ${contact.firstName} ${contact.lastName}`);
             
-            // Generate QR code on canvas
             await toCanvas(canvas, vcard, options);
             
-            // Convert to blob
             const blob = await new Promise((resolve, reject) => {
               canvas.toBlob((blob) => {
                 if (blob) resolve(blob);
@@ -151,7 +139,7 @@ const Premium = () => {
             
           } catch (error) {
             console.error(`Error generating QR code for contact ${contact.firstName} ${contact.lastName}:`, error);
-            throw error; // Re-throw so the outer try-catch can handle it
+            throw error;
           } finally {
             completedCount++;
             const progress = (completedCount / totalContacts) * 100;
@@ -160,7 +148,6 @@ const Premium = () => {
           }
         });
         
-        // Wait for all contacts in this batch to complete
         try {
           await Promise.all(batchPromises);
         } catch (error) {
@@ -170,7 +157,6 @@ const Premium = () => {
         }
       }
       
-      // After all batches are processed, create the ZIP file
       const filesInZip = Object.keys(zip.files).length;
       console.log(`Files in zip: ${filesInZip}`);
       
@@ -226,47 +212,12 @@ const Premium = () => {
 
   return (
     <PremiumLayout>
-      <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          maxWidth: "600px",
-          margin: "0 auto 2rem auto"
-        }}>
-          {[1, 2, 3].map((step) => (
-            <div key={step} style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center"
-            }}>
-              <div style={{
-                width: "3rem",
-                height: "3rem",
-                borderRadius: "50%",
-                backgroundColor: currentStep >= step ? "#ff7e0c" : "#e2e8f0",
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: "600",
-                marginBottom: "0.5rem"
-              }}>
-                {step}
-              </div>
-              <span style={{ color: currentStep >= step ? "#1A1F2C" : "#8E9196" }}>
-                {step === 1 && "Daten importieren"}
-                {step === 2 && "Template anpassen"}
-                {step === 3 && "QR-Codes generieren"}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {currentStep === 1 && (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="col-span-1 md:col-span-2">
           <ImportStep onImportSuccess={handleImportSuccess} />
-        )}
+        </div>
         
-        {currentStep === 2 && (
+        <div className="col-span-1">
           <TemplateStep
             templateData={templateData}
             templateSettings={templateSettings}
@@ -276,9 +227,9 @@ const Premium = () => {
             onSelectContact={setSelectedContact}
             onNextStep={() => setCurrentStep(3)}
           />
-        )}
+        </div>
         
-        {currentStep === 3 && (
+        <div className="col-span-1">
           <GenerateStep
             importedData={importedData}
             templateSettings={templateSettings}
@@ -288,7 +239,7 @@ const Premium = () => {
             onGenerateSelected={handleGenerateSelected}
             onReset={resetProcess}
           />
-        )}
+        </div>
       </div>
     </PremiumLayout>
   );

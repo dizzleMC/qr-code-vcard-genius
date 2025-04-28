@@ -10,13 +10,13 @@ export const ImportStep = ({ onImportSuccess }) => {
   };
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card className="border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-200 bg-white overflow-hidden">
       <CardHeader className="border-b bg-white pb-6">
         <h2 className="text-xl font-medium text-gray-900">
-          Schritt 1: Excel-Datei importieren
+          Excel-Datei importieren
         </h2>
       </CardHeader>
-      <CardContent className="p-8 bg-[#FCFCFD]">
+      <CardContent className="p-8">
         <ExcelImporter onImportSuccess={handleImportSuccess} />
       </CardContent>
     </Card>
