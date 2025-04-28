@@ -15,30 +15,30 @@ export const GenerateStep = ({
   onReset
 }) => {
   return (
-    <Card className="bg-white">
-      <CardHeader>
-        <h2 className="text-xl font-semibold text-gray-900">
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="border-b bg-white pb-6">
+        <h2 className="text-xl font-medium text-gray-900">
           Schritt 3: QR-Codes generieren
         </h2>
       </CardHeader>
       
-      <CardContent className="space-y-8">
-        <Card className="bg-gray-50/50">
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold mb-4">Zusammenfassung</h3>
+      <CardContent className="p-8 space-y-12 bg-[#FCFCFD]">
+        <Card className="border border-gray-100 shadow-none">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-medium text-gray-900 mb-4">Zusammenfassung</h3>
             
             <ul className="space-y-2">
-              <li className="flex justify-between">
+              <li className="flex justify-between text-sm">
                 <span className="text-gray-600">Anzahl Kontakte:</span>
-                <span className="font-medium">{importedData.length}</span>
+                <span className="font-medium text-gray-900">{importedData.length}</span>
               </li>
             </ul>
           </CardContent>
         </Card>
         
         {isGenerating && (
-          <div className="space-y-2">
-            <Progress value={generationProgress} />
+          <div className="space-y-3">
+            <Progress value={generationProgress} className="h-2" />
             <p className="text-sm text-gray-600 flex items-center gap-2">
               <Loader className="animate-spin" size={16} />
               Generiere QR-Codes... {Math.round(generationProgress)}%
@@ -46,8 +46,8 @@ export const GenerateStep = ({
           </div>
         )}
         
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">QR-Code Vorschau</h3>
+        <div className="space-y-6">
+          <h3 className="text-sm font-medium text-gray-900">QR-Code Vorschau</h3>
           <QRCodePreviewGrid 
             contacts={importedData}
             templateSettings={templateSettings}
@@ -68,7 +68,7 @@ export const GenerateStep = ({
           <Button
             onClick={onGenerate}
             disabled={isGenerating || importedData.length === 0}
-            className="flex-2 bg-[#ff7e0c] text-white font-medium hover:bg-[#ff7e0c]/90"
+            className="flex-1 bg-[#ff7e0c] text-white font-medium hover:bg-[#ff7e0c]/90"
           >
             {isGenerating ? (
               <span className="flex items-center gap-2">

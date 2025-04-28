@@ -1,6 +1,7 @@
 
 import { toast } from "sonner";
 import { ExcelImporter } from "@/components/ExcelImporter";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export const ImportStep = ({ onImportSuccess }) => {
   const handleImportSuccess = (data) => {
@@ -9,11 +10,15 @@ export const ImportStep = ({ onImportSuccess }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-8">
-      <h2 className="text-xl font-semibold mb-6">
-        Schritt 1: Excel-Datei importieren
-      </h2>
-      <ExcelImporter onImportSuccess={handleImportSuccess} />
-    </div>
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="border-b bg-white pb-6">
+        <h2 className="text-xl font-medium text-gray-900">
+          Schritt 1: Excel-Datei importieren
+        </h2>
+      </CardHeader>
+      <CardContent className="p-8 bg-[#FCFCFD]">
+        <ExcelImporter onImportSuccess={handleImportSuccess} />
+      </CardContent>
+    </Card>
   );
 };

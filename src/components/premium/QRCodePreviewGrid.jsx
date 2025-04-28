@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,7 +24,6 @@ export const QRCodePreviewGrid = ({
   const [currentPage, setCurrentPage] = useState(1);
   const contactsPerPage = 9;
   
-  // Generate vCard data string for QR code
   const generateVCardData = (contact) => {
     const vcard = [
       "BEGIN:VCARD",
@@ -45,13 +43,11 @@ export const QRCodePreviewGrid = ({
     return vcard;
   };
 
-  // Calculate pagination
   const totalPages = Math.ceil(contacts.length / contactsPerPage);
   const indexOfLastContact = currentPage * contactsPerPage;
   const indexOfFirstContact = indexOfLastContact - contactsPerPage;
   const currentContacts = contacts.slice(indexOfFirstContact, indexOfLastContact);
 
-  // Handle checkbox changes
   const toggleSelectAll = () => {
     if (selectedContacts.length === contacts.length) {
       setSelectedContacts([]);
@@ -91,7 +87,8 @@ export const QRCodePreviewGrid = ({
         <Button
           onClick={handleGenerateSelected}
           disabled={isGenerating || selectedContacts.length === 0}
-          className="bg-[#ff7e0c] text-white font-medium hover:bg-[#ff7e0c]/90"
+          variant="outline"
+          className="text-[#ff7e0c] border-[#ff7e0c] hover:bg-[#ff7e0c]/5"
         >
           {isGenerating ? (
             <span className="flex items-center gap-2">
@@ -110,11 +107,11 @@ export const QRCodePreviewGrid = ({
           return (
             <Card
               key={actualIndex}
-              className={`overflow-hidden ${
-                selectedContacts.includes(actualIndex) ? 'ring-2 ring-[#ff7e0c]' : ''
+              className={`overflow-hidden border-gray-100 ${
+                selectedContacts.includes(actualIndex) ? 'ring-1 ring-[#ff7e0c]' : ''
               }`}
             >
-              <div className="p-4 space-y-4">
+              <CardContent className="p-6 space-y-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <Checkbox 
@@ -136,7 +133,7 @@ export const QRCodePreviewGrid = ({
                 </div>
                 
                 <div className="flex justify-center">
-                  <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="p-4 bg-white rounded-lg border border-gray-100">
                     <QRCodeSVG
                       value={generateVCardData(contact)}
                       size={120}
@@ -149,16 +146,14 @@ export const QRCodePreviewGrid = ({
                 </div>
                 
                 <Button 
-                  variant="outline" 
+                  variant="outline"
                   className="w-full"
-                  onClick={() => {
-                    onGenerateSelected([contact]);
-                  }}
+                  onClick={() => onGenerateSelected([contact])}
                 >
                   <Download className="mr-2 h-4 w-4" />
                   QR-Code herunterladen
                 </Button>
-              </div>
+              </CardContent>
             </Card>
           );
         })}
