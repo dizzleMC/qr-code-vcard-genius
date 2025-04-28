@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -109,58 +108,52 @@ export const QRCodePreviewGrid = ({
           }
         };
         
-        const dimensions = getDimensions();
-        const { width, height } = dimensions;
+        const settings = templateSettings.nameTag;
+        const { width, height } = getDimensions();
         canvas.width = width;
         canvas.height = height;
         
-        // Fill background
-        ctx.fillStyle = templateSettings.nameTag.backgroundColor || "#ffffff";
+        ctx.fillStyle = settings.backgroundColor || "#ffffff";
         ctx.fillRect(0, 0, width, height);
         
-        const nameTagSettings = templateSettings.nameTag;
-        const template = nameTagSettings.template || "classic";
-        const borderColor = nameTagSettings.borderColor || "#e2e8f0";
+        const template = settings.template || "classic";
+        const borderColor = settings.borderColor || "#e2e8f0";
         
-        // Add gradient based on template
         let gradient;
         if (template === "modern") {
           gradient = ctx.createLinearGradient(0, 0, width, 0);
-          gradient.addColorStop(0, nameTagSettings.backgroundColor || "#ffffff");
-          gradient.addColorStop(0.85, nameTagSettings.backgroundColor || "#ffffff");
-          gradient.addColorStop(1, borderColor + "20");
+          gradient.addColorStop(0, settings.backgroundColor || "#ffffff");
+          gradient.addColorStop(0.7, settings.backgroundColor || "#ffffff");
+          gradient.addColorStop(1, borderColor + "30");
         } else if (template === "business") {
           gradient = ctx.createLinearGradient(0, 0, 0, height);
-          gradient.addColorStop(0, nameTagSettings.backgroundColor || "#ffffff");
-          gradient.addColorStop(0.85, nameTagSettings.backgroundColor || "#ffffff");
-          gradient.addColorStop(1, borderColor + "20");
+          gradient.addColorStop(0, settings.backgroundColor || "#ffffff");
+          gradient.addColorStop(0.7, settings.backgroundColor || "#ffffff");
+          gradient.addColorStop(1, borderColor + "30");
         } else if (template === "minimal") {
           gradient = ctx.createLinearGradient(0, 0, width, 0);
-          gradient.addColorStop(0, nameTagSettings.backgroundColor || "#ffffff");
-          gradient.addColorStop(0.90, nameTagSettings.backgroundColor || "#ffffff");
-          gradient.addColorStop(1, borderColor + "10");
-        } else { // classic template
+          gradient.addColorStop(0, settings.backgroundColor || "#ffffff");
+          gradient.addColorStop(0.85, settings.backgroundColor || "#ffffff");
+          gradient.addColorStop(1, borderColor + "15");
+        } else {
           gradient = ctx.createLinearGradient(0, 0, width, 0);
-          gradient.addColorStop(0, nameTagSettings.backgroundColor || "#ffffff");
-          gradient.addColorStop(0.85, nameTagSettings.backgroundColor || "#ffffff");
-          gradient.addColorStop(1, borderColor + "20");
+          gradient.addColorStop(0, settings.backgroundColor || "#ffffff");
+          gradient.addColorStop(0.75, settings.backgroundColor || "#ffffff");
+          gradient.addColorStop(1, borderColor + "25");
         }
         
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, width, height);
         
-        // Add border
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = 2;
         ctx.strokeRect(1, 1, width - 2, height - 2);
         
-        // Determine font settings
-        const fontFamily = nameTagSettings.font || 'Arial';
+        const fontFamily = settings.font || 'Arial';
         const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
         const company = (contact.company || '').trim();
         const title = (contact.title || '').trim();
-
-        // Set up font sizes according to tag size
+        
         const nameFontSize = Math.max(dimensions.fontSize, 18);
         const titleFontSize = Math.max(dimensions.fontSize - 6, 12);
         const companyFontSize = Math.max(dimensions.fontSize - 4, 14);
@@ -169,46 +162,39 @@ export const QRCodePreviewGrid = ({
         const titleFont = `${titleFontSize}px ${fontFamily}`;
         const companyFont = `${companyFontSize}px ${fontFamily}`;
         
-        // Measure text to position correctly
-        const nameMetrics = measureText(ctx, fullName, nameFont);
-        const titleMetrics = title ? measureText(ctx, title, titleFont) : { width: 0, height: 0 };
-        const companyMetrics = company ? measureText(ctx, company, companyFont) : { width: 0, height: 0 };
+        const qrSize = template === "business" ? height * 0.65 : height * 0.7;
         
-        // Define QR size consistently before use
-        const qrSize = height * 0.7;
-        
-        // Improved template-specific layout exactly matching preview
         const getTemplatePosition = () => {
           switch(template) {
             case "modern":
               return {
-                nameX: width * 0.08,
+                nameX: width * 0.88,
                 nameY: height / 2 - 10,
-                titleX: width * 0.08,
+                titleX: width * 0.88,
                 titleY: height / 2 + titleFontSize + 5,
-                companyX: width * 0.08,
+                companyX: width * 0.88,
                 companyY: height / 2 + titleFontSize + companyFontSize + 15,
-                qrX: width - qrSize/1.6,
+                qrX: width * 0.3,
                 qrY: height / 2,
-                logoX: width * 0.08,
+                logoX: width * 0.88,
                 logoY: height * 0.15,
-                logoAlign: "left",
-                textAlign: "left",
+                logoAlign: "right",
+                textAlign: "right",
                 qrSize: qrSize
               };
             case "business":
               return {
                 nameX: width / 2,
-                nameY: height * 0.5, // Adjusted to match preview
+                nameY: height * 0.5 - 10,
                 titleX: width / 2,
-                titleY: height * 0.5 + titleFontSize + 8,
+                titleY: height * 0.5 + titleFontSize + 5,
                 companyX: width / 2,
-                companyY: height * 0.5 + titleFontSize + companyFontSize + 16,
+                companyY: height * 0.5 + titleFontSize + companyFontSize + 15,
                 qrX: width - qrSize/2 - 15,
-                qrY: height - qrSize/2 - 15,
+                qrY: height - qrSize/2 - 10,
                 logoX: width / 2,
-                logoY: height * 0.22, // Increased vertical space for logo
-                logoAlign: "center", 
+                logoY: height * 0.2,
+                logoAlign: "center",
                 textAlign: "center",
                 qrSize: qrSize
               };
@@ -222,8 +208,8 @@ export const QRCodePreviewGrid = ({
                 companyY: height / 2 + titleFontSize + companyFontSize + 15,
                 qrX: width - qrSize/1.6,
                 qrY: height / 2,
-                logoX: width * 0.15,
-                logoY: height * 0.15,
+                logoX: width * 0.2,
+                logoY: height / 2,
                 logoAlign: "center",
                 textAlign: "center",
                 qrSize: qrSize
@@ -251,36 +237,32 @@ export const QRCodePreviewGrid = ({
         const templatePosition = getTemplatePosition();
         ctx.textAlign = templatePosition.textAlign;
         
-        // Create white background for QR code first
-        const qrBackgroundPadding = 8;
-        ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
+        const qrBackgroundPadding = 10;
+        ctx.fillStyle = settings.qrBgColor || "#ffffff";
         ctx.fillRect(
-          templatePosition.qrX - (qrSize / 2) - qrBackgroundPadding/2, 
-          templatePosition.qrY - (qrSize / 2) - qrBackgroundPadding/2, 
-          qrSize + qrBackgroundPadding, 
-          qrSize + qrBackgroundPadding
+          templatePosition.qrX - (templatePosition.qrSize / 2) - qrBackgroundPadding/2, 
+          templatePosition.qrY - (templatePosition.qrSize / 2) - qrBackgroundPadding/2, 
+          templatePosition.qrSize + qrBackgroundPadding, 
+          templatePosition.qrSize + qrBackgroundPadding
         );
         
-        // Draw LOGO first if needed - with improved positioning
-        if (nameTagSettings.logo) {
+        if (settings.logo) {
           const img = new Image();
           await new Promise((resolve, reject) => {
             img.onload = resolve;
             img.onerror = reject;
-            img.src = nameTagSettings.logo;
+            img.src = settings.logo;
           }).catch(err => {
             console.error("Error loading logo:", err);
           });
           
           if (img.complete && img.naturalWidth > 0) {
-            const scale = nameTagSettings.logoScale / 100;
+            const scale = settings.logoScale / 100;
             const logoWidth = img.width * scale;
             const logoHeight = img.height * scale;
-            // Ensure logo isn't too large for the name tag
-            const maxLogoHeight = height * 0.3; // Increased from 0.25 to 0.3
-            const maxLogoWidth = width * 0.6; // Add max width constraint
+            const maxLogoHeight = height * 0.3;
+            const maxLogoWidth = width * 0.6;
             
-            // Apply both height and width constraints for proper scaling
             const ratio = Math.min(
               maxLogoHeight / logoHeight, 
               maxLogoWidth / logoWidth, 
@@ -290,26 +272,25 @@ export const QRCodePreviewGrid = ({
             const finalLogoWidth = logoWidth * ratio;
             const finalLogoHeight = logoHeight * ratio;
             
-            // Logo X position based on template
             let logoXPos;
             if (templatePosition.logoAlign === "center") {
               logoXPos = templatePosition.logoX - (finalLogoWidth / 2);
+            } else if (templatePosition.logoAlign === "right") {
+              logoXPos = templatePosition.logoX - finalLogoWidth;
             } else {
               logoXPos = templatePosition.logoX;
             }
               
-            // Draw the logo at the calculated position
             ctx.drawImage(
               img, 
               logoXPos,
-              templatePosition.logoY - (finalLogoHeight / 2), // Center logo vertically
+              templatePosition.logoY - (finalLogoHeight / 2),
               finalLogoWidth,
               finalLogoHeight
             );
           }
         }
         
-        // Generate and draw QR code on canvas
         try {
           const vcard = generateVCardData(contact);
           const { toCanvas } = await import('qrcode');
@@ -317,44 +298,41 @@ export const QRCodePreviewGrid = ({
           const qrCanvas = document.createElement("canvas");
           
           await toCanvas(qrCanvas, vcard, {
-            width: qrSize,
+            width: templatePosition.qrSize,
             margin: 1,
             color: {
-              dark: nameTagSettings.qrFgColor || "#000000",
-              light: nameTagSettings.qrBgColor || "#ffffff"
+              dark: settings.qrFgColor || "#000000",
+              light: settings.qrBgColor || "#ffffff"
             },
             errorCorrectionLevel: 'M'
           });
           
           ctx.drawImage(
             qrCanvas, 
-            templatePosition.qrX - (qrSize / 2), 
-            templatePosition.qrY - (qrSize / 2), 
-            qrSize, 
-            qrSize
+            templatePosition.qrX - (templatePosition.qrSize / 2), 
+            templatePosition.qrY - (templatePosition.qrSize / 2), 
+            templatePosition.qrSize, 
+            templatePosition.qrSize
           );
         } catch (qrError) {
           console.error("Error generating QR code for name tag:", qrError);
         }
         
-        // Draw text AFTER QR code and logo with improved truncation
         const truncateText = (text, maxWidth) => {
           if (!text) return '';
           
           let truncated = text;
-          ctx.save(); // Save current context state
+          ctx.save();
           
-          // Set the appropriate font for measurement
           if (text === fullName) ctx.font = nameFont;
           else if (text === title) ctx.font = titleFont;
           else ctx.font = companyFont;
           
-          // Check if text needs truncation
           while (ctx.measureText(truncated).width > maxWidth && truncated.length > 0) {
             truncated = truncated.slice(0, -1);
           }
           
-          ctx.restore(); // Restore context state
+          ctx.restore();
           
           if (truncated !== text && truncated.length > 3) {
             truncated = truncated.slice(0, -3) + '...';
@@ -363,33 +341,36 @@ export const QRCodePreviewGrid = ({
           return truncated;
         };
         
-        // Draw name with truncation
-        const textPadding = 15; // Padding from edge
-        const maxNameWidth = (templatePosition.textAlign === "center") 
-          ? width * 0.8 
-          : width - qrSize - textPadding * 3;
+        const textPadding = 15;
+        let maxNameWidth;
+        
+        if (template === "business") {
+          maxNameWidth = width * 0.8;
+        } else if (templatePosition.textAlign === "center") {
+          maxNameWidth = width * 0.6;
+        } else if (templatePosition.textAlign === "right") {
+          maxNameWidth = width * 0.5;
+        } else {
+          maxNameWidth = width - templatePosition.qrSize - textPadding * 3;
+        }
         
         ctx.font = nameFont;
-        ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
+        ctx.fillStyle = settings.nameColor || "#1A1F2C";
         const truncatedName = truncateText(fullName, maxNameWidth);
         ctx.fillText(truncatedName, templatePosition.nameX, templatePosition.nameY);
         
         if (title) {
           ctx.font = titleFont;
-          ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-          const maxTitleWidth = (templatePosition.textAlign === "center")
-            ? width * 0.8
-            : width - qrSize - textPadding * 3;
+          ctx.fillStyle = settings.companyColor || "#8E9196";
+          const maxTitleWidth = maxNameWidth;
           const truncatedTitle = truncateText(title, maxTitleWidth);
           ctx.fillText(truncatedTitle, templatePosition.titleX, templatePosition.titleY);
         }
         
         if (company) {
           ctx.font = companyFont;
-          ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-          const maxCompanyWidth = (templatePosition.textAlign === "center")
-            ? width * 0.8
-            : width - qrSize - textPadding * 3;
+          ctx.fillStyle = settings.companyColor || "#8E9196";
+          const maxCompanyWidth = maxNameWidth;
           const truncatedCompany = truncateText(company, maxCompanyWidth);
           ctx.fillText(truncatedCompany, templatePosition.companyX, templatePosition.companyY);
         }
