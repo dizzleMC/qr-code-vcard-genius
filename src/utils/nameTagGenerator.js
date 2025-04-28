@@ -6,11 +6,20 @@ import { generateVCardData, truncateText } from './qrCodeUtils';
  * @returns {Object} Dimensions and properties for the name tag
  */
 export const getDimensions = (size) => {
-  switch(size) {
-    case "small": return { width: 350, height: 175, fontSize: 18 };
-    case "large": return { width: 450, height: 225, fontSize: 26 };
+  console.log("getDimensions called with size:", size);
+  
+  // Provide fallback if size is undefined or not recognized
+  const validSize = size && ["small", "medium", "large"].includes(size) 
+    ? size 
+    : "medium";
+    
+  console.log("Using size value:", validSize);
+    
+  switch(validSize) {
+    case "small": return { width: 350, height: 175, fontSize: 18, qrSize: 100 };
+    case "large": return { width: 450, height: 225, fontSize: 26, qrSize: 150 };
     case "medium":
-    default: return { width: 400, height: 200, fontSize: 22 };
+    default: return { width: 400, height: 200, fontSize: 22, qrSize: 120 };
   }
 };
 
@@ -157,8 +166,8 @@ export const generateNameTag = async (contact, nameTagSettings) => {
     throw new Error("Name tag settings are required");
   }
   
-  if (!nameTagSettings.size) {
-    console.warn("Size not specified in nameTagSettings, defaulting to medium");
+  if (!nameTagSettings.size || !["small", "medium", "large"].includes(nameTagSettings.size)) {
+    console.warn("Size not specified or invalid in nameTagSettings, defaulting to medium");
     nameTagSettings.size = "medium";
   }
   
@@ -171,7 +180,6 @@ export const generateNameTag = async (contact, nameTagSettings) => {
   }
   
   try {
-    // Get dimensions based on size setting with fallbacks
     const sizeSetting = nameTagSettings.size || "medium";
     console.log("Using size setting:", sizeSetting);
     
@@ -179,14 +187,14 @@ export const generateNameTag = async (contact, nameTagSettings) => {
     console.log("Calculated dimensions:", dimensions);
     
     if (!dimensions) {
-      throw new Error(`Failed to get dimensions for size: ${sizeSetting}`);
+      console.error("Failed to get dimensions, using default medium size");
+      dimensions = { width: 400, height: 200, fontSize: 22, qrSize: 120 };
     }
     
     const { width, height, fontSize } = dimensions;
     canvas.width = width;
     canvas.height = height;
     
-    // Draw background with template-specific styling
     const template = nameTagSettings.template || "classic";
     const backgroundColor = nameTagSettings.backgroundColor || "#ffffff";
     const borderColor = nameTagSettings.borderColor || "#e2e8f0";
@@ -194,24 +202,19 @@ export const generateNameTag = async (contact, nameTagSettings) => {
     console.log("Drawing template background:", template);
     createTemplateBackground(ctx, template, width, height, backgroundColor, borderColor);
     
-    // Calculate template-specific positions
-    const qrSize = template === "business" ? height * 0.65 : height * 0.7;
+    const qrSize = dimensions.qrSize || (template === "business" ? height * 0.65 : height * 0.7);
     const templatePosition = getTemplatePosition(template, width, height, qrSize);
     
-    // Set text alignment based on template
     ctx.textAlign = templatePosition.textAlign;
     
-    // Draw QR code background
-    const qrBackgroundPadding = 10;
     ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
     ctx.fillRect(
-      templatePosition.qrX - (templatePosition.qrSize / 2) - qrBackgroundPadding/2, 
-      templatePosition.qrY - (templatePosition.qrSize / 2) - qrBackgroundPadding/2, 
-      templatePosition.qrSize + qrBackgroundPadding, 
-      templatePosition.qrSize + qrBackgroundPadding
+      templatePosition.qrX - (templatePosition.qrSize / 2) - 10, 
+      templatePosition.qrY - (templatePosition.qrSize / 2) - 10, 
+      templatePosition.qrSize + 20, 
+      templatePosition.qrSize + 20
     );
     
-    // Add logo if available
     if (nameTagSettings.logo) {
       const img = new Image();
       try {
@@ -259,7 +262,6 @@ export const generateNameTag = async (contact, nameTagSettings) => {
       }
     }
     
-    // Generate QR code
     try {
       const { toCanvas } = await import('qrcode');
       const vcard = generateVCardData(contact);
@@ -287,12 +289,10 @@ export const generateNameTag = async (contact, nameTagSettings) => {
       console.error("Error generating QR code for name tag:", error);
     }
     
-    // Add text content
     const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
     const company = (contact.company || '').trim();
     const title = (contact.title || '').trim();
     
-    // Calculate font sizes
     const nameFontSize = Math.max(fontSize, 18);
     const titleFontSize = Math.max(fontSize - 6, 12);
     const companyFontSize = Math.max(fontSize - 4, 14);
@@ -301,20 +301,17 @@ export const generateNameTag = async (contact, nameTagSettings) => {
     const titleFont = `${titleFontSize}px ${nameTagSettings.font || 'Arial'}`;
     const companyFont = `${companyFontSize}px ${nameTagSettings.font || 'Arial'}`;
     
-    // Calculate max widths for text
     const textPadding = 20;
     const maxNameWidth = template === "business" ? width * 0.8 : 
       templatePosition.textAlign === "center" ? width * 0.6 : 
       templatePosition.textAlign === "right" ? width * 0.5 : 
       width - templatePosition.qrSize - textPadding * 3;
     
-    // Draw name
     ctx.font = nameFont;
     ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
     const truncatedName = truncateText(ctx, fullName, maxNameWidth, nameFont);
     ctx.fillText(truncatedName, templatePosition.nameX, templatePosition.nameY);
     
-    // Draw title
     if (title) {
       ctx.font = titleFont;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
@@ -322,7 +319,6 @@ export const generateNameTag = async (contact, nameTagSettings) => {
       ctx.fillText(truncatedTitle, templatePosition.titleX, templatePosition.titleY);
     }
     
-    // Draw company
     if (company) {
       ctx.font = companyFont;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
@@ -330,7 +326,6 @@ export const generateNameTag = async (contact, nameTagSettings) => {
       ctx.fillText(truncatedCompany, templatePosition.companyX, templatePosition.companyY);
     }
     
-    // Convert canvas to blob
     console.log("Generating blob from canvas");
     return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {

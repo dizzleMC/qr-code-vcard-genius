@@ -10,6 +10,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   
   // Get dimensions based on size setting using the same function as the generator
   const dimensions = getDimensions(settings.size || "medium");
+  console.log("NameTagPreview dimensions:", dimensions);
   
   // Base styles for the name tag with adjusted font size based on dimensions
   const nameTagStyle = {

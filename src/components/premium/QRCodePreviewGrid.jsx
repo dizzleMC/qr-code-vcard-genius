@@ -99,6 +99,9 @@ export const QRCodePreviewGrid = ({
           logoScale: templateSettings.nameTag.logoScale || 100
         };
         
+        console.log("Sanitized name tag settings:", nameTagSettings);
+        console.log("Size parameter:", nameTagSettings.size);
+        
         // Use the dedicated nameTagGenerator utility
         const nameTagBlob = await generateNameTag(contact, nameTagSettings);
         
@@ -123,7 +126,7 @@ export const QRCodePreviewGrid = ({
         toast.success("Namensschild wurde heruntergeladen!");
       } catch (error) {
         console.error("Error generating name tag:", error);
-        toast.error("Fehler beim Erstellen des Namensschilds.");
+        toast.error(`Fehler beim Erstellen des Namensschilds: ${error.message}`);
       }
     }
   };
