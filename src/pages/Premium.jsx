@@ -66,7 +66,7 @@ const Premium = () => {
     await generateQRCodes(importedData);
   };
   
-  // Extracted QR code generation logic into a separate function
+  // Improved QR code generation logic into a separate function
   const generateQRCodes = async (contactsToGenerate) => {
     setIsGenerating(true);
     setGenerationProgress(0);
@@ -75,23 +75,29 @@ const Premium = () => {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
       
-      // Use direct QR code generation instead of a web worker
-      // This helps debug and ensure proper generation
+      // Import qrcode library
       const { toCanvas } = await import('qrcode');
       
       let completedCount = 0;
       const totalContacts = contactsToGenerate.length;
+      console.log(`Starting generation of ${totalContacts} QR codes`);
       
       // Process in smaller batches for better UI responsiveness
-      const batchSize = 5;
+      const batchSize = 3;
       const batches = [];
       
       for (let i = 0; i < totalContacts; i += batchSize) {
         batches.push(contactsToGenerate.slice(i, i + batchSize));
       }
       
-      for (const batch of batches) {
-        await Promise.all(batch.map(async (contact) => {
+      console.log(`Split into ${batches.length} batches of max ${batchSize} contacts each`);
+      
+      // Process each batch sequentially to avoid memory issues
+      for (const [batchIndex, batch] of batches.entries()) {
+        console.log(`Processing batch ${batchIndex + 1}/${batches.length}`);
+        
+        // Process contacts within each batch in parallel
+        const batchPromises = batch.map(async (contact) => {
           try {
             // Generate vCard data
             const vcard = [
@@ -112,76 +118,101 @@ const Premium = () => {
             // Create a canvas element
             const canvas = document.createElement("canvas");
             const options = {
-              width: templateSettings.size,
+              width: templateSettings.size || 200,
               margin: 4,
               color: {
-                dark: templateSettings.fgColor,
-                light: templateSettings.bgColor
-              }
+                dark: templateSettings.fgColor || "#1A1F2C",
+                light: templateSettings.bgColor || "#ffffff"
+              },
+              errorCorrectionLevel: 'H'
             };
+            
+            console.log(`Generating QR code for ${contact.firstName} ${contact.lastName}`);
             
             // Generate QR code on canvas
             await toCanvas(canvas, vcard, options);
             
             // Convert to blob
-            const blob = await new Promise(resolve => {
-              canvas.toBlob(resolve, "image/png");
+            const blob = await new Promise((resolve, reject) => {
+              canvas.toBlob((blob) => {
+                if (blob) resolve(blob);
+                else reject(new Error("Failed to create blob"));
+              }, "image/png");
             });
             
-            if (blob && blob.size > 0) {
-              const fileName = `${contact.firstName || 'contact'}-${contact.lastName || ''}-qr.png`;
-              zip.file(fileName, blob);
-              console.log(`Added to zip: ${fileName}, size: ${blob.size} bytes`);
-            } else {
-              console.error(`Failed to create blob for contact: ${contact.firstName} ${contact.lastName}`);
-              toast.error(`Fehler beim Generieren des QR-Codes für ${contact.firstName} ${contact.lastName}`);
+            if (!blob) {
+              throw new Error("Blob creation failed");
             }
+            
+            console.log(`Generated QR code for ${contact.firstName} ${contact.lastName}, size: ${blob.size} bytes`);
+            
+            const fileName = `${contact.firstName || 'contact'}-${contact.lastName || ''}-qr.png`;
+            zip.file(fileName, blob);
+            
           } catch (error) {
             console.error(`Error generating QR code for contact ${contact.firstName} ${contact.lastName}:`, error);
-            toast.error(`Fehler beim Erstellen des QR-Codes für ${contact.firstName} ${contact.lastName}`);
+            throw error; // Re-throw so the outer try-catch can handle it
           } finally {
             completedCount++;
             const progress = (completedCount / totalContacts) * 100;
             setGenerationProgress(progress);
+            console.log(`Progress: ${Math.round(progress)}%`);
           }
-        }));
+        });
+        
+        // Wait for all contacts in this batch to complete
+        try {
+          await Promise.all(batchPromises);
+        } catch (error) {
+          console.error("Error in batch processing:", error);
+          toast.error(`Ein Fehler ist aufgetreten: ${error.message}`);
+          // We'll continue to the next batch despite errors
+        }
       }
       
-      // Create and download ZIP file
+      // After all batches are processed, create the ZIP file
       const filesInZip = Object.keys(zip.files).length;
       console.log(`Files in zip: ${filesInZip}`);
       
       if (filesInZip > 0) {
-        const content = await zip.generateAsync({ 
-          type: "blob",
-          compression: "DEFLATE",
-          compressionOptions: { level: 6 }
-        });
-        
-        if (content && content.size > 0) {
-          const downloadLink = document.createElement("a");
-          const url = URL.createObjectURL(content);
-          downloadLink.href = url;
-          downloadLink.download = "qr-codes.zip";
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
+        try {
+          console.log("Generating final ZIP file...");
+          const content = await zip.generateAsync({ 
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: { level: 6 }
+          });
           
-          setTimeout(() => {
-            URL.revokeObjectURL(url);
-          }, 1000);
+          console.log(`ZIP generated, size: ${content.size} bytes`);
           
-          toast.success(`${filesInZip} QR-Codes wurden erfolgreich generiert und heruntergeladen!`);
-        } else {
-          console.error("Generated ZIP has no size");
-          toast.error("Die generierte ZIP-Datei ist leer. Bitte versuchen Sie es erneut.");
+          if (content && content.size > 0) {
+            const downloadLink = document.createElement("a");
+            const url = URL.createObjectURL(content);
+            downloadLink.href = url;
+            downloadLink.download = "qr-codes.zip";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            setTimeout(() => {
+              URL.revokeObjectURL(url);
+            }, 1000);
+            
+            toast.success(`${filesInZip} QR-Codes wurden erfolgreich generiert und heruntergeladen!`);
+          } else {
+            console.error("Generated ZIP has no size");
+            toast.error("Die generierte ZIP-Datei ist leer. Bitte versuchen Sie es erneut.");
+          }
+        } catch (error) {
+          console.error("Error generating ZIP:", error);
+          toast.error(`Fehler beim Erstellen der ZIP-Datei: ${error.message}`);
         }
       } else {
         toast.error("Es konnten keine QR-Codes generiert werden. Bitte versuchen Sie es erneut.");
       }
     } catch (error) {
       console.error("Fehler beim Generieren der QR-Codes:", error);
-      toast.error("Fehler beim Generieren der QR-Codes. Bitte versuchen Sie es erneut.");
+      toast.error(`Fehler beim Generieren der QR-Codes: ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
