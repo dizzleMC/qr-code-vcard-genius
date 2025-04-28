@@ -1,6 +1,8 @@
+
 import { useState } from "react";
 import { VCardForm } from "@/components/VCardForm";
 import { QRCodeDisplay } from "@/components/QRCodeDisplay";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [vCardData, setVCardData] = useState({
@@ -28,6 +30,40 @@ const Index = () => {
         maxWidth: "1200px",
         margin: "0 auto"
       }}>
+        <nav style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "2rem"
+        }}>
+          <ul style={{
+            display: "flex",
+            gap: "2rem",
+            listStyle: "none",
+            padding: 0
+          }}>
+            <li>
+              <Link to="/" style={{
+                fontWeight: "600",
+                color: "#ff7e0c",
+                textDecoration: "none",
+                borderBottom: "2px solid #ff7e0c",
+                paddingBottom: "0.25rem"
+              }}>
+                Einzel QR-Code
+              </Link>
+            </li>
+            <li>
+              <Link to="/premium" style={{
+                fontWeight: "500",
+                color: "#8E9196",
+                textDecoration: "none"
+              }}>
+                Premium Bulk-Generator
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        
         <div style={{
           maxWidth: "768px",
           margin: "0 auto",
@@ -39,7 +75,7 @@ const Index = () => {
             fontWeight: "600",
             color: "#1A1F2C",
             marginBottom: "0.75rem"
-          }}>Your vCard QR-Code Generator</h1>
+          }}>QR-Code Generator</h1>
           <p style={{
             color: "#8E9196",
             fontSize: "1.125rem"

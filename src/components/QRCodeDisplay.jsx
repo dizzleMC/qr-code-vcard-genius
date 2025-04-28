@@ -1,14 +1,22 @@
+
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-export const QRCodeDisplay = ({ data }) => {
-  const [qrSize, setQrSize] = useState(200);
-  const [fgColor, setFgColor] = useState("#1A1F2C");
-  const [bgColor, setBgColor] = useState("#ffffff");
+export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColor }) => {
+  const [qrSize, setQrSize] = useState(initialSize || 200);
+  const [fgColor, setFgColor] = useState(initialFgColor || "#1A1F2C");
+  const [bgColor, setBgColor] = useState(initialBgColor || "#ffffff");
+
+  // Update size and colors if props change (useful for template preview)
+  useEffect(() => {
+    if (initialSize) setQrSize(initialSize);
+    if (initialFgColor) setFgColor(initialFgColor);
+    if (initialBgColor) setBgColor(initialBgColor);
+  }, [initialSize, initialFgColor, initialBgColor]);
 
   const isFormEmpty = Object.values(data).every(value => value === "");
 
@@ -42,18 +50,18 @@ export const QRCodeDisplay = ({ data }) => {
     const img = new Image();
     
     img.onload = () => {
+      // No extra height needed now as we're not adding text
       canvas.width = img.width;
-      canvas.height = img.height + 40;
+      canvas.height = img.height;
       
+      // Draw background color
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
+      // Draw QR code
       ctx.drawImage(img, 0, 0);
       
-      ctx.font = "16px Arial";
-      ctx.fillStyle = "#ff7e0c";
-      ctx.textAlign = "center";
-      ctx.fillText("www.yourvcard.de", canvas.width / 2, img.height + 25);
+      // No branding text added anymore
       
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
@@ -94,12 +102,6 @@ export const QRCodeDisplay = ({ data }) => {
     padding: "1.5rem",
     backgroundColor: "#F9FAFB",
     borderRadius: "0.5rem"
-  };
-
-  const urlStyle = {
-    marginTop: "1rem",
-    color: "#ff7e0c",
-    fontWeight: "500"
   };
 
   const controlsContainerStyle = {
@@ -148,9 +150,7 @@ export const QRCodeDisplay = ({ data }) => {
             bgColor={bgColor}
           />
         </div>
-        <div style={urlStyle}>
-          www.yourvcard.de
-        </div>
+        {/* Removed the yourvcard.de text that was here */}
       </div>
       
       <div style={controlsContainerStyle}>
