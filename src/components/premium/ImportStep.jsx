@@ -9,7 +9,10 @@ export const ImportStep = ({ onImportSuccess }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white rounded-xl shadow-sm p-8">
+      <h2 className="text-xl font-semibold mb-6">
+        Schritt 1: Excel-Datei importieren
+      </h2>
       <ExcelImporter onImportSuccess={handleImportSuccess} />
     </div>
   );

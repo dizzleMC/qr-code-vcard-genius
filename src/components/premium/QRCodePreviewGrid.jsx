@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader, Download } from "lucide-react";
+import { Loader } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -12,7 +13,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Card } from "@/components/ui/card";
 
 export const QRCodePreviewGrid = ({
   contacts,
@@ -24,6 +24,7 @@ export const QRCodePreviewGrid = ({
   const [currentPage, setCurrentPage] = useState(1);
   const contactsPerPage = 9;
   
+  // Generate vCard data string for QR code
   const generateVCardData = (contact) => {
     const vcard = [
       "BEGIN:VCARD",
@@ -43,11 +44,13 @@ export const QRCodePreviewGrid = ({
     return vcard;
   };
 
+  // Calculate pagination
   const totalPages = Math.ceil(contacts.length / contactsPerPage);
   const indexOfLastContact = currentPage * contactsPerPage;
   const indexOfFirstContact = indexOfLastContact - contactsPerPage;
   const currentContacts = contacts.slice(indexOfFirstContact, indexOfLastContact);
 
+  // Handle checkbox changes
   const toggleSelectAll = () => {
     if (selectedContacts.length === contacts.length) {
       setSelectedContacts([]);
@@ -71,24 +74,21 @@ export const QRCodePreviewGrid = ({
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="select-all"
             checked={selectedContacts.length === contacts.length}
             onCheckedChange={toggleSelectAll}
           />
-          <label htmlFor="select-all" className="text-sm text-gray-600">
-            Alle auswählen ({selectedContacts.length}/{contacts.length})
-          </label>
+          <label htmlFor="select-all">Alle auswählen ({selectedContacts.length}/{contacts.length})</label>
         </div>
         
         <Button
           onClick={handleGenerateSelected}
           disabled={isGenerating || selectedContacts.length === 0}
-          variant="outline"
-          className="text-[#ff7e0c] border-[#ff7e0c] hover:bg-[#ff7e0c]/5"
+          className="bg-[#ff7e0c] text-white font-medium"
         >
           {isGenerating ? (
             <span className="flex items-center gap-2">
@@ -101,66 +101,56 @@ export const QRCodePreviewGrid = ({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {currentContacts.map((contact, index) => {
           const actualIndex = indexOfFirstContact + index;
           return (
-            <Card
+            <div 
               key={actualIndex}
-              className={`overflow-hidden border-gray-100 ${
-                selectedContacts.includes(actualIndex) ? 'ring-1 ring-[#ff7e0c]' : ''
+              className={`bg-white p-4 rounded-lg shadow-sm border ${
+                selectedContacts.includes(actualIndex) ? 'border-[#ff7e0c]' : 'border-gray-200'
               }`}
             >
-              <CardContent className="p-6 space-y-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <Checkbox 
-                      id={`contact-${actualIndex}`}
-                      checked={selectedContacts.includes(actualIndex)}
-                      onCheckedChange={() => toggleContactSelection(index)}
-                    />
-                    <div>
-                      <h3 className="font-medium text-gray-900">
-                        {contact.firstName} {contact.lastName}
-                      </h3>
-                      {contact.company && (
-                        <p className="text-sm text-gray-500">
-                          {contact.company}
-                        </p>
-                      )}
-                    </div>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center">
+                  <Checkbox 
+                    id={`contact-${actualIndex}`}
+                    checked={selectedContacts.includes(actualIndex)}
+                    onCheckedChange={() => toggleContactSelection(index)}
+                    className="mr-2"
+                  />
+                  <div>
+                    <h3 className="font-medium truncate max-w-[180px]">
+                      {contact.firstName} {contact.lastName}
+                    </h3>
+                    {contact.company && (
+                      <p className="text-sm text-gray-500 truncate max-w-[180px]">
+                        {contact.company}
+                      </p>
+                    )}
                   </div>
                 </div>
-                
-                <div className="flex justify-center">
-                  <div className="p-4 bg-white rounded-lg border border-gray-100">
-                    <QRCodeSVG
-                      value={generateVCardData(contact)}
-                      size={120}
-                      level="H"
-                      includeMargin={true}
-                      fgColor={templateSettings.fgColor}
-                      bgColor={templateSettings.bgColor}
-                    />
-                  </div>
+              </div>
+              
+              <div className="flex justify-center my-3">
+                <div className="p-2 bg-[#F9FAFB] rounded-lg">
+                  <QRCodeSVG
+                    value={generateVCardData(contact)}
+                    size={120}
+                    level="H"
+                    includeMargin={true}
+                    fgColor={templateSettings.fgColor}
+                    bgColor={templateSettings.bgColor}
+                  />
                 </div>
-                
-                <Button 
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => onGenerateSelected([contact])}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  QR-Code herunterladen
-                </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           );
         })}
       </div>
 
       {totalPages > 1 && (
-        <Pagination className="justify-center">
+        <Pagination>
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious 
