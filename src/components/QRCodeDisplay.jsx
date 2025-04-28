@@ -1,4 +1,3 @@
-
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -6,17 +5,52 @@ import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColor }) => {
+export const QRCodeDisplay = ({ 
+  data, 
+  initialSize, 
+  initialFgColor, 
+  initialBgColor,
+  previewMode = false,
+  onSizeChange,
+  onFgColorChange,
+  onBgColorChange
+}) => {
   const [qrSize, setQrSize] = useState(initialSize || 200);
   const [fgColor, setFgColor] = useState(initialFgColor || "#1A1F2C");
   const [bgColor, setBgColor] = useState(initialBgColor || "#ffffff");
 
-  // Update size and colors if props change (useful for template preview)
   useEffect(() => {
-    if (initialSize) setQrSize(initialSize);
-    if (initialFgColor) setFgColor(initialFgColor);
-    if (initialBgColor) setBgColor(initialBgColor);
+    if (initialSize) {
+      setQrSize(initialSize);
+      onSizeChange?.(initialSize);
+    }
+    if (initialFgColor) {
+      setFgColor(initialFgColor);
+      onFgColorChange?.(initialFgColor);
+    }
+    if (initialBgColor) {
+      setBgColor(initialBgColor);
+      onBgColorChange?.(initialBgColor);
+    }
   }, [initialSize, initialFgColor, initialBgColor]);
+
+  const handleSizeChange = (e) => {
+    const newSize = parseInt(e.target.value);
+    if (newSize >= 100 && newSize <= 400) {
+      setQrSize(newSize);
+      onSizeChange?.(newSize);
+    }
+  };
+
+  const handleFgColorChange = (value) => {
+    setFgColor(value);
+    onFgColorChange?.(value);
+  };
+
+  const handleBgColorChange = (value) => {
+    setBgColor(value);
+    onBgColorChange?.(value);
+  };
 
   const isFormEmpty = Object.values(data).every(value => !value || value === "");
 
@@ -79,79 +113,10 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
-  const handleSizeChange = (e) => {
-    const newSize = parseInt(e.target.value);
-    if (newSize >= 100 && newSize <= 400) {
-      setQrSize(newSize);
-    }
-  };
-
-  const containerStyle = {
-    backgroundColor: "white",
-    borderRadius: "0.75rem",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-    padding: "2rem",
-    display: "flex",
-    flexDirection: "column",
-    gap: "2rem"
-  };
-
-  const qrContainerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center"
-  };
-
-  const qrWrapperStyle = {
-    padding: "1.5rem",
-    backgroundColor: "#F9FAFB",
-    borderRadius: "0.5rem"
-  };
-
-  const controlsContainerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1.5rem"
-  };
-
-  const labelStyle = {
-    display: "block",
-    marginBottom: "0.75rem",
-    color: "#1A1F2C"
-  };
-
-  const colorPickerContainerStyle = {
-    display: "flex",
-    gap: "0.75rem"
-  };
-
-  const colorInputContainerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    width: "3rem",
-    gap: "0.5rem"
-  };
-
-  const colorGridStyle = {
-    flex: 1,
-    display: "grid",
-    gridTemplateColumns: "repeat(5, 1fr)",
-    gap: "0.5rem"
-  };
-
-  const colorButtonStyle = {
-    width: "100%",
-    height: "3rem",
-    borderRadius: "0.5rem",
-    border: "1px solid #e2e8f0",
-    transition: "transform 0.2s",
-    cursor: "pointer"
-  };
-
   return (
-    <div style={containerStyle}>
-      <div id="qr-code" style={qrContainerStyle}>
-        <div style={qrWrapperStyle}>
+    <div className="bg-white rounded-xl shadow-sm p-8 space-y-8">
+      <div id="qr-code" className="flex flex-col items-center">
+        <div className="p-6 bg-[#F9FAFB] rounded-lg">
           <QRCodeSVG
             value={generateVCardData(data)}
             size={qrSize}
@@ -163,124 +128,96 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
         </div>
       </div>
       
-      <div style={controlsContainerStyle}>
-        <div>
-          <Label htmlFor="size" style={labelStyle}>QR-Code Größe ({qrSize}px)</Label>
-          <Input
-            id="size"
-            type="range"
-            min="100"
-            max="400"
-            value={qrSize}
-            onChange={handleSizeChange}
-            style={{ width: "100%" }}
-          />
-        </div>
-        
-        <div>
-          <Label htmlFor="fgColor" style={labelStyle}>QR-Code Farbe</Label>
-          <div style={colorPickerContainerStyle}>
-            <div style={colorInputContainerStyle}>
+      {!previewMode && (
+        <>
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Label htmlFor="size" className="text-[#1A1F2C]">QR-Code Größe ({qrSize}px)</Label>
               <Input
-                id="fgColor"
-                type="color"
-                value={fgColor}
-                onChange={(e) => setFgColor(e.target.value)}
-                style={{
-                  width: "3rem",
-                  height: "3rem",
-                  padding: "0.25rem",
-                  cursor: "pointer",
-                  borderRadius: "0.5rem"
-                }}
-              />
-              <Input
-                type="text"
-                value={fgColor}
-                onChange={(e) => setFgColor(e.target.value)}
-                style={{
-                  width: "3rem",
-                  padding: "0.25rem",
-                  fontSize: "0.75rem"
-                }}
+                id="size"
+                type="range"
+                min="100"
+                max="400"
+                value={qrSize}
+                onChange={handleSizeChange}
+                className="w-full accent-[#ff7e0c]"
               />
             </div>
-            <div style={colorGridStyle}>
-              {["#1A1F2C", "#ff7e0c", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
-                <button
-                  key={color}
-                  onClick={() => setFgColor(color)}
-                  style={{
-                    ...colorButtonStyle,
-                    backgroundColor: color
-                  }}
-                  aria-label={`Wähle Farbe ${color}`}
-                />
-              ))}
+            
+            <div className="space-y-3">
+              <Label htmlFor="fgColor" className="text-[#1A1F2C]">QR-Code Farbe</Label>
+              <div className="flex gap-3">
+                <div className="flex flex-col w-12 gap-2">
+                  <Input
+                    id="fgColor"
+                    type="color"
+                    value={fgColor}
+                    onChange={(e) => handleFgColorChange(e.target.value)}
+                    className="w-12 h-12 p-1 cursor-pointer rounded-lg"
+                  />
+                  <Input
+                    type="text"
+                    value={fgColor}
+                    onChange={(e) => handleFgColorChange(e.target.value)}
+                    className="w-full text-xs p-1"
+                  />
+                </div>
+                <div className="flex-1 grid grid-cols-5 gap-2">
+                  {["#1A1F2C", "#ff7e0c", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => handleFgColorChange(color)}
+                      className="w-full h-12 rounded-lg border border-gray-200 transition-transform hover:scale-105"
+                      style={{ backgroundColor: color }}
+                      aria-label={`Wähle Farbe ${color}`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        
-        <div>
-          <Label htmlFor="bgColor" style={labelStyle}>Hintergrundfarbe</Label>
-          <div style={colorPickerContainerStyle}>
-            <div style={colorInputContainerStyle}>
-              <Input
-                id="bgColor"
-                type="color"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                style={{
-                  width: "3rem",
-                  height: "3rem",
-                  padding: "0.25rem",
-                  cursor: "pointer",
-                  borderRadius: "0.5rem"
-                }}
-              />
-              <Input
-                type="text"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                style={{
-                  width: "3rem",
-                  padding: "0.25rem",
-                  fontSize: "0.75rem"
-                }}
-              />
-            </div>
-            <div style={colorGridStyle}>
-              {["#ffffff", "#F2FCE2", "#FEF7CD", "#E5DEFF", "#FFDEE2"].map((color) => (
-                <button
-                  key={color}
-                  onClick={() => setBgColor(color)}
-                  style={{
-                    ...colorButtonStyle,
-                    backgroundColor: color
-                  }}
-                  aria-label={`Wähle Hintergrundfarbe ${color}`}
-                />
-              ))}
+            
+            <div className="space-y-3">
+              <Label htmlFor="bgColor" className="text-[#1A1F2C]">Hintergrundfarbe</Label>
+              <div className="flex gap-3">
+                <div className="flex flex-col w-12 gap-2">
+                  <Input
+                    id="bgColor"
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => handleBgColorChange(e.target.value)}
+                    className="w-12 h-12 p-1 cursor-pointer rounded-lg"
+                  />
+                  <Input
+                    type="text"
+                    value={bgColor}
+                    onChange={(e) => handleBgColorChange(e.target.value)}
+                    className="w-full text-xs p-1"
+                  />
+                </div>
+                <div className="flex-1 grid grid-cols-5 gap-2">
+                  {["#ffffff", "#F2FCE2", "#FEF7CD", "#E5DEFF", "#FFDEE2"].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => handleBgColorChange(color)}
+                      className="w-full h-12 rounded-lg border border-gray-200 transition-transform hover:scale-105"
+                      style={{ backgroundColor: color }}
+                      aria-label={`Wähle Hintergrundfarbe ${color}`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-      
-      <Button 
-        onClick={handleDownload}
-        disabled={isFormEmpty}
-        style={{
-          width: "100%",
-          backgroundColor: "#ff7e0c",
-          color: "white",
-          fontWeight: "500",
-          padding: "0.625rem",
-          opacity: isFormEmpty ? "0.5" : "1",
-          cursor: isFormEmpty ? "not-allowed" : "pointer"
-        }}
-      >
-        QR-Code Herunterladen
-      </Button>
+          
+          <Button 
+            onClick={handleDownload}
+            disabled={isFormEmpty}
+            className={`w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium py-2.5`}
+          >
+            QR-Code Herunterladen
+          </Button>
+        </>
+      )}
     </div>
   );
 };

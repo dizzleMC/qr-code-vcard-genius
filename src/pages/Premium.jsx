@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,9 @@ import { ExcelImporter } from "@/components/ExcelImporter";
 import { Upload } from "lucide-react";
 import { GuideSection } from "@/components/GuideSection";
 import { Link } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
+import { ContactPreview } from "@/components/ContactPreview";
+import { Loader } from "lucide-react";
 
 const Premium = () => {
   const [templateSettings, setTemplateSettings] = useState({
@@ -20,8 +22,9 @@ const Premium = () => {
   const [importedData, setImportedData] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [generationProgress, setGenerationProgress] = useState(0);
   
-  // This is for the template preview
   const [templateData, setTemplateData] = useState({
     firstName: "Max",
     lastName: "Mustermann",
@@ -50,7 +53,6 @@ const Premium = () => {
     setCurrentStep(2);
   };
   
-  // Improved QR code generation function that actually creates proper QR codes
   const handleBulkGenerate = async () => {
     if (importedData.length === 0) {
       toast.error("Keine Daten zum Generieren vorhanden.");
@@ -58,102 +60,60 @@ const Premium = () => {
     }
     
     setIsGenerating(true);
+    setGenerationProgress(0);
     
     try {
       const JSZip = (await import("jszip")).default;
-      const { renderToString } = await import('react-dom/server');
-      const { QRCodeSVG } = await import('qrcode.react');
       const zip = new JSZip();
+      const worker = new Worker(new URL('../workers/qrWorker.js', import.meta.url), { type: 'module' });
       
-      // Helper function to generate vCard data - same as in QRCodeDisplay
-      const generateVCardData = (contact) => {
-        const vcard = [
-          "BEGIN:VCARD",
-          "VERSION:3.0",
-          `N:${contact.lastName};${contact.firstName};;;`,
-          `FN:${contact.firstName} ${contact.lastName}`,
-          contact.title && `TITLE:${contact.title}`,
-          contact.company && `ORG:${contact.company}`,
-          contact.email && `EMAIL:${contact.email}`,
-          contact.phone && `TEL:${contact.phone}`,
-          contact.website && `URL:${contact.website}`,
-          contact.street && contact.city && 
-            `ADR:;;${contact.street};${contact.city};${contact.state};${contact.zip};${contact.country}`,
-          "END:VCARD"
-        ].filter(Boolean).join("\n");
+      let completedTasks = 0;
+      
+      worker.onmessage = async (e) => {
+        const { success, fileName, blob, progress, error } = e.data;
         
-        return vcard;
+        if (success) {
+          zip.file(fileName, blob);
+        } else {
+          console.error(`Error generating QR code: ${error}`);
+        }
+        
+        setGenerationProgress(progress);
+        completedTasks++;
+        
+        if (completedTasks === importedData.length) {
+          const content = await zip.generateAsync({ type: "blob" });
+          const downloadLink = document.createElement("a");
+          downloadLink.href = URL.createObjectURL(content);
+          downloadLink.download = "qr-codes.zip";
+          downloadLink.click();
+          
+          worker.terminate();
+          setIsGenerating(false);
+          toast.success("QR-Codes wurden erfolgreich generiert und heruntergeladen!");
+          setCurrentStep(3);
+        }
       };
       
-      // Create a temporary canvas for QR code generation
-      const tempCanvas = document.createElement("canvas");
-      const ctx = tempCanvas.getContext("2d");
-      
-      // Process each contact
-      for (let i = 0; i < importedData.length; i++) {
-        const contact = importedData[i];
-        
-        // Generate vCard data for this contact
-        const vCardData = generateVCardData(contact);
-        
-        // Generate QR code as SVG using qrcode.react
-        const qrCodeSvg = renderToString(
-          <QRCodeSVG
-            value={vCardData}
-            size={templateSettings.size}
-            level="H"
-            includeMargin={true}
-            fgColor={templateSettings.fgColor}
-            bgColor={templateSettings.bgColor}
-          />
-        );
-        
-        // Convert SVG to a canvas image
-        const img = new Image();
-        
-        // We need to wait for the image to load
-        await new Promise((resolve) => {
-          img.onload = resolve;
-          img.src = 'data:image/svg+xml;base64,' + btoa(qrCodeSvg);
+      const batchSize = 5;
+      for (let i = 0; i < importedData.length; i += batchSize) {
+        const batch = importedData.slice(i, i + batchSize);
+        batch.forEach((contact, batchIndex) => {
+          worker.postMessage({
+            contact,
+            settings: templateSettings,
+            index: i + batchIndex,
+            total: importedData.length
+          });
         });
         
-        // Set canvas dimensions and draw the QR code
-        tempCanvas.width = templateSettings.size;
-        tempCanvas.height = templateSettings.size;
-        
-        // Set background color
-        ctx.fillStyle = templateSettings.bgColor;
-        ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-        
-        // Draw the QR code
-        ctx.drawImage(img, 0, 0);
-        
-        // Convert to blob and add to ZIP
-        const blob = await new Promise(resolve => tempCanvas.toBlob(resolve));
-        
-        // Create a meaningful filename using contact information
-        const fileName = `${contact.firstName}-${contact.lastName}-qr.png`;
-        zip.file(fileName, blob);
-        
-        // Update progress
-        toast.info(`Generiere ${i + 1} von ${importedData.length} QR-Codes...`, {
-          id: 'progress-toast',
-        });
+        if (i + batchSize < importedData.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
-      
-      // Generate and download ZIP file
-      const content = await zip.generateAsync({ type: "blob" });
-      const downloadLink = document.createElement("a");
-      downloadLink.href = URL.createObjectURL(content);
-      downloadLink.download = "qr-codes.zip";
-      downloadLink.click();
-      
-      toast.success("QR-Codes wurden erfolgreich generiert und heruntergeladen!");
-      setCurrentStep(3);
     } catch (error) {
       console.error("Fehler beim Generieren der QR-Codes:", error);
       toast.error("Fehler beim Generieren der QR-Codes. Bitte versuchen Sie es erneut.");
-    } finally {
       setIsGenerating(false);
     }
   };
@@ -233,7 +193,6 @@ const Premium = () => {
           flexDirection: "column",
           gap: "2rem"
         }}>
-          {/* Step indicator */}
           <div style={{
             display: "flex",
             justifyContent: "space-between",
@@ -269,7 +228,6 @@ const Premium = () => {
             ))}
           </div>
           
-          {/* Step 1: Data Import */}
           {currentStep === 1 && (
             <div style={{
               backgroundColor: "white",
@@ -287,275 +245,56 @@ const Premium = () => {
             </div>
           )}
           
-          {/* Step 2: Template Configuration */}
           {currentStep === 2 && (
-            <div style={{
-              display: "flex",
-              flexDirection: window.innerWidth < 1024 ? "column" : "row",
-              gap: "2rem"
-            }}>
-              <div style={{
-                flex: "1",
-                backgroundColor: "white",
-                borderRadius: "0.75rem",
-                boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-                padding: "2rem"
-              }}>
-                <h2 style={{
-                  fontSize: "1.5rem",
-                  fontWeight: "600",
-                  marginBottom: "1.5rem"
-                }}>Schritt 2: QR-Code Template anpassen</h2>
+            <div className="flex flex-col lg:flex-row gap-8">
+              <div className="flex-1 bg-white rounded-xl shadow-sm p-8">
+                <h2 className="text-xl font-semibold mb-6">Schritt 2: QR-Code Template anpassen</h2>
                 
-                <div style={{ marginBottom: "1.5rem" }}>
-                  <Label htmlFor="size" style={{ display: "block", marginBottom: "0.5rem" }}>
-                    QR-Code Größe ({templateSettings.size}px)
-                  </Label>
-                  <Input
-                    id="size"
-                    type="range"
-                    min="100"
-                    max="400"
-                    value={templateSettings.size}
-                    onChange={(e) => handleTemplateChange('size', parseInt(e.target.value))}
-                    style={{ width: "100%" }}
-                  />
-                </div>
+                <QRCodeDisplay
+                  data={selectedContact || templateData}
+                  initialSize={templateSettings.size}
+                  initialFgColor={templateSettings.fgColor}
+                  initialBgColor={templateSettings.bgColor}
+                  onSizeChange={(size) => handleTemplateChange('size', size)}
+                  onFgColorChange={(color) => handleTemplateChange('fgColor', color)}
+                  onBgColorChange={(color) => handleTemplateChange('bgColor', color)}
+                />
                 
-                <div style={{ marginBottom: "1.5rem" }}>
-                  <Label htmlFor="fgColor" style={{ display: "block", marginBottom: "0.5rem" }}>
-                    QR-Code Farbe
-                  </Label>
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <div style={{ display: "flex", flexDirection: "column", width: "3rem" }}>
-                      <Input
-                        id="fgColor"
-                        type="color"
-                        value={templateSettings.fgColor}
-                        onChange={(e) => handleTemplateChange('fgColor', e.target.value)}
-                        style={{ width: "3rem", height: "3rem", padding: "0.25rem", marginBottom: "0.5rem" }}
-                      />
-                      <Input
-                        type="text"
-                        value={templateSettings.fgColor}
-                        onChange={(e) => handleTemplateChange('fgColor', e.target.value)}
-                        style={{ width: "3rem", fontSize: "0.75rem", padding: "0.25rem" }}
-                      />
-                    </div>
-                    <div style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(5, 1fr)",
-                      gap: "0.5rem",
-                      flex: "1"
-                    }}>
-                      {["#1A1F2C", "#ff7e0c", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
-                        <button
-                          key={color}
-                          onClick={() => handleTemplateChange('fgColor', color)}
-                          style={{
-                            backgroundColor: color,
-                            width: "100%",
-                            height: "3rem",
-                            borderRadius: "0.5rem",
-                            border: "1px solid #e2e8f0"
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <ContactPreview
+                  contacts={importedData}
+                  selectedContact={selectedContact}
+                  onSelectContact={setSelectedContact}
+                />
                 
-                <div style={{ marginBottom: "1.5rem" }}>
-                  <Label htmlFor="bgColor" style={{ display: "block", marginBottom: "0.5rem" }}>
-                    Hintergrundfarbe
-                  </Label>
-                  <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <div style={{ display: "flex", flexDirection: "column", width: "3rem" }}>
-                      <Input
-                        id="bgColor"
-                        type="color"
-                        value={templateSettings.bgColor}
-                        onChange={(e) => handleTemplateChange('bgColor', e.target.value)}
-                        style={{ width: "3rem", height: "3rem", padding: "0.25rem", marginBottom: "0.5rem" }}
-                      />
-                      <Input
-                        type="text"
-                        value={templateSettings.bgColor}
-                        onChange={(e) => handleTemplateChange('bgColor', e.target.value)}
-                        style={{ width: "3rem", fontSize: "0.75rem", padding: "0.25rem" }}
-                      />
-                    </div>
-                    <div style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(5, 1fr)",
-                      gap: "0.5rem",
-                      flex: "1"
-                    }}>
-                      {["#ffffff", "#F2FCE2", "#FEF7CD", "#E5DEFF", "#FFDEE2"].map((color) => (
-                        <button
-                          key={color}
-                          onClick={() => handleTemplateChange('bgColor', color)}
-                          style={{
-                            backgroundColor: color,
-                            width: "100%",
-                            height: "3rem",
-                            borderRadius: "0.5rem",
-                            border: "1px solid #e2e8f0"
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                
-                <Button 
+                <Button
                   onClick={() => setCurrentStep(3)}
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#ff7e0c",
-                    color: "white",
-                    fontWeight: "500",
-                    padding: "0.625rem"
-                  }}
+                  className="mt-6 w-full bg-[#ff7e0c] text-white font-medium"
                 >
                   Weiter zu Schritt 3
                 </Button>
               </div>
-              
-              <div style={{
-                width: "100%",
-                maxWidth: window.innerWidth < 1024 ? "100%" : "50%"
-              }}>
-                <div style={{
-                  backgroundColor: "white",
-                  borderRadius: "0.75rem", 
-                  boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-                  padding: "2rem"
-                }}>
-                  <h3 style={{
-                    fontSize: "1.25rem",
-                    fontWeight: "600",
-                    marginBottom: "1rem"
-                  }}>Vorschau</h3>
-                  
-                  <div style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center"
-                  }}>
-                    <QRCodeDisplay 
-                      data={templateData} 
-                      initialSize={templateSettings.size}
-                      initialFgColor={templateSettings.fgColor}
-                      initialBgColor={templateSettings.bgColor}
-                    />
-                  </div>
-                </div>
-                
-                <div style={{
-                  marginTop: "1rem",
-                  backgroundColor: "white",
-                  borderRadius: "0.75rem",
-                  boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-                  padding: "2rem"
-                }}>
-                  <h3 style={{
-                    fontSize: "1.25rem", 
-                    fontWeight: "600",
-                    marginBottom: "1rem"
-                  }}>Importierte Daten</h3>
-                  
-                  <p style={{
-                    color: "#8E9196",
-                    marginBottom: "1rem"
-                  }}>
-                    {importedData.length} Kontakte wurden importiert.
-                  </p>
-                  
-                  <div style={{
-                    maxHeight: "200px",
-                    overflowY: "auto",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "0.5rem"
-                  }}>
-                    <table style={{
-                      width: "100%",
-                      borderCollapse: "collapse"
-                    }}>
-                      <thead>
-                        <tr>
-                          <th style={{ padding: "0.75rem", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>Name</th>
-                          <th style={{ padding: "0.75rem", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>Email</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {importedData.slice(0, 5).map((contact, index) => (
-                          <tr key={index}>
-                            <td style={{ padding: "0.75rem", borderBottom: "1px solid #e2e8f0" }}>
-                              {contact.firstName} {contact.lastName}
-                            </td>
-                            <td style={{ padding: "0.75rem", borderBottom: "1px solid #e2e8f0" }}>
-                              {contact.email}
-                            </td>
-                          </tr>
-                        ))}
-                        {importedData.length > 5 && (
-                          <tr>
-                            <td colSpan={2} style={{ padding: "0.75rem", textAlign: "center", color: "#8E9196" }}>
-                              ...und {importedData.length - 5} weitere
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
           
-          {/* Step 3: Generate QR Codes */}
           {currentStep === 3 && (
-            <div style={{
-              backgroundColor: "white",
-              borderRadius: "0.75rem",
-              boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-              padding: "2rem"
-            }}>
-              <h2 style={{
-                fontSize: "1.5rem",
-                fontWeight: "600",
-                marginBottom: "1.5rem"
-              }}>Schritt 3: QR-Codes generieren</h2>
+            <div className="bg-white rounded-xl shadow-sm p-8">
+              <h2 className="text-xl font-semibold mb-6">Schritt 3: QR-Codes generieren</h2>
               
-              <div style={{
-                backgroundColor: "#f8fafc",
-                borderRadius: "0.5rem",
-                padding: "1.5rem",
-                marginBottom: "2rem"
-              }}>
-                <h3 style={{
-                  fontSize: "1.25rem",
-                  fontWeight: "600",
-                  marginBottom: "1rem"
-                }}>Zusammenfassung</h3>
+              <div className="flex-1 bg-white rounded-xl shadow-sm p-8">
+                <h3 className="text-xl font-semibold mb-6">Zusammenfassung</h3>
                 
-                <ul style={{
-                  listStyle: "none",
-                  padding: "0",
-                  margin: "0"
-                }}>
-                  <li style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                <ul className="list-none p-0 m-0">
+                  <li className="flex justify-between mb-2">
                     <span>Anzahl Kontakte:</span>
-                    <span style={{ fontWeight: "600" }}>{importedData.length}</span>
+                    <span className="font-medium">{importedData.length}</span>
                   </li>
-                  <li style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                  <li className="flex justify-between mb-2">
                     <span>QR-Code Größe:</span>
-                    <span style={{ fontWeight: "600" }}>{templateSettings.size}px</span>
+                    <span className="font-medium">{templateSettings.size}px</span>
                   </li>
-                  <li style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                  <li className="flex justify-between mb-2">
                     <span>QR-Code Farbe:</span>
-                    <span style={{ fontWeight: "600", display: "flex", alignItems: "center" }}>
+                    <span className="font-medium flex items-center">
                       <div style={{ 
                         width: "1rem", 
                         height: "1rem", 
@@ -567,9 +306,9 @@ const Premium = () => {
                       {templateSettings.fgColor}
                     </span>
                   </li>
-                  <li style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                  <li className="flex justify-between mb-2">
                     <span>Hintergrundfarbe:</span>
-                    <span style={{ fontWeight: "600", display: "flex", alignItems: "center" }}>
+                    <span className="font-medium flex items-center">
                       <div style={{ 
                         width: "1rem", 
                         height: "1rem", 
@@ -584,42 +323,44 @@ const Premium = () => {
                 </ul>
               </div>
               
-              <div style={{
-                display: "flex",
-                gap: "1rem",
-                flexDirection: window.innerWidth < 640 ? "column" : "row"
-              }}>
-                <Button 
+              {isGenerating && (
+                <div className="mb-6">
+                  <Progress value={generationProgress} className="mb-2" />
+                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                    <Loader className="animate-spin" size={16} />
+                    Generiere QR-Codes... {Math.round(generationProgress)}%
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex gap-4">
+                <Button
                   onClick={resetProcess}
-                  style={{
-                    flex: "1",
-                    backgroundColor: "transparent",
-                    color: "#1A1F2C",
-                    border: "1px solid #e2e8f0"
-                  }}
+                  variant="outline"
+                  className="flex-1"
                 >
                   Zurücksetzen
                 </Button>
                 
-                <Button 
+                <Button
                   onClick={handleBulkGenerate}
                   disabled={isGenerating}
-                  style={{
-                    flex: window.innerWidth < 640 ? "1" : "2",
-                    backgroundColor: "#ff7e0c",
-                    color: "white",
-                    fontWeight: "500",
-                    opacity: isGenerating ? "0.7" : "1"
-                  }}
+                  className="flex-2 bg-[#ff7e0c] text-white font-medium"
                 >
-                  {isGenerating ? "Wird generiert..." : "Alle QR-Codes generieren & herunterladen"}
+                  {isGenerating ? (
+                    <span className="flex items-center gap-2">
+                      <Loader className="animate-spin" size={16} />
+                      Generiere...
+                    </span>
+                  ) : (
+                    "Alle QR-Codes generieren & herunterladen"
+                  )}
                 </Button>
               </div>
             </div>
           )}
         </div>
         
-        {/* Guide Section - moved to the bottom as requested */}
         <GuideSection />
       </div>
     </div>
