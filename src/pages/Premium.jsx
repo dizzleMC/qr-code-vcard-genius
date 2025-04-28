@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,44 +74,70 @@ const Premium = () => {
         const { success, fileName, blob, progress, error } = e.data;
         
         if (success) {
-          zip.file(fileName, blob);
+          // Verify the blob is valid
+          if (blob instanceof Blob && blob.size > 0) {
+            zip.file(fileName, blob);
+            console.log(`Added to zip: ${fileName}, size: ${blob.size} bytes`);
+          } else {
+            console.error(`Invalid blob for ${fileName}:`, blob);
+            toast.error(`Fehler beim Generieren von ${fileName}`);
+          }
         } else {
           console.error(`Error generating QR code: ${error}`);
+          toast.error(`Fehler beim Generieren eines QR-Codes: ${error}`);
         }
         
         setGenerationProgress(progress);
         completedTasks++;
         
         if (completedTasks === importedData.length) {
-          const content = await zip.generateAsync({ type: "blob" });
-          const downloadLink = document.createElement("a");
-          downloadLink.href = URL.createObjectURL(content);
-          downloadLink.download = "qr-codes.zip";
-          downloadLink.click();
+          // Only proceed if we have files in the zip
+          const filesInZip = Object.keys(zip.files).length;
+          console.log(`Files in zip: ${filesInZip}`);
+          
+          if (filesInZip > 0) {
+            const content = await zip.generateAsync({ 
+              type: "blob",
+              compression: "DEFLATE",
+              compressionOptions: { level: 6 }
+            });
+            
+            if (content.size > 0) {
+              const downloadLink = document.createElement("a");
+              const url = URL.createObjectURL(content);
+              downloadLink.href = url;
+              downloadLink.download = "qr-codes.zip";
+              downloadLink.click();
+              
+              // Clean up
+              setTimeout(() => {
+                URL.revokeObjectURL(url);
+              }, 1000);
+              
+              toast.success("QR-Codes wurden erfolgreich generiert und heruntergeladen!");
+              setCurrentStep(3);
+            } else {
+              toast.error("Die generierte ZIP-Datei ist leer. Bitte versuchen Sie es erneut.");
+            }
+          } else {
+            toast.error("Es konnten keine QR-Codes generiert werden. Bitte versuchen Sie es erneut.");
+          }
           
           worker.terminate();
           setIsGenerating(false);
-          toast.success("QR-Codes wurden erfolgreich generiert und heruntergeladen!");
-          setCurrentStep(3);
         }
       };
       
-      const batchSize = 5;
-      for (let i = 0; i < importedData.length; i += batchSize) {
-        const batch = importedData.slice(i, i + batchSize);
-        batch.forEach((contact, batchIndex) => {
-          worker.postMessage({
-            contact,
-            settings: templateSettings,
-            index: i + batchIndex,
-            total: importedData.length
-          });
+      // Process all contacts at once instead of batching
+      importedData.forEach((contact, index) => {
+        worker.postMessage({
+          contact,
+          settings: templateSettings,
+          index: index,
+          total: importedData.length
         });
-        
-        if (i + batchSize < importedData.length) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      }
+      });
+      
     } catch (error) {
       console.error("Fehler beim Generieren der QR-Codes:", error);
       toast.error("Fehler beim Generieren der QR-Codes. Bitte versuchen Sie es erneut.");

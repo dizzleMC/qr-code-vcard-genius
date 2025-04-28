@@ -24,7 +24,7 @@ self.onmessage = async function(e) {
     
     self.postMessage({
       success: true,
-      fileName: `${contact.firstName}-${contact.lastName}-qr.png`,
+      fileName: `${contact.firstName || 'contact'}-${contact.lastName || 'info'}-qr.png`,
       blob: blob,
       progress: ((index + 1) / total) * 100
     });
