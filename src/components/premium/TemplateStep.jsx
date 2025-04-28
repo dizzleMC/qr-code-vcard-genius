@@ -63,6 +63,10 @@ export const TemplateStep = ({
                 borderColor: "#e2e8f0"
               }}
               onSettingChange={handleNameTagSettingChange}
+              qrCodeSettings={{
+                fgColor: templateSettings.fgColor,
+                bgColor: templateSettings.bgColor
+              }}
             />
           </TabsContent>
         </Tabs>

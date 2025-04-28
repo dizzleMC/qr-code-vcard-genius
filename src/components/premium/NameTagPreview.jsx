@@ -12,24 +12,24 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   const getDimensions = () => {
     switch(settings.size) {
       case "small": 
-        return { width: "350px", height: "175px", qrSize: 110 };
+        return { width: "350px", height: "175px", qrSize: 110, fontSize: 18 };
       case "large": 
-        return { width: "450px", height: "225px", qrSize: 160 };
+        return { width: "450px", height: "225px", qrSize: 160, fontSize: 26 };
       case "medium":
       default: 
-        return { width: "400px", height: "200px", qrSize: 140 };
+        return { width: "400px", height: "200px", qrSize: 140, fontSize: 22 };
     }
   };
   
   const dimensions = getDimensions();
   
-  // Base styles for the name tag
+  // Base styles for the name tag with adjusted font size based on dimensions
   const nameTagStyle = {
-    backgroundColor: settings.backgroundColor,
-    borderColor: settings.borderColor,
+    backgroundColor: settings.backgroundColor || "#ffffff",
+    borderColor: settings.borderColor || "#e2e8f0",
     borderWidth: "2px",
     borderStyle: "solid",
-    fontFamily: settings.font,
+    fontFamily: settings.font || "Inter",
     width: dimensions.width,
     height: dimensions.height,
     borderRadius: "8px",
@@ -70,6 +70,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
           container: {
             ...nameTagStyle,
             flexDirection: "column",
+            background: `linear-gradient(to bottom, ${settings.backgroundColor} 85%, ${settings.borderColor}20 100%)`,
           },
           contentWrapper: {
             flex: "1",
@@ -92,6 +93,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
             flexDirection: "row",
             boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
             borderWidth: "1px",
+            background: `linear-gradient(to right, ${settings.backgroundColor} 90%, ${settings.borderColor}10 100%)`,
           },
           contentWrapper: {
             flex: "1",
@@ -111,6 +113,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
           container: {
             ...nameTagStyle,
             flexDirection: "row",
+            background: `linear-gradient(to right, ${settings.backgroundColor} 85%, ${settings.borderColor}15 100%)`,
           },
           contentWrapper: {
             flex: "1",
@@ -129,9 +132,14 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   
   const templateStyles = getTemplateStyles();
   
+  // Calculate font sizes dynamically based on tag size
+  const nameFontSize = Math.max(dimensions.fontSize, 18);
+  const titleFontSize = Math.max(dimensions.fontSize - 6, 12);
+  const companyFontSize = Math.max(dimensions.fontSize - 4, 14);
+  
   const nameStyle = {
     color: settings.nameColor,
-    fontSize: `${settings.fontSize}px`,
+    fontSize: `${nameFontSize}px`,
     fontWeight: "600",
     margin: "0 0 0.25rem 0",
     wordBreak: "break-word",
@@ -140,7 +148,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   
   const titleStyle = {
     color: settings.companyColor,
-    fontSize: `${Math.max(settings.fontSize - 6, 12)}px`,
+    fontSize: `${titleFontSize}px`,
     margin: "0.25rem 0",
     wordBreak: "break-word",
     width: "100%"
@@ -148,7 +156,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
 
   const companyStyle = {
     color: settings.companyColor,
-    fontSize: `${Math.max(settings.fontSize - 4, 14)}px`,
+    fontSize: `${companyFontSize}px`,
     margin: "0.25rem 0 0 0",
     wordBreak: "break-word",
     width: "100%"
@@ -195,8 +203,8 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
               value={qrValue}
               size={dimensions.qrSize}
               level="M"
-              bgColor="#ffffff"
-              fgColor="#000000"
+              bgColor={settings.qrBgColor || "#ffffff"}
+              fgColor={settings.qrFgColor || "#000000"}
             />
           </div>
         </div>

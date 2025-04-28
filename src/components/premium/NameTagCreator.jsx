@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NameTagPreview } from "./NameTagPreview";
-import { Upload, X, Layout, Check } from "lucide-react";
+import { Upload, X, Layout, Check, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 
 export const NameTagCreator = ({
   data,
   nameTagSettings,
-  onSettingChange
+  onSettingChange,
+  qrCodeSettings
 }) => {
   const [dragActive, setDragActive] = useState(false);
   
@@ -40,6 +42,17 @@ export const NameTagCreator = ({
     { value: "medium", label: "Mittel (400 × 200px)" },
     { value: "large", label: "Groß (450 × 225px)" },
   ];
+
+  const syncQRCodeStyles = () => {
+    if (!qrCodeSettings) {
+      toast.error("Keine QR-Code Einstellungen gefunden.");
+      return;
+    }
+    
+    onSettingChange('qrBgColor', qrCodeSettings.bgColor);
+    onSettingChange('qrFgColor', qrCodeSettings.fgColor);
+    toast.success("QR-Code Styling übernommen!");
+  };
 
   const handleLogoUpload = (e) => {
     e.preventDefault();
@@ -174,6 +187,20 @@ export const NameTagCreator = ({
             </div>
           </div>
 
+          {/* QR Code sync button */}
+          <div className="space-y-3">
+            <Button 
+              onClick={syncQRCodeStyles}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <RefreshCw size={16} />
+              QR-Code Styling übernehmen
+            </Button>
+            <p className="text-xs text-gray-500">
+              Übernimmt die im QR-Code Tab definierten Farben für das Namensschild
+            </p>
+          </div>
+
           {/* Name tag preview */}
           <div className="bg-[#F9FAFB] p-6 rounded-lg">
             <h3 className="text-sm font-medium mb-4 text-gray-600">Vorschau</h3>
@@ -182,7 +209,11 @@ export const NameTagCreator = ({
                 name={`${data.firstName || ''} ${data.lastName || ''}`}
                 company={data.company}
                 title={data.title}
-                settings={nameTagSettings}
+                settings={{
+                  ...nameTagSettings,
+                  qrFgColor: nameTagSettings.qrFgColor || "#000000",
+                  qrBgColor: nameTagSettings.qrBgColor || "#ffffff"
+                }}
                 qrValue={generateVCardData(data)}
               />
             </div>
@@ -353,13 +384,13 @@ export const NameTagCreator = ({
                   <Input
                     id="backgroundColor"
                     type="color"
-                    value={nameTagSettings.backgroundColor}
+                    value={nameTagSettings.backgroundColor || "#ffffff"}
                     onChange={(e) => onSettingChange('backgroundColor', e.target.value)}
                     className="w-12 h-12 p-1 cursor-pointer rounded-lg"
                   />
                   <Input
                     type="text"
-                    value={nameTagSettings.backgroundColor}
+                    value={nameTagSettings.backgroundColor || "#ffffff"}
                     onChange={(e) => onSettingChange('backgroundColor', e.target.value)}
                     className="w-full text-xs p-1"
                   />
