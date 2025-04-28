@@ -28,6 +28,7 @@ export const TemplateStep = ({
           Schritt 2: QR-Code & Namensschild anpassen
         </h2>
         
+        {/* Always render the tabs regardless of other conditions */}
         <Tabs defaultValue="qrcode" className="mb-6">
           <TabsList className="w-full">
             <TabsTrigger value="qrcode" className="w-1/2">QR-Code</TabsTrigger>
