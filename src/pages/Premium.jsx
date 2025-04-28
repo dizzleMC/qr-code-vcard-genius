@@ -4,6 +4,9 @@ import { PremiumLayout } from "@/components/premium/PremiumLayout";
 import { ImportStep } from "@/components/premium/ImportStep";
 import { TemplateStep } from "@/components/premium/TemplateStep";
 import { GenerateStep } from "@/components/premium/GenerateStep";
+import { Button } from "@/components/ui/button";
+import { QRCodePreviewGrid } from "@/components/premium/QRCodePreviewGrid";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 const Premium = () => {
   const [templateSettings, setTemplateSettings] = useState({
@@ -210,37 +213,181 @@ const Premium = () => {
     toast.info("Prozess zurückgesetzt. Sie können neue Kontakte importieren.");
   };
 
+  const goToNextStep = () => {
+    setCurrentStep(prev => Math.min(prev + 1, 3));
+  };
+
+  const goToPreviousStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
   return (
     <PremiumLayout>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="col-span-1 md:col-span-2">
-          <ImportStep onImportSuccess={handleImportSuccess} />
-        </div>
-        
-        <div className="col-span-1">
-          <TemplateStep
-            templateData={templateData}
-            templateSettings={templateSettings}
-            importedData={importedData}
-            selectedContact={selectedContact}
-            onTemplateChange={handleTemplateChange}
-            onSelectContact={setSelectedContact}
-            onNextStep={() => setCurrentStep(3)}
-          />
-        </div>
-        
-        <div className="col-span-1">
-          <GenerateStep
-            importedData={importedData}
-            templateSettings={templateSettings}
-            isGenerating={isGenerating}
-            generationProgress={generationProgress}
-            onGenerate={handleBulkGenerate}
-            onGenerateSelected={handleGenerateSelected}
-            onReset={resetProcess}
-          />
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= 1 ? 'bg-[#ff7e0c] text-white' : 'bg-gray-200 text-gray-600'}`}>
+              1
+            </div>
+            <div className={`h-1 w-16 ${currentStep >= 2 ? 'bg-[#ff7e0c]' : 'bg-gray-200'}`}></div>
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= 2 ? 'bg-[#ff7e0c] text-white' : 'bg-gray-200 text-gray-600'}`}>
+              2
+            </div>
+            <div className={`h-1 w-16 ${currentStep >= 3 ? 'bg-[#ff7e0c]' : 'bg-gray-200'}`}></div>
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= 3 ? 'bg-[#ff7e0c] text-white' : 'bg-gray-200 text-gray-600'}`}>
+              3
+            </div>
+          </div>
+          <div>
+            <span className="text-gray-600">
+              Schritt {currentStep} von 3: {currentStep === 1 ? 'Import' : currentStep === 2 ? 'Template' : 'Generieren'}
+            </span>
+          </div>
         </div>
       </div>
+      
+      {currentStep === 1 && (
+        <Card className="border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-200 bg-white overflow-hidden">
+          <CardHeader className="border-b bg-white pb-6">
+            <h2 className="text-xl font-medium text-gray-900">
+              Schritt 1: Excel-Datei importieren
+            </h2>
+          </CardHeader>
+          <CardContent className="p-6">
+            <ImportStep onImportSuccess={(data) => {
+              handleImportSuccess(data);
+              goToNextStep();
+            }} />
+            
+            <div className="flex justify-end mt-6">
+              <Button 
+                onClick={goToNextStep}
+                disabled={importedData.length === 0}
+                className="bg-[#ff7e0c] hover:bg-[#ff7e0c]/90"
+              >
+                Weiter zu Schritt 2
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {currentStep === 2 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-200 bg-white overflow-hidden">
+            <CardHeader className="border-b bg-white pb-6">
+              <h2 className="text-xl font-medium text-gray-900">
+                Schritt 2: QR-Code Template konfigurieren
+              </h2>
+            </CardHeader>
+            <CardContent className="p-6">
+              <TemplateStep
+                templateData={templateData}
+                templateSettings={templateSettings}
+                importedData={importedData}
+                selectedContact={selectedContact}
+                onTemplateChange={handleTemplateChange}
+                onSelectContact={setSelectedContact}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card className="border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-200 bg-white overflow-hidden">
+            <CardHeader className="border-b bg-white pb-6">
+              <h2 className="text-xl font-medium text-gray-900">
+                Kontaktvorschau
+              </h2>
+            </CardHeader>
+            <CardContent className="p-6">
+              {importedData.length > 0 && (
+                <div className="max-h-[400px] overflow-y-auto">
+                  <div className="space-y-3">
+                    {importedData.slice(0, 5).map((contact, index) => (
+                      <div 
+                        key={index}
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${selectedContact === contact ? 'border-[#ff7e0c] bg-orange-50' : 'border-gray-100 hover:border-gray-300'}`}
+                        onClick={() => setSelectedContact(contact)}
+                      >
+                        <div className="font-medium">{contact.firstName} {contact.lastName}</div>
+                        {contact.company && <div className="text-sm text-gray-600">{contact.company}</div>}
+                        {contact.email && <div className="text-sm text-gray-600">{contact.email}</div>}
+                      </div>
+                    ))}
+                    {importedData.length > 5 && (
+                      <div className="text-sm text-gray-500 mt-2">
+                        +{importedData.length - 5} weitere Kontakte
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
+          <div className="col-span-1 md:col-span-2 flex justify-between mt-4">
+            <Button
+              variant="outline"
+              onClick={goToPreviousStep}
+            >
+              Zurück zu Schritt 1
+            </Button>
+            <Button
+              onClick={goToNextStep}
+              className="bg-[#ff7e0c] hover:bg-[#ff7e0c]/90"
+            >
+              Weiter zu Schritt 3
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {currentStep === 3 && (
+        <>
+          <Card className="border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-200 bg-white overflow-hidden mb-6">
+            <CardHeader className="border-b bg-white pb-6">
+              <h2 className="text-xl font-medium text-gray-900">
+                Schritt 3: QR-Codes generieren
+              </h2>
+            </CardHeader>
+            <CardContent className="p-6">
+              <GenerateStep
+                importedData={importedData}
+                templateSettings={templateSettings}
+                isGenerating={isGenerating}
+                generationProgress={generationProgress}
+                onGenerate={handleBulkGenerate}
+                onGenerateSelected={handleGenerateSelected}
+                onReset={resetProcess}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card className="border border-gray-100 shadow-lg hover:shadow-xl transition-shadow duration-200 bg-white overflow-hidden">
+            <CardHeader className="border-b bg-white pb-6">
+              <h2 className="text-xl font-medium text-gray-900">
+                QR-Code Vorschau
+              </h2>
+            </CardHeader>
+            <CardContent className="p-6">
+              <QRCodePreviewGrid
+                contacts={importedData}
+                templateSettings={templateSettings}
+                onGenerateSelected={handleGenerateSelected}
+                isGenerating={isGenerating}
+              />
+            </CardContent>
+          </Card>
+          
+          <div className="flex justify-between mt-6">
+            <Button
+              variant="outline"
+              onClick={goToPreviousStep}
+            >
+              Zurück zu Schritt 2
+            </Button>
+          </div>
+        </>
+      )}
     </PremiumLayout>
   );
 };

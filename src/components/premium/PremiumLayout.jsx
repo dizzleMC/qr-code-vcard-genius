@@ -36,7 +36,7 @@ export const PremiumLayout = ({ children }) => {
           </p>
         </div>
         
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {children}
         </div>
         
