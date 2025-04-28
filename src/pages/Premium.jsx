@@ -223,7 +223,7 @@ const Premium = () => {
               </div>
               <span style={{
             color: currentStep >= step ? "#1A1F2C" : "#8E9196"
-          }} className="my-[8px] mx-[16px]">
+          }} className="my-[8px] mx-[16px] py-[16px]">
                 {step === 1 && "Daten importieren"}
                 {step === 2 && "Template anpassen"}
                 {step === 3 && "QR-Codes generieren"}
