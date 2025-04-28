@@ -96,38 +96,40 @@ const Premium = () => {
       }
     };
     
-    const dimensions = getDimensions();
-    const { width, height } = dimensions;
+    const { width, height } = getDimensions();
     canvas.width = width;
     canvas.height = height;
     
-    const fillBackgroundWithGradient = () => {
-      const bgcolor = nameTagSettings.backgroundColor || "#ffffff";
-      const borderColor = nameTagSettings.borderColor || "#e2e8f0";
-      let gradient;
-      
-      if (nameTagSettings.template === "modern" || nameTagSettings.template === "classic" || nameTagSettings.template === "minimal") {
-        gradient = ctx.createLinearGradient(0, 0, width, 0);
-        gradient.addColorStop(0, bgcolor);
-        gradient.addColorStop(0.85, bgcolor);
-        gradient.addColorStop(1, borderColor + "20");
-      } else {
-        gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, bgcolor);
-        gradient.addColorStop(0.85, bgcolor);
-        gradient.addColorStop(1, borderColor + "20");
-      }
-      
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-    };
+    // Fill with solid background color first
+    ctx.fillStyle = nameTagSettings.backgroundColor || "#ffffff";
+    ctx.fillRect(0, 0, width, height);
     
-    fillBackgroundWithGradient();
+    // Add gradient based on template
+    const template = nameTagSettings.template || "classic";
+    const borderColor = nameTagSettings.borderColor || "#e2e8f0";
     
+    let gradient;
+    if (template === "modern" || template === "classic" || template === "minimal") {
+      gradient = ctx.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, nameTagSettings.backgroundColor || "#ffffff");
+      gradient.addColorStop(0.85, nameTagSettings.backgroundColor || "#ffffff");
+      gradient.addColorStop(1, borderColor + "20");
+    } else { // business template
+      gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, nameTagSettings.backgroundColor || "#ffffff");
+      gradient.addColorStop(0.85, nameTagSettings.backgroundColor || "#ffffff");
+      gradient.addColorStop(1, borderColor + "20");
+    }
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+    
+    // Add border
     ctx.strokeStyle = nameTagSettings.borderColor || "#e2e8f0";
     ctx.lineWidth = 2;
     ctx.strokeRect(1, 1, width - 2, height - 2);
     
+    // Set up font
     let fontFamily = nameTagSettings.font || "Arial";
     if (!["Arial", "Helvetica", "Times New Roman", "Georgia"].includes(fontFamily)) {
       try {
@@ -147,6 +149,7 @@ const Premium = () => {
     const company = (contact.company || '').trim();
     const title = (contact.title || '').trim();
     
+    // Get template-specific layout positions
     const getTemplatePosition = () => {
       switch(nameTagSettings.template) {
         case "modern":
@@ -159,7 +162,9 @@ const Premium = () => {
             titleY: height / 2 + 15,
             companyX: width * 0.25,
             companyY: height / 2 + 40,
-            textAlign: "right"
+            qrX: width * 0.75,
+            qrY: height / 2,
+            textAlign: "left"
           };
         case "business":
           return {
@@ -170,7 +175,9 @@ const Premium = () => {
             titleX: width / 2,
             titleY: height / 2 + 35,
             companyX: width / 2,
-            companyY: height / 2 + 60,
+            companyY: height / 2 + 60, 
+            qrX: width - 70, // Position away from text
+            qrY: height - 70, 
             textAlign: "center"
           };
         case "minimal":
@@ -183,6 +190,8 @@ const Premium = () => {
             titleY: height / 2 + 15,
             companyX: width / 2,
             companyY: height / 2 + 40,
+            qrX: width * 0.8,
+            qrY: height / 2,
             textAlign: "center"
           };
         case "classic":
@@ -196,13 +205,17 @@ const Premium = () => {
             titleY: height / 2 + 15,
             companyX: width * 0.25,
             companyY: height / 2 + 40,
+            qrX: width * 0.75,
+            qrY: height / 2,
             textAlign: "left"
           };
       }
     };
     
     const templatePosition = getTemplatePosition();
+    ctx.textAlign = templatePosition.textAlign;
     
+    // Draw logo if available
     if (nameTagSettings.logo) {
       const img = new Image();
       await new Promise((resolve, reject) => {
@@ -223,9 +236,13 @@ const Premium = () => {
         const finalLogoWidth = logoWidth * ratio;
         const finalLogoHeight = logoHeight * ratio;
         
+        const logoXPos = template === "business" || template === "minimal" ? 
+          templatePosition.logoX - (finalLogoWidth / 2) : 
+          templatePosition.logoX;
+        
         ctx.drawImage(
           img, 
-          templatePosition.logoX - (finalLogoWidth / 2),
+          logoXPos,
           templatePosition.logoY,
           finalLogoWidth,
           finalLogoHeight
@@ -233,32 +250,33 @@ const Premium = () => {
       }
     }
     
-    ctx.textAlign = templatePosition.textAlign;
+    // Set text properties based on name tag size
+    const nameFontSize = Math.max(nameTagSettings.fontSize || 22, 18);
+    const titleFontSize = Math.max((nameTagSettings.fontSize || 22) - 6, 12);
+    const companyFontSize = Math.max((nameTagSettings.fontSize || 22) - 4, 14);
     
-    const nameFontSize = Math.max(dimensions.fontSize, 18);
-    const titleFontSize = Math.max(dimensions.fontSize - 6, 12);
-    const companyFontSize = Math.max(dimensions.fontSize - 4, 14);
-    
+    // Draw name
     ctx.font = `bold ${nameFontSize}px ${fontFamily}`;
     ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
     ctx.fillText(fullName, templatePosition.nameX, templatePosition.nameY);
     
+    // Draw title if available
     if (title) {
       ctx.font = `${titleFontSize}px ${fontFamily}`;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
       ctx.fillText(title, templatePosition.titleX, templatePosition.titleY);
     }
     
+    // Draw company if available  
     if (company) {
       ctx.font = `${companyFontSize}px ${fontFamily}`;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
       ctx.fillText(company, templatePosition.companyX, templatePosition.companyY);
     }
     
+    // Generate QR code on separate canvas
     try {
-      const {
-        toCanvas
-      } = await import('qrcode');
+      const { toCanvas } = await import('qrcode');
       
       const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
       
@@ -275,42 +293,23 @@ const Premium = () => {
         errorCorrectionLevel: 'M'
       });
       
-      let qrX, qrY;
-      
-      const getQrPosition = () => {
-        switch(nameTagSettings.template) {
-          case "modern":
-            return {
-              qrX: width * 0.8,
-              qrY: height / 2
-            };
-          case "business":
-            return {
-              qrX: width - qrSize / 2 - 15,
-              qrY: height - qrSize / 2 - 15
-            };
-          case "minimal":
-            return {
-              qrX: width * 0.8,
-              qrY: height / 2
-            };
-          case "classic":
-          default:
-            return {
-              qrX: width * 0.75,
-              qrY: height / 2
-            };
-        }
-      };
-      
-      const qrPosition = getQrPosition();
-      qrX = qrPosition.qrX;
-      qrY = qrPosition.qrY;
-      
+      // Create white background for QR code
       ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
-      ctx.fillRect(qrX - (qrSize / 2) - 5, qrY - (qrSize / 2) - 5, qrSize + 10, qrSize + 10);
+      ctx.fillRect(
+        templatePosition.qrX - (qrSize / 2) - 5, 
+        templatePosition.qrY - (qrSize / 2) - 5, 
+        qrSize + 10, 
+        qrSize + 10
+      );
       
-      ctx.drawImage(qrCanvas, qrX - (qrSize / 2), qrY - (qrSize / 2), qrSize, qrSize);
+      // Draw QR code
+      ctx.drawImage(
+        qrCanvas, 
+        templatePosition.qrX - (qrSize / 2), 
+        templatePosition.qrY - (qrSize / 2), 
+        qrSize, 
+        qrSize
+      );
     } catch (error) {
       console.error("Error generating QR code for name tag:", error);
     }
@@ -330,9 +329,7 @@ const Premium = () => {
       const JSZip = (await import("jszip")).default;
       const zip = new JSZip();
 
-      const {
-        toCanvas
-      } = await import('qrcode');
+      const { toCanvas } = await import('qrcode');
       let completedCount = 0;
       const totalContacts = contactsToGenerate.length;
       const totalItems = templateSettings.nameTag.enabled ? totalContacts * 2 : totalContacts;
@@ -352,7 +349,18 @@ const Premium = () => {
         const batchPromises = batch.map(async contact => {
           try {
             // Generate QR code
-            const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
+            const vcard = ["BEGIN:VCARD", "VERSION:3.0", 
+              `N:${contact.lastName || ''};${contact.firstName || ''};;;`, 
+              `FN:${contact.firstName || ''} ${contact.lastName || ''}`, 
+              contact.title && `TITLE:${contact.title}`, 
+              contact.company && `ORG:${contact.company}`, 
+              contact.email && `EMAIL:${contact.email}`, 
+              contact.phone && `TEL:${contact.phone}`, 
+              contact.website && `URL:${contact.website}`, 
+              (contact.street || contact.city) && 
+                `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, 
+              "END:VCARD"
+            ].filter(Boolean).join("\n");
 
             const canvas = document.createElement("canvas");
             const options = {
@@ -388,137 +396,12 @@ const Premium = () => {
             setGenerationProgress(progress);
             
             // Generate name tag if enabled
-            if (templateSettings.nameTag.enabled) {
+            if (templateSettings.nameTag?.enabled) {
               try {
                 console.log(`Generating name tag for ${contact.firstName} ${contact.lastName}`);
                 
-                // Create a new canvas for the name tag
-                const nameTagCanvas = document.createElement("canvas");
-                const ctx = nameTagCanvas.getContext("2d");
-                
-                if (!ctx) {
-                  throw new Error("Canvas context could not be created");
-                }
-                
-                const getDimensions = () => {
-                  switch(templateSettings.nameTag.size) {
-                    case "small": return { width: 350, height: 175, fontSize: 18 };
-                    case "large": return { width: 450, height: 225, fontSize: 26 };
-                    case "medium":
-                    default: return { width: 400, height: 200, fontSize: 22 };
-                  }
-                };
-                
-                const { width, height } = getDimensions();
-                nameTagCanvas.width = width;
-                nameTagCanvas.height = height;
-                
-                // Fill background
-                ctx.fillStyle = templateSettings.nameTag.backgroundColor || "#ffffff";
-                ctx.fillRect(0, 0, width, height);
-                
-                // Add border
-                ctx.strokeStyle = templateSettings.nameTag.borderColor || "#e2e8f0";
-                ctx.lineWidth = 2;
-                ctx.strokeRect(1, 1, width - 2, height - 2);
-                
-                // Draw name, title, company
-                const fontFamily = templateSettings.nameTag.font || "Arial";
-                const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
-                const company = (contact.company || '').trim();
-                const title = (contact.title || '').trim();
-                
-                // Position based on template
-                const template = templateSettings.nameTag.template || "classic";
-                let nameX, nameY, titleX, titleY, companyX, companyY, qrX, qrY;
-                
-                if (template === "modern") {
-                  nameX = width * 0.25;
-                  nameY = height / 2 - 10;
-                  titleX = width * 0.25;
-                  titleY = height / 2 + 15;
-                  companyX = width * 0.25;
-                  companyY = height / 2 + 40;
-                  qrX = width * 0.75;
-                  qrY = height / 2;
-                  ctx.textAlign = "left";
-                } else if (template === "business") {
-                  nameX = width / 2;
-                  nameY = height / 2 + 10;
-                  titleX = width / 2;
-                  titleY = height / 2 + 35;
-                  companyX = width / 2;
-                  companyY = height / 2 + 60;
-                  qrX = width - (height * 0.35) - 15;
-                  qrY = height - (height * 0.35) - 15;
-                  ctx.textAlign = "center";
-                } else if (template === "minimal") {
-                  nameX = width / 2;
-                  nameY = height / 2 - 10;
-                  titleX = width / 2;
-                  titleY = height / 2 + 15;
-                  companyX = width / 2;
-                  companyY = height / 2 + 40;
-                  qrX = width * 0.8;
-                  qrY = height / 2;
-                  ctx.textAlign = "center";
-                } else { // classic
-                  nameX = width * 0.25;
-                  nameY = height / 2 - 10;
-                  titleX = width * 0.25;
-                  titleY = height / 2 + 15;
-                  companyX = width * 0.25;
-                  companyY = height / 2 + 40;
-                  qrX = width * 0.75;
-                  qrY = height / 2;
-                  ctx.textAlign = "left";
-                }
-                
-                // Draw text
-                ctx.font = `bold ${templateSettings.nameTag.fontSize || 22}px ${fontFamily}`;
-                ctx.fillStyle = templateSettings.nameTag.nameColor || "#1A1F2C";
-                ctx.fillText(fullName, nameX, nameY);
-                
-                if (title) {
-                  ctx.font = `${(templateSettings.nameTag.fontSize || 22) - 4}px ${fontFamily}`;
-                  ctx.fillStyle = templateSettings.nameTag.companyColor || "#8E9196";
-                  ctx.fillText(title, titleX, titleY);
-                }
-                
-                if (company) {
-                  ctx.font = `${(templateSettings.nameTag.fontSize || 22) - 2}px ${fontFamily}`;
-                  ctx.fillStyle = templateSettings.nameTag.companyColor || "#8E9196";
-                  ctx.fillText(company, companyX, companyY);
-                }
-                
-                // Add QR code
-                const qrCanvas = document.createElement("canvas");
-                const qrSize = height * 0.7;
-                
-                await toCanvas(qrCanvas, vcard, {
-                  width: qrSize,
-                  margin: 1,
-                  color: {
-                    dark: templateSettings.nameTag.qrFgColor || "#000000",
-                    light: templateSettings.nameTag.qrBgColor || "#ffffff"
-                  },
-                  errorCorrectionLevel: 'M'
-                });
-                
-                // Draw QR background
-                ctx.fillStyle = templateSettings.nameTag.qrBgColor || "#ffffff";
-                ctx.fillRect(qrX - (qrSize / 2) - 5, qrY - (qrSize / 2) - 5, qrSize + 10, qrSize + 10);
-                
-                // Draw QR code
-                ctx.drawImage(qrCanvas, qrX - (qrSize / 2), qrY - (qrSize / 2), qrSize, qrSize);
-                
-                // Convert to blob and add to zip
-                const nameTagBlob = await new Promise((resolve, reject) => {
-                  nameTagCanvas.toBlob(blob => {
-                    if (blob) resolve(blob);
-                    else reject(new Error("Failed to create name tag blob"));
-                  }, "image/png");
-                });
+                // Use our improved generateNameTag function
+                const nameTagBlob = await generateNameTag(contact, templateSettings.nameTag);
                 
                 if (!nameTagBlob) {
                   throw new Error("Name tag blob creation failed");

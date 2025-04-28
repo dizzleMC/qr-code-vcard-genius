@@ -92,126 +92,206 @@ export const QRCodePreviewGrid = ({
         
         const getDimensions = () => {
           switch(templateSettings.nameTag.size) {
-            case "small": return { width: 350, height: 175 };
-            case "large": return { width: 450, height: 225 };
+            case "small": return { width: 350, height: 175, fontSize: 18 };
+            case "large": return { width: 450, height: 225, fontSize: 26 };
             case "medium":
-            default: return { width: 400, height: 200 };
+            default: return { width: 400, height: 200, fontSize: 22 };
           }
         };
         
         const dimensions = getDimensions();
-        canvas.width = dimensions.width;
-        canvas.height = dimensions.height;
+        const { width, height } = dimensions;
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx.fillStyle = templateSettings.nameTag.backgroundColor || "#ffffff";
+        ctx.fillRect(0, 0, width, height);
         
         const nameTagSettings = templateSettings.nameTag;
+        const template = nameTagSettings.template || "classic";
+        const borderColor = nameTagSettings.borderColor || "#e2e8f0";
         
-        ctx.fillStyle = nameTagSettings.backgroundColor || "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let gradient;
+        if (template === "modern" || template === "classic" || template === "minimal") {
+          gradient = ctx.createLinearGradient(0, 0, width, 0);
+          gradient.addColorStop(0, nameTagSettings.backgroundColor || "#ffffff");
+          gradient.addColorStop(0.85, nameTagSettings.backgroundColor || "#ffffff");
+          gradient.addColorStop(1, borderColor + "20");
+        } else { // business template
+          gradient = ctx.createLinearGradient(0, 0, 0, height);
+          gradient.addColorStop(0, nameTagSettings.backgroundColor || "#ffffff");
+          gradient.addColorStop(0.85, nameTagSettings.backgroundColor || "#ffffff");
+          gradient.addColorStop(1, borderColor + "20");
+        }
         
-        ctx.strokeStyle = nameTagSettings.borderColor || "#e2e8f0";
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+        
+        ctx.strokeStyle = borderColor;
         ctx.lineWidth = 2;
-        ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+        ctx.strokeRect(1, 1, width - 2, height - 2);
         
         const fontFamily = nameTagSettings.font || 'Arial';
+        
         const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
         const company = (contact.company || '').trim();
         const title = (contact.title || '').trim();
         
-        const template = nameTagSettings.template || "classic";
-        let nameX, nameY, titleX, titleY, companyX, companyY, qrX, qrY;
+        const getTemplatePosition = () => {
+          switch(template) {
+            case "modern":
+              return {
+                nameX: width * 0.25,
+                nameY: height / 2 - 10,
+                titleX: width * 0.25,
+                titleY: height / 2 + 15,
+                companyX: width * 0.25,
+                companyY: height / 2 + 40,
+                qrX: width * 0.75,
+                qrY: height / 2,
+                logoX: width * 0.25,
+                logoY: 25,
+                textAlign: "left"
+              };
+            case "business":
+              return {
+                nameX: width / 2,
+                nameY: height / 2 + 10,
+                titleX: width / 2,
+                titleY: height / 2 + 35,
+                companyX: width / 2,
+                companyY: height / 2 + 60,
+                qrX: width - 70,
+                qrY: height - 70,
+                logoX: width / 2,
+                logoY: 40,
+                textAlign: "center"
+              };
+            case "minimal":
+              return {
+                nameX: width / 2,
+                nameY: height / 2 - 10,
+                titleX: width / 2,
+                titleY: height / 2 + 15,
+                companyX: width / 2,
+                companyY: height / 2 + 40,
+                qrX: width * 0.8,
+                qrY: height / 2,
+                logoX: width * 0.25,
+                logoY: 25,
+                textAlign: "center"
+              };
+            case "classic":
+            default:
+              return {
+                nameX: width * 0.25,
+                nameY: height / 2 - 10,
+                titleX: width * 0.25,
+                titleY: height / 2 + 15,
+                companyX: width * 0.25,
+                companyY: height / 2 + 40,
+                qrX: width * 0.75,
+                qrY: height / 2,
+                logoX: width * 0.25,
+                logoY: 25,
+                textAlign: "left"
+              };
+          }
+        };
         
-        if (template === "modern") {
-          nameX = canvas.width * 0.25;
-          nameY = canvas.height / 2 - 10;
-          titleX = canvas.width * 0.25;
-          titleY = canvas.height / 2 + 15;
-          companyX = canvas.width * 0.25;
-          companyY = canvas.height / 2 + 40;
-          qrX = canvas.width * 0.75;
-          qrY = canvas.height / 2;
-          ctx.textAlign = "left";
-        } else if (template === "business") {
-          nameX = canvas.width / 2;
-          nameY = canvas.height / 2 + 10;
-          titleX = canvas.width / 2;
-          titleY = canvas.height / 2 + 35;
-          companyX = canvas.width / 2;
-          companyY = canvas.height / 2 + 60;
-          qrX = canvas.width - (canvas.height * 0.35) - 15;
-          qrY = canvas.height - (canvas.height * 0.35) - 15;
-          ctx.textAlign = "center";
-        } else if (template === "minimal") {
-          nameX = canvas.width / 2;
-          nameY = canvas.height / 2 - 10;
-          titleX = canvas.width / 2;
-          titleY = canvas.height / 2 + 15;
-          companyX = canvas.width / 2;
-          companyY = canvas.height / 2 + 40;
-          qrX = canvas.width * 0.8;
-          qrY = canvas.height / 2;
-          ctx.textAlign = "center";
-        } else { // classic
-          nameX = canvas.width * 0.25;
-          nameY = canvas.height / 2 - 10;
-          titleX = canvas.width * 0.25;
-          titleY = canvas.height / 2 + 15;
-          companyX = canvas.width * 0.25;
-          companyY = canvas.height / 2 + 40;
-          qrX = canvas.width * 0.75;
-          qrY = canvas.height / 2;
-          ctx.textAlign = "left";
+        const templatePosition = getTemplatePosition();
+        ctx.textAlign = templatePosition.textAlign;
+        
+        if (nameTagSettings.logo) {
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = nameTagSettings.logo;
+          }).catch(err => {
+            console.error("Error loading logo:", err);
+          });
+          
+          if (img.complete && img.naturalWidth > 0) {
+            const scale = nameTagSettings.logoScale / 100;
+            const logoWidth = img.width * scale;
+            const logoHeight = img.height * scale;
+            const maxLogoHeight = height * 0.3;
+            
+            const ratio = Math.min(maxLogoHeight / logoHeight, 1);
+            const finalLogoWidth = logoWidth * ratio;
+            const finalLogoHeight = logoHeight * ratio;
+            
+            const logoXPos = template === "business" || template === "minimal" ? 
+              templatePosition.logoX - (finalLogoWidth / 2) : 
+              templatePosition.logoX;
+              
+            ctx.drawImage(
+              img, 
+              logoXPos,
+              templatePosition.logoY,
+              finalLogoWidth,
+              finalLogoHeight
+            );
+          }
         }
         
-        ctx.font = `bold ${nameTagSettings.fontSize || 22}px ${fontFamily}`;
+        const nameFontSize = Math.max(dimensions.fontSize, 18);
+        const titleFontSize = Math.max(dimensions.fontSize - 6, 12);
+        const companyFontSize = Math.max(dimensions.fontSize - 4, 14);
+        
+        ctx.font = `bold ${nameFontSize}px ${fontFamily}`;
         ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
-        ctx.fillText(fullName, nameX, nameY);
+        ctx.fillText(fullName, templatePosition.nameX, templatePosition.nameY);
         
         if (title) {
-          ctx.font = `${(nameTagSettings.fontSize || 22) - 4}px ${fontFamily}`;
+          ctx.font = `${titleFontSize}px ${fontFamily}`;
           ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-          ctx.fillText(title, titleX, titleY);
+          ctx.fillText(title, templatePosition.titleX, templatePosition.titleY);
         }
         
         if (company) {
-          ctx.font = `${(nameTagSettings.fontSize || 22) - 2}px ${fontFamily}`;
+          ctx.font = `${companyFontSize}px ${fontFamily}`;
           ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-          ctx.fillText(company, companyX, companyY);
+          ctx.fillText(company, templatePosition.companyX, templatePosition.companyY);
         }
         
-        const vcard = ["BEGIN:VCARD", "VERSION:3.0", 
-          `N:${contact.lastName || ''};${contact.firstName || ''};;;`, 
-          `FN:${contact.firstName || ''} ${contact.lastName || ''}`, 
-          contact.title && `TITLE:${contact.title}`, 
-          contact.company && `ORG:${contact.company}`, 
-          contact.email && `EMAIL:${contact.email}`, 
-          contact.phone && `TEL:${contact.phone}`, 
-          contact.website && `URL:${contact.website}`, 
-          (contact.street || contact.city) && 
-            `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, 
-          "END:VCARD"
-        ].filter(Boolean).join("\n");
-        
-        const {
-          toCanvas
-        } = await import('qrcode');
-        
-        const qrCanvas = document.createElement("canvas");
-        const qrSize = canvas.height * 0.7;
-        
-        await toCanvas(qrCanvas, vcard, {
-          width: qrSize,
-          margin: 1,
-          color: {
-            dark: nameTagSettings.qrFgColor || "#000000",
-            light: nameTagSettings.qrBgColor || "#ffffff"
-          },
-          errorCorrectionLevel: 'M'
-        });
-        
-        ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
-        ctx.fillRect(qrX - (qrSize / 2) - 5, qrY - (qrSize / 2) - 5, qrSize + 10, qrSize + 10);
-        
-        ctx.drawImage(qrCanvas, qrX - (qrSize / 2), qrY - (qrSize / 2), qrSize, qrSize);
+        try {
+          const vcard = generateVCardData(contact);
+          const { toCanvas } = await import('qrcode');
+          
+          const qrCanvas = document.createElement("canvas");
+          const qrSize = height * 0.7;
+          
+          await toCanvas(qrCanvas, vcard, {
+            width: qrSize,
+            margin: 1,
+            color: {
+              dark: nameTagSettings.qrFgColor || "#000000",
+              light: nameTagSettings.qrBgColor || "#ffffff"
+            },
+            errorCorrectionLevel: 'M'
+          });
+          
+          ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
+          ctx.fillRect(
+            templatePosition.qrX - (qrSize / 2) - 5, 
+            templatePosition.qrY - (qrSize / 2) - 5, 
+            qrSize + 10, 
+            qrSize + 10
+          );
+          
+          ctx.drawImage(
+            qrCanvas, 
+            templatePosition.qrX - (qrSize / 2), 
+            templatePosition.qrY - (qrSize / 2), 
+            qrSize, 
+            qrSize
+          );
+          
+        } catch (qrError) {
+          console.error("Error generating QR code for name tag:", qrError);
+        }
         
         const pngFile = canvas.toDataURL("image/png");
         const downloadLink = document.createElement("a");
