@@ -1,6 +1,5 @@
 
-import { QRCodeSVG } from 'qrcode.react';
-import { renderToString } from 'react-dom/server';
+import QRCode from 'qrcode';
 
 self.onmessage = async function(e) {
   const { contact, settings, index, total } = e.data;
@@ -8,25 +7,25 @@ self.onmessage = async function(e) {
   try {
     const vCardData = generateVCardData(contact);
     
-    // Generate QR code SVG
-    const qrCodeSvg = renderToString(
-      <QRCodeSVG
-        value={vCardData}
-        size={settings.size}
-        level="H"
-        includeMargin={true}
-        fgColor={settings.fgColor}
-        bgColor={settings.bgColor}
-      />
-    );
-
-    // Convert SVG to blob
-    const svgBlob = new Blob([qrCodeSvg], { type: 'image/svg+xml' });
+    // Generate QR code using QRCode lib instead of React component
+    const qrCodeDataURL = await QRCode.toDataURL(vCardData, {
+      width: settings.size,
+      margin: 4,
+      color: {
+        dark: settings.fgColor,
+        light: settings.bgColor
+      },
+      errorCorrectionLevel: 'H'
+    });
+    
+    // Convert data URL to blob
+    const response = await fetch(qrCodeDataURL);
+    const blob = await response.blob();
     
     self.postMessage({
       success: true,
       fileName: `${contact.firstName}-${contact.lastName}-qr.png`,
-      blob: svgBlob,
+      blob: blob,
       progress: ((index + 1) / total) * 100
     });
   } catch (error) {
