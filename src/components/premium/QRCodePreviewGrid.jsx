@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -5,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "lucide-react";
 import { toast } from "sonner";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { NameTagPreview } from "./NameTagPreview";
+
 export const QRCodePreviewGrid = ({
   contacts,
   templateSettings,
@@ -14,14 +17,17 @@ export const QRCodePreviewGrid = ({
   const [selectedContacts, setSelectedContacts] = useState(contacts.map((_, index) => index));
   const [currentPage, setCurrentPage] = useState(1);
   const contactsPerPage = 9;
+  
   const generateVCardData = contact => {
     const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
     return vcard;
   };
+  
   const totalPages = Math.ceil(contacts.length / contactsPerPage);
   const indexOfLastContact = currentPage * contactsPerPage;
   const indexOfFirstContact = indexOfLastContact - contactsPerPage;
   const currentContacts = contacts.slice(indexOfFirstContact, indexOfLastContact);
+  
   const toggleSelectAll = () => {
     if (selectedContacts.length === contacts.length) {
       setSelectedContacts([]);
@@ -29,6 +35,7 @@ export const QRCodePreviewGrid = ({
       setSelectedContacts(contacts.map((_, index) => index));
     }
   };
+  
   const toggleContactSelection = index => {
     const actualIndex = indexOfFirstContact + index;
     if (selectedContacts.includes(actualIndex)) {
@@ -37,39 +44,110 @@ export const QRCodePreviewGrid = ({
       setSelectedContacts([...selectedContacts, actualIndex]);
     }
   };
+  
   const handleGenerateSelected = () => {
     const selectedContactsData = selectedContacts.map(index => contacts[index]);
     onGenerateSelected(selectedContactsData);
   };
-  const handleDownloadSingle = contact => {
-    const svg = document.querySelector(`#qr-code-${contact.firstName}-${contact.lastName} svg`);
-    if (!svg) {
-      toast.error("QR-Code konnte nicht generiert werden.");
-      return;
-    }
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      toast.error("Browser unterstützt keine Canvas-Funktionalität.");
-      return;
-    }
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.fillStyle = templateSettings.bgColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
+  
+  const handleDownloadSingle = (contact, type = 'qrcode') => {
+    if (type === 'qrcode') {
+      const svg = document.querySelector(`#qr-code-${contact.firstName}-${contact.lastName} svg`);
+      if (!svg) {
+        toast.error("QR-Code konnte nicht generiert werden.");
+        return;
+      }
+      
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        toast.error("Browser unterstützt keine Canvas-Funktionalität.");
+        return;
+      }
+      
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.fillStyle = templateSettings.bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        const pngFile = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `${contact.firstName || 'qrcode'}-${contact.lastName || 'contact'}-qr.png`;
+        downloadLink.href = pngFile;
+        downloadLink.click();
+        toast.success("QR-Code wurde heruntergeladen!");
+      };
+      img.src = "data:image/svg+xml;base64," + btoa(svgData);
+    } else if (type === 'nametag' && templateSettings.nameTag?.enabled) {
+      // For name tag download, we'll use the generateNameTag function from Premium.jsx
+      // Since we can't directly access it, we'll recreate the basic functionality here
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        toast.error("Browser unterstützt keine Canvas-Funktionalität.");
+        return;
+      }
+      
+      // Set canvas dimensions
+      const width = 400;
+      const height = 200;
+      canvas.width = width;
+      canvas.height = height;
+      
+      const nameTagSettings = templateSettings.nameTag;
+      
+      // Fill background
+      ctx.fillStyle = nameTagSettings.backgroundColor;
+      ctx.fillRect(0, 0, width, height);
+      
+      // Add border
+      ctx.strokeStyle = nameTagSettings.borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, width - 2, height - 2);
+      
+      // Get font family
+      let fontFamily = nameTagSettings.font || 'Arial';
+      const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
+      const company = (contact.company || '').trim();
+      const title = (contact.title || '').trim();
+      
+      // Variables for positioning
+      let yPos = height / 2;
+      
+      // Draw name
+      ctx.font = `bold ${nameTagSettings.fontSize}px ${fontFamily}`;
+      ctx.fillStyle = nameTagSettings.nameColor;
+      ctx.textAlign = "center";
+      ctx.fillText(fullName, width / 2, yPos - (title || company ? 20 : 0));
+      
+      // Draw title if available
+      if (title) {
+        ctx.font = `${nameTagSettings.fontSize - 4}px ${fontFamily}`;
+        ctx.fillStyle = nameTagSettings.companyColor;
+        ctx.fillText(title, width / 2, yPos + 10);
+        yPos += 30;
+      }
+      
+      // Draw company
+      if (company) {
+        ctx.font = `${nameTagSettings.fontSize - 2}px ${fontFamily}`;
+        ctx.fillStyle = nameTagSettings.companyColor;
+        ctx.fillText(company, width / 2, title ? yPos + 10 : yPos + 20);
+      }
+      
+      // Download the name tag
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = `${contact.firstName || 'qrcode'}-${contact.lastName || 'contact'}-qr.png`;
+      downloadLink.download = `${contact.firstName || 'contact'}-${contact.lastName || ''}-nametag.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
-      toast.success("QR-Code wurde heruntergeladen!");
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+      toast.success("Namensschild wurde heruntergeladen!");
+    }
   };
+
   return <div className="space-y-6">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
@@ -83,7 +161,7 @@ export const QRCodePreviewGrid = ({
           {isGenerating ? <span className="flex items-center gap-2">
               <Loader className="animate-spin" size={16} />
               Generiere...
-            </span> : `${selectedContacts.length} QR-Codes herunterladen`}
+            </span> : `${selectedContacts.length} ${templateSettings.nameTag?.enabled ? 'QR-Codes & Namensschilder' : 'QR-Codes'} herunterladen`}
         </Button>
       </div>
 
@@ -106,15 +184,37 @@ export const QRCodePreviewGrid = ({
                   </div>
                 </div>
                 
+                {/* QR Code Preview */}
                 <div className="flex justify-center">
                   <div id={`qr-code-${contact.firstName}-${contact.lastName}`} className="p-4 bg-[#F9FAFB] rounded-lg transition-all duration-200 hover:shadow-sm">
                     <QRCodeSVG value={generateVCardData(contact)} size={120} level="H" includeMargin={true} fgColor={templateSettings.fgColor} bgColor={templateSettings.bgColor} />
                   </div>
                 </div>
 
-                <Button variant="secondary" onClick={() => handleDownloadSingle(contact)} className="w-full text-sm text-[#1A1F2C] transition-colors rounded-sm bg-orange-50">
+                {/* Name Tag Preview (if enabled) */}
+                {templateSettings.nameTag?.enabled && (
+                  <div className="flex justify-center">
+                    <div className="w-[200px]">
+                      <NameTagPreview
+                        name={`${contact.firstName} ${contact.lastName}`}
+                        company={contact.company}
+                        title={contact.title}
+                        settings={templateSettings.nameTag}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Download buttons */}
+                <Button variant="secondary" onClick={() => handleDownloadSingle(contact, 'qrcode')} className="w-full text-sm text-[#1A1F2C] transition-colors rounded-sm bg-orange-50 mb-2">
                   QR-Code herunterladen
                 </Button>
+                
+                {templateSettings.nameTag?.enabled && (
+                  <Button variant="secondary" onClick={() => handleDownloadSingle(contact, 'nametag')} className="w-full text-sm text-[#1A1F2C] transition-colors rounded-sm bg-orange-50">
+                    Namensschild herunterladen
+                  </Button>
+                )}
               </div>
             </div>;
       })}
