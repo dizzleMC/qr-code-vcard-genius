@@ -18,20 +18,21 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
     if (initialBgColor) setBgColor(initialBgColor);
   }, [initialSize, initialFgColor, initialBgColor]);
 
-  const isFormEmpty = Object.values(data).every(value => value === "");
+  const isFormEmpty = Object.values(data).every(value => !value || value === "");
 
   const generateVCardData = (data) => {
     const vcard = [
       "BEGIN:VCARD",
       "VERSION:3.0",
-      `N:${data.lastName};${data.firstName};;;`,
-      `FN:${data.firstName} ${data.lastName}`,
+      `N:${data.lastName || ''};${data.firstName || ''};;;`,
+      `FN:${data.firstName || ''} ${data.lastName || ''}`,
       data.title && `TITLE:${data.title}`,
       data.company && `ORG:${data.company}`,
       data.email && `EMAIL:${data.email}`,
       data.phone && `TEL:${data.phone}`,
       data.website && `URL:${data.website}`,
-      data.street && data.city && `ADR:;;${data.street};${data.city};${data.state};${data.zip};${data.country}`,
+      (data.street || data.city) && 
+        `ADR:;;${data.street || ''};${data.city || ''};${data.state || ''};${data.zip || ''};${data.country || ''}`,
       "END:VCARD"
     ].filter(Boolean).join("\n");
     
@@ -40,17 +41,22 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
 
   const handleDownload = () => {
     const svg = document.querySelector("#qr-code svg");
-    if (!svg) return;
+    if (!svg) {
+      toast.error("QR-Code konnte nicht generiert werden.");
+      return;
+    }
 
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      toast.error("Browser unterstützt keine Canvas-Funktionalität.");
+      return;
+    }
     
     const img = new Image();
     
     img.onload = () => {
-      // No extra height needed now as we're not adding text
       canvas.width = img.width;
       canvas.height = img.height;
       
@@ -61,11 +67,9 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
       // Draw QR code
       ctx.drawImage(img, 0, 0);
       
-      // No branding text added anymore
-      
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = `${data.firstName}-${data.lastName}-qr.png`;
+      downloadLink.download = `${data.firstName || 'qrcode'}-${data.lastName || 'contact'}-qr.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
       
@@ -121,6 +125,13 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
     gap: "0.75rem"
   };
 
+  const colorInputContainerStyle = {
+    display: "flex",
+    flexDirection: "column",
+    width: "3rem",
+    gap: "0.5rem"
+  };
+
   const colorGridStyle = {
     flex: 1,
     display: "grid",
@@ -150,7 +161,6 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
             bgColor={bgColor}
           />
         </div>
-        {/* Removed the yourvcard.de text that was here */}
       </div>
       
       <div style={controlsContainerStyle}>
@@ -170,19 +180,31 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
         <div>
           <Label htmlFor="fgColor" style={labelStyle}>QR-Code Farbe</Label>
           <div style={colorPickerContainerStyle}>
-            <Input
-              id="fgColor"
-              type="color"
-              value={fgColor}
-              onChange={(e) => setFgColor(e.target.value)}
-              style={{
-                width: "3rem",
-                height: "3rem",
-                padding: "0.25rem",
-                cursor: "pointer",
-                borderRadius: "0.5rem"
-              }}
-            />
+            <div style={colorInputContainerStyle}>
+              <Input
+                id="fgColor"
+                type="color"
+                value={fgColor}
+                onChange={(e) => setFgColor(e.target.value)}
+                style={{
+                  width: "3rem",
+                  height: "3rem",
+                  padding: "0.25rem",
+                  cursor: "pointer",
+                  borderRadius: "0.5rem"
+                }}
+              />
+              <Input
+                type="text"
+                value={fgColor}
+                onChange={(e) => setFgColor(e.target.value)}
+                style={{
+                  width: "3rem",
+                  padding: "0.25rem",
+                  fontSize: "0.75rem"
+                }}
+              />
+            </div>
             <div style={colorGridStyle}>
               {["#1A1F2C", "#ff7e0c", "#8B5CF6", "#D946EF", "#F97316"].map((color) => (
                 <button
@@ -202,19 +224,31 @@ export const QRCodeDisplay = ({ data, initialSize, initialFgColor, initialBgColo
         <div>
           <Label htmlFor="bgColor" style={labelStyle}>Hintergrundfarbe</Label>
           <div style={colorPickerContainerStyle}>
-            <Input
-              id="bgColor"
-              type="color"
-              value={bgColor}
-              onChange={(e) => setBgColor(e.target.value)}
-              style={{
-                width: "3rem",
-                height: "3rem",
-                padding: "0.25rem",
-                cursor: "pointer",
-                borderRadius: "0.5rem"
-              }}
-            />
+            <div style={colorInputContainerStyle}>
+              <Input
+                id="bgColor"
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                style={{
+                  width: "3rem",
+                  height: "3rem",
+                  padding: "0.25rem",
+                  cursor: "pointer",
+                  borderRadius: "0.5rem"
+                }}
+              />
+              <Input
+                type="text"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                style={{
+                  width: "3rem",
+                  padding: "0.25rem",
+                  fontSize: "0.75rem"
+                }}
+              />
+            </div>
             <div style={colorGridStyle}>
               {["#ffffff", "#F2FCE2", "#FEF7CD", "#E5DEFF", "#FFDEE2"].map((color) => (
                 <button

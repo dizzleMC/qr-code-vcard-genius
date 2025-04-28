@@ -58,31 +58,67 @@ export const ExcelImporter = ({ onImportSuccess }) => {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = utils.sheet_to_json(worksheet);
       
-      // Map the Excel data to our expected format
-      const mappedData = jsonData.map(row => {
-        // Try to match common field names in Excel files
-        return {
-          firstName: row.firstName || row.Vorname || row['First Name'] || row.Name || '',
-          lastName: row.lastName || row.Nachname || row['Last Name'] || row.Familienname || '',
-          title: row.title || row.Titel || row.Position || row.JobTitle || '',
-          company: row.company || row.Firma || row.Unternehmen || row.Company || '',
-          email: row.email || row.Email || row['E-Mail'] || '',
-          phone: row.phone || row.Telefon || row.Phone || row.Tel || row.Mobil || '',
-          website: row.website || row.Website || row.Webseite || row.URL || '',
-          street: row.street || row.Straße || row.Strasse || row.Street || row.Adresse || '',
-          city: row.city || row.Stadt || row.City || row.Ort || '',
-          state: row.state || row.Bundesland || row.State || row.Region || row.Land || '',
-          zip: row.zip || row.PLZ || row['Postal Code'] || row.Postleitzahl || '',
-          country: row.country || row.Land || row.Country || row.Nation || ''
-        };
-      });
+      console.log("Imported Excel Data:", jsonData);
       
-      if (mappedData.length === 0) {
+      if (jsonData.length === 0) {
         toast.error("Die Datei enthält keine gültigen Daten.");
+        setIsProcessing(false);
         return;
       }
       
-      onImportSuccess(mappedData);
+      // Improved column mapping with more flexible field name detection
+      const mappedData = jsonData.map(row => {
+        // Create an array of all possible field names for each data type
+        const fieldMappings = {
+          firstName: ["Vorname", "First Name", "FirstName", "Vorname (First Name)", "Name", "Given Name"],
+          lastName: ["Nachname", "Last Name", "LastName", "Nachname (Last Name)", "Familienname", "Surname"],
+          title: ["Titel", "Title", "Position", "Titel (Title/Position)", "JobTitle", "Rolle", "Role"],
+          company: ["Firma", "Company", "Unternehmen", "Firma (Company)", "Organisation", "Organization"],
+          email: ["Email", "E-Mail", "EmailAddress", "Email (Email)", "Mail"],
+          phone: ["Telefon", "Phone", "Tel", "Telefonnummer", "Telefon (Phone)", "Mobile", "Mobil"],
+          website: ["Website", "Webseite", "URL", "Website (Website)", "Homepage", "Web"],
+          street: ["Straße", "Street", "Adresse", "Straße (Street)", "Strasse", "Address"],
+          city: ["Stadt", "City", "Ort", "Stadt (City)"],
+          state: ["Bundesland", "State", "Region", "Bundesland (State)", "Province"],
+          zip: ["PLZ", "Zip", "Postal Code", "PLZ (Zip)", "Postleitzahl", "ZIP Code"],
+          country: ["Land", "Country", "Nation", "Land (Country)"]
+        };
+        
+        // Function to find a value in the row using any of the possible field names
+        const findValue = (fieldNames) => {
+          // First try exact match
+          const exactMatch = fieldNames.find(name => row[name] !== undefined);
+          if (exactMatch) return row[exactMatch];
+          
+          // Try case-insensitive match if exact match fails
+          const rowKeys = Object.keys(row);
+          for (const fieldName of fieldNames) {
+            const matchKey = rowKeys.find(key => 
+              key.toLowerCase() === fieldName.toLowerCase()
+            );
+            if (matchKey) return row[matchKey];
+          }
+          
+          return ''; // Return empty string if no match found
+        };
+        
+        // Map each field using the findValue function
+        const mappedRow = {};
+        for (const [key, fieldNames] of Object.entries(fieldMappings)) {
+          mappedRow[key] = findValue(fieldNames);
+        }
+        
+        console.log("Mapped row:", mappedRow);
+        return mappedRow;
+      });
+      
+      if (mappedData.length > 0) {
+        console.log("Final mapped data:", mappedData);
+        onImportSuccess(mappedData);
+        toast.success(`${mappedData.length} Kontakte erfolgreich importiert!`);
+      } else {
+        toast.error("Die Datei enthält keine gültigen Daten.");
+      }
       
     } catch (error) {
       console.error("Error processing Excel file:", error);

@@ -21,7 +21,7 @@ export const generateExcelTemplate = () => {
     "Land (Country)"
   ];
   
-  // Sample data
+  // Sample data - expanded with more clear examples
   const sampleData = [
     {
       "Vorname (First Name)": "Max",

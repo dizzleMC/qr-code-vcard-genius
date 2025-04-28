@@ -50,6 +50,7 @@ const Premium = () => {
     setCurrentStep(2);
   };
   
+  // Improved QR code generation function that actually creates proper QR codes
   const handleBulkGenerate = async () => {
     if (importedData.length === 0) {
       toast.error("Keine Daten zum Generieren vorhanden.");
@@ -60,7 +61,29 @@ const Premium = () => {
     
     try {
       const JSZip = (await import("jszip")).default;
+      const { renderToString } = await import('react-dom/server');
+      const { QRCodeSVG } = await import('qrcode.react');
       const zip = new JSZip();
+      
+      // Helper function to generate vCard data - same as in QRCodeDisplay
+      const generateVCardData = (contact) => {
+        const vcard = [
+          "BEGIN:VCARD",
+          "VERSION:3.0",
+          `N:${contact.lastName};${contact.firstName};;;`,
+          `FN:${contact.firstName} ${contact.lastName}`,
+          contact.title && `TITLE:${contact.title}`,
+          contact.company && `ORG:${contact.company}`,
+          contact.email && `EMAIL:${contact.email}`,
+          contact.phone && `TEL:${contact.phone}`,
+          contact.website && `URL:${contact.website}`,
+          contact.street && contact.city && 
+            `ADR:;;${contact.street};${contact.city};${contact.state};${contact.zip};${contact.country}`,
+          "END:VCARD"
+        ].filter(Boolean).join("\n");
+        
+        return vcard;
+      };
       
       // Create a temporary canvas for QR code generation
       const tempCanvas = document.createElement("canvas");
@@ -70,26 +93,31 @@ const Premium = () => {
       for (let i = 0; i < importedData.length; i++) {
         const contact = importedData[i];
         
-        // Create a temporary container for QRCodeSVG
-        const tempContainer = document.createElement("div");
-        tempContainer.style.position = "absolute";
-        tempContainer.style.left = "-9999px";
-        tempContainer.id = `temp-qr-${i}`;
-        document.body.appendChild(tempContainer);
+        // Generate vCard data for this contact
+        const vCardData = generateVCardData(contact);
         
-        // Render QR code (we're not actually showing this, just using it to generate data)
-        const qrDisplay = document.createElement("div");
-        qrDisplay.id = "qr-code";
-        tempContainer.appendChild(qrDisplay);
+        // Generate QR code as SVG using qrcode.react
+        const qrCodeSvg = renderToString(
+          <QRCodeSVG
+            value={vCardData}
+            size={templateSettings.size}
+            level="H"
+            includeMargin={true}
+            fgColor={templateSettings.fgColor}
+            bgColor={templateSettings.bgColor}
+          />
+        );
         
-        // We'll need to manually generate the QR code SVG
-        // This is normally done by the QRCodeDisplay component
-        // For simplicity in this implementation, we'll use a simplified version
+        // Convert SVG to a canvas image
+        const img = new Image();
         
-        // Add the QR code to the ZIP file
-        const fileName = `${contact.firstName}-${contact.lastName}-qr.png`;
+        // We need to wait for the image to load
+        await new Promise((resolve) => {
+          img.onload = resolve;
+          img.src = 'data:image/svg+xml;base64,' + btoa(qrCodeSvg);
+        });
         
-        // For the demo, we'll simulate the QR code generation
+        // Set canvas dimensions and draw the QR code
         tempCanvas.width = templateSettings.size;
         tempCanvas.height = templateSettings.size;
         
@@ -97,16 +125,15 @@ const Premium = () => {
         ctx.fillStyle = templateSettings.bgColor;
         ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
         
-        // Simulate QR code (in reality, this would be the actual QR code)
-        ctx.fillStyle = templateSettings.fgColor;
-        ctx.fillRect(10, 10, tempCanvas.width - 20, tempCanvas.height - 20);
+        // Draw the QR code
+        ctx.drawImage(img, 0, 0);
         
         // Convert to blob and add to ZIP
         const blob = await new Promise(resolve => tempCanvas.toBlob(resolve));
-        zip.file(fileName, blob);
         
-        // Clean up
-        document.body.removeChild(tempContainer);
+        // Create a meaningful filename using contact information
+        const fileName = `${contact.firstName}-${contact.lastName}-qr.png`;
+        zip.file(fileName, blob);
         
         // Update progress
         toast.info(`Generiere ${i + 1} von ${importedData.length} QR-Codes...`, {
@@ -200,9 +227,6 @@ const Premium = () => {
             Erstellen Sie QR-Codes für mehrere Kontakte auf einmal
           </p>
         </div>
-        
-        {/* Add the new guide component */}
-        <GuideSection />
         
         <div style={{
           display: "flex",
@@ -303,13 +327,21 @@ const Premium = () => {
                     QR-Code Farbe
                   </Label>
                   <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <Input
-                      id="fgColor"
-                      type="color"
-                      value={templateSettings.fgColor}
-                      onChange={(e) => handleTemplateChange('fgColor', e.target.value)}
-                      style={{ width: "3rem", height: "3rem", padding: "0.25rem" }}
-                    />
+                    <div style={{ display: "flex", flexDirection: "column", width: "3rem" }}>
+                      <Input
+                        id="fgColor"
+                        type="color"
+                        value={templateSettings.fgColor}
+                        onChange={(e) => handleTemplateChange('fgColor', e.target.value)}
+                        style={{ width: "3rem", height: "3rem", padding: "0.25rem", marginBottom: "0.5rem" }}
+                      />
+                      <Input
+                        type="text"
+                        value={templateSettings.fgColor}
+                        onChange={(e) => handleTemplateChange('fgColor', e.target.value)}
+                        style={{ width: "3rem", fontSize: "0.75rem", padding: "0.25rem" }}
+                      />
+                    </div>
                     <div style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(5, 1fr)",
@@ -338,13 +370,21 @@ const Premium = () => {
                     Hintergrundfarbe
                   </Label>
                   <div style={{ display: "flex", gap: "0.75rem" }}>
-                    <Input
-                      id="bgColor"
-                      type="color"
-                      value={templateSettings.bgColor}
-                      onChange={(e) => handleTemplateChange('bgColor', e.target.value)}
-                      style={{ width: "3rem", height: "3rem", padding: "0.25rem" }}
-                    />
+                    <div style={{ display: "flex", flexDirection: "column", width: "3rem" }}>
+                      <Input
+                        id="bgColor"
+                        type="color"
+                        value={templateSettings.bgColor}
+                        onChange={(e) => handleTemplateChange('bgColor', e.target.value)}
+                        style={{ width: "3rem", height: "3rem", padding: "0.25rem", marginBottom: "0.5rem" }}
+                      />
+                      <Input
+                        type="text"
+                        value={templateSettings.bgColor}
+                        onChange={(e) => handleTemplateChange('bgColor', e.target.value)}
+                        style={{ width: "3rem", fontSize: "0.75rem", padding: "0.25rem" }}
+                      />
+                    </div>
                     <div style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(5, 1fr)",
@@ -513,6 +553,34 @@ const Premium = () => {
                     <span>QR-Code Größe:</span>
                     <span style={{ fontWeight: "600" }}>{templateSettings.size}px</span>
                   </li>
+                  <li style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                    <span>QR-Code Farbe:</span>
+                    <span style={{ fontWeight: "600", display: "flex", alignItems: "center" }}>
+                      <div style={{ 
+                        width: "1rem", 
+                        height: "1rem", 
+                        backgroundColor: templateSettings.fgColor, 
+                        display: "inline-block",
+                        marginRight: "0.5rem",
+                        border: "1px solid #e2e8f0"
+                      }}></div>
+                      {templateSettings.fgColor}
+                    </span>
+                  </li>
+                  <li style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                    <span>Hintergrundfarbe:</span>
+                    <span style={{ fontWeight: "600", display: "flex", alignItems: "center" }}>
+                      <div style={{ 
+                        width: "1rem", 
+                        height: "1rem", 
+                        backgroundColor: templateSettings.bgColor, 
+                        display: "inline-block",
+                        marginRight: "0.5rem",
+                        border: "1px solid #e2e8f0"
+                      }}></div>
+                      {templateSettings.bgColor}
+                    </span>
+                  </li>
                 </ul>
               </div>
               
@@ -550,6 +618,9 @@ const Premium = () => {
             </div>
           )}
         </div>
+        
+        {/* Guide Section - moved to the bottom as requested */}
+        <GuideSection />
       </div>
     </div>
   );
