@@ -1,9 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Loader } from "lucide-react";
 import { QRCodePreviewGrid } from "./QRCodePreviewGrid";
-
 export const GenerateStep = ({
   importedData,
   isGenerating,
@@ -13,8 +11,7 @@ export const GenerateStep = ({
   onGenerateSelected,
   onReset
 }) => {
-  return (
-    <div className="bg-white rounded-xl shadow-sm p-8">
+  return <div className="bg-white rounded-xl shadow-sm p-8 my-[32px]">
       <h2 className="text-xl font-semibold mb-6">
         Schritt 3: QR-Codes generieren
       </h2>
@@ -30,50 +27,30 @@ export const GenerateStep = ({
         </ul>
       </div>
       
-      {isGenerating && (
-        <div className="mb-6">
+      {isGenerating && <div className="mb-6">
           <Progress value={generationProgress} className="mb-2" />
           <p className="text-sm text-gray-600 flex items-center gap-2">
             <Loader className="animate-spin" size={16} />
             Generiere QR-Codes... {Math.round(generationProgress)}%
           </p>
-        </div>
-      )}
+        </div>}
       
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">QR-Code Vorschau</h3>
-        <QRCodePreviewGrid 
-          contacts={importedData}
-          templateSettings={templateSettings}
-          onGenerateSelected={onGenerateSelected}
-          isGenerating={isGenerating}
-        />
+        <QRCodePreviewGrid contacts={importedData} templateSettings={templateSettings} onGenerateSelected={onGenerateSelected} isGenerating={isGenerating} />
       </div>
       
       <div className="flex gap-4">
-        <Button
-          onClick={onReset}
-          variant="outline"
-          className="flex-1"
-        >
+        <Button onClick={onReset} variant="outline" className="flex-1">
           Zurücksetzen
         </Button>
         
-        <Button
-          onClick={onGenerate}
-          disabled={isGenerating || importedData.length === 0}
-          className="flex-2 bg-[#ff7e0c] text-white font-medium"
-        >
-          {isGenerating ? (
-            <span className="flex items-center gap-2">
+        <Button onClick={onGenerate} disabled={isGenerating || importedData.length === 0} className="flex-2 bg-[#ff7e0c] text-white font-medium">
+          {isGenerating ? <span className="flex items-center gap-2">
               <Loader className="animate-spin" size={16} />
               Generiere...
-            </span>
-          ) : (
-            "Alle QR-Codes generieren & herunterladen"
-          )}
+            </span> : "Alle QR-Codes generieren & herunterladen"}
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
