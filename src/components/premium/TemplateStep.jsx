@@ -60,7 +60,9 @@ export const TemplateStep = ({
                 logo: null,
                 logoScale: 100,
                 backgroundColor: "#ffffff",
-                borderColor: "#e2e8f0"
+                borderColor: "#e2e8f0",
+                qrFgColor: "#000000",
+                qrBgColor: "#ffffff"
               }}
               onSettingChange={handleNameTagSettingChange}
               qrCodeSettings={{

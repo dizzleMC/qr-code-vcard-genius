@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -60,14 +59,12 @@ export const NameTagCreator = ({
     
     if (!file) return;
     
-    // Check file type
     const validTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/gif'];
     if (!validTypes.includes(file.type)) {
       alert("Bitte laden Sie ein Bild im Format JPEG, PNG, SVG oder GIF hoch.");
       return;
     }
     
-    // Check file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       alert("Die Datei ist zu groß. Maximale Dateigröße beträgt 2MB.");
       return;
@@ -102,7 +99,6 @@ export const NameTagCreator = ({
     onSettingChange('logo', null);
   };
   
-  // Generate vCard data for QR code preview
   const generateVCardData = (data) => {
     const vcard = [
       "BEGIN:VCARD",
@@ -123,7 +119,6 @@ export const NameTagCreator = ({
 
   return (
     <div className="space-y-6">
-      {/* Enable/disable toggle */}
       <div className="flex items-center space-x-2">
         <Checkbox 
           id="enable-nametag" 
@@ -140,7 +135,6 @@ export const NameTagCreator = ({
 
       {nameTagSettings.enabled && (
         <>
-          {/* Template selection */}
           <div className="space-y-3">
             <Label htmlFor="template" className="text-[#1A1F2C]">Layout</Label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -164,7 +158,6 @@ export const NameTagCreator = ({
             </div>
           </div>
           
-          {/* Size selection */}
           <div className="space-y-3">
             <Label htmlFor="size" className="text-[#1A1F2C]">Größe</Label>
             <div className="grid grid-cols-3 gap-3">
@@ -187,11 +180,11 @@ export const NameTagCreator = ({
             </div>
           </div>
 
-          {/* QR Code sync button */}
           <div className="space-y-3">
             <Button 
               onClick={syncQRCodeStyles}
               className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white"
+              type="button"
             >
               <RefreshCw size={16} />
               QR-Code Styling übernehmen
@@ -201,7 +194,6 @@ export const NameTagCreator = ({
             </p>
           </div>
 
-          {/* Name tag preview */}
           <div className="bg-[#F9FAFB] p-6 rounded-lg">
             <h3 className="text-sm font-medium mb-4 text-gray-600">Vorschau</h3>
             <div className="flex justify-center">
@@ -219,9 +211,7 @@ export const NameTagCreator = ({
             </div>
           </div>
 
-          {/* Customization options */}
           <div className="space-y-4">
-            {/* Font selection */}
             <div>
               <Label htmlFor="font" className="text-[#1A1F2C]">Schriftart</Label>
               <Select
@@ -241,7 +231,6 @@ export const NameTagCreator = ({
               </Select>
             </div>
 
-            {/* Font size */}
             <div>
               <Label htmlFor="fontSize" className="text-[#1A1F2C]">Schriftgröße ({nameTagSettings.fontSize}px)</Label>
               <Input
@@ -255,7 +244,6 @@ export const NameTagCreator = ({
               />
             </div>
 
-            {/* Name color */}
             <div>
               <Label htmlFor="nameColor" className="text-[#1A1F2C]">Farbe Name</Label>
               <div className="flex gap-3 mt-1">
@@ -288,7 +276,6 @@ export const NameTagCreator = ({
               </div>
             </div>
 
-            {/* Company color */}
             <div>
               <Label htmlFor="companyColor" className="text-[#1A1F2C]">Farbe Titel & Firma</Label>
               <div className="flex gap-3 mt-1">
@@ -321,7 +308,6 @@ export const NameTagCreator = ({
               </div>
             </div>
 
-            {/* Logo upload */}
             <div>
               <Label htmlFor="logo" className="text-[#1A1F2C]">Logo hochladen</Label>
               <div 
@@ -376,7 +362,6 @@ export const NameTagCreator = ({
               )}
             </div>
 
-            {/* Background color */}
             <div>
               <Label htmlFor="backgroundColor" className="text-[#1A1F2C]">Hintergrundfarbe</Label>
               <div className="flex gap-3 mt-1">
@@ -409,7 +394,6 @@ export const NameTagCreator = ({
               </div>
             </div>
 
-            {/* Border color */}
             <div>
               <Label htmlFor="borderColor" className="text-[#1A1F2C]">Rahmenfarbe</Label>
               <div className="flex gap-3 mt-1">

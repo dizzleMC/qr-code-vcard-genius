@@ -37,6 +37,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
     padding: "1rem",
     boxSizing: "border-box",
     overflow: "hidden",
+    position: "relative", // Added position relative to all templates
   };
   
   // Template-specific styles and layout
@@ -47,7 +48,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
           container: {
             ...nameTagStyle,
             flexDirection: "row-reverse", // QR on left, text on right
-            background: `linear-gradient(to right, ${settings.backgroundColor} 70%, ${settings.borderColor}20 100%)`,
+            background: `linear-gradient(to right, ${settings.backgroundColor || "#ffffff"} 70%, ${settings.borderColor || "#e2e8f0"}20 100%)`,
           },
           contentWrapper: {
             flex: "1",
@@ -70,7 +71,8 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
           container: {
             ...nameTagStyle,
             flexDirection: "column",
-            background: `linear-gradient(to bottom, ${settings.backgroundColor} 85%, ${settings.borderColor}20 100%)`,
+            background: `linear-gradient(to bottom, ${settings.backgroundColor || "#ffffff"} 85%, ${settings.borderColor || "#e2e8f0"}20 100%)`,
+            position: "relative", // Ensure relative positioning for business layout
           },
           contentWrapper: {
             flex: "1",
@@ -84,6 +86,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
             position: "absolute",
             bottom: "10px",
             right: "10px",
+            zIndex: 2, // Ensure QR code is above other elements
           }
         };
       case "minimal":
@@ -93,7 +96,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
             flexDirection: "row",
             boxShadow: "0 4px 6px rgba(0, 0, 0, 0.05)",
             borderWidth: "1px",
-            background: `linear-gradient(to right, ${settings.backgroundColor} 90%, ${settings.borderColor}10 100%)`,
+            background: `linear-gradient(to right, ${settings.backgroundColor || "#ffffff"} 90%, ${settings.borderColor || "#e2e8f0"}10 100%)`,
           },
           contentWrapper: {
             flex: "1",
@@ -113,7 +116,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
           container: {
             ...nameTagStyle,
             flexDirection: "row",
-            background: `linear-gradient(to right, ${settings.backgroundColor} 85%, ${settings.borderColor}15 100%)`,
+            background: `linear-gradient(to right, ${settings.backgroundColor || "#ffffff"} 85%, ${settings.borderColor || "#e2e8f0"}15 100%)`,
           },
           contentWrapper: {
             flex: "1",
@@ -138,7 +141,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   const companyFontSize = Math.max(dimensions.fontSize - 4, 14);
   
   const nameStyle = {
-    color: settings.nameColor,
+    color: settings.nameColor || "#1A1F2C",
     fontSize: `${nameFontSize}px`,
     fontWeight: "600",
     margin: "0 0 0.25rem 0",
@@ -147,7 +150,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   };
   
   const titleStyle = {
-    color: settings.companyColor,
+    color: settings.companyColor || "#8E9196",
     fontSize: `${titleFontSize}px`,
     margin: "0.25rem 0",
     wordBreak: "break-word",
@@ -155,7 +158,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
   };
 
   const companyStyle = {
-    color: settings.companyColor,
+    color: settings.companyColor || "#8E9196",
     fontSize: `${companyFontSize}px`,
     margin: "0.25rem 0 0 0",
     wordBreak: "break-word",
@@ -195,7 +198,7 @@ export const NameTagPreview = ({ name, company, title, settings, qrValue }) => {
       {qrValue && (
         <div style={templateStyles.qrWrapper}>
           <div style={{
-            backgroundColor: "#ffffff",
+            backgroundColor: settings.qrBgColor || "#ffffff",
             padding: "0.5rem",
             borderRadius: "4px"
           }}>
