@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import { PremiumLayout } from "@/components/premium/PremiumLayout";
@@ -178,7 +177,7 @@ const Premium = () => {
     const titleMetrics = title ? measureText(ctx, title, titleFont) : { width: 0, height: 0 };
     const companyMetrics = company ? measureText(ctx, company, companyFont) : { width: 0, height: 0 };
     
-    // Get template-specific layout positions with improved positioning
+    // UPDATED: Get template-specific layout positions with improved positioning
     const getTemplatePosition = () => {
       // Calculate the maximum text width to avoid overlaps
       const maxTextWidth = Math.max(nameMetrics.width, titleMetrics.width, companyMetrics.width);
@@ -189,7 +188,7 @@ const Premium = () => {
       switch(template) {
         case "modern":
           return {
-            logoX: width * 0.75,
+            logoX: width * 0.25,
             logoY: 25,
             nameX: width * 0.25,
             nameY: height / 2 - 10,
@@ -264,37 +263,7 @@ const Premium = () => {
       qrSize + 10
     );
     
-    // Generate QR code on separate canvas
-    try {
-      const { toCanvas } = await import('qrcode');
-      
-      const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
-      
-      const qrCanvas = document.createElement("canvas");
-      
-      await toCanvas(qrCanvas, vcard, {
-        width: qrSize,
-        margin: 1,
-        color: {
-          dark: nameTagSettings.qrFgColor || "#000000",
-          light: nameTagSettings.qrBgColor || "#ffffff"
-        },
-        errorCorrectionLevel: 'M'
-      });
-      
-      // Draw QR code
-      ctx.drawImage(
-        qrCanvas, 
-        templatePosition.qrX - (qrSize / 2), 
-        templatePosition.qrY - (qrSize / 2), 
-        qrSize, 
-        qrSize
-      );
-    } catch (error) {
-      console.error("Error generating QR code for name tag:", error);
-    }
-    
-    // Draw logo if available
+    // FIXED: Draw logo first, before QR code
     if (nameTagSettings.logo) {
       const img = new Image();
       await new Promise((resolve, reject) => {
@@ -329,23 +298,77 @@ const Premium = () => {
       }
     }
     
+    // Generate QR code on separate canvas
+    try {
+      const { toCanvas } = await import('qrcode');
+      
+      const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
+      
+      const qrCanvas = document.createElement("canvas");
+      
+      await toCanvas(qrCanvas, vcard, {
+        width: qrSize,
+        margin: 1,
+        color: {
+          dark: nameTagSettings.qrFgColor || "#000000",
+          light: nameTagSettings.qrBgColor || "#ffffff"
+        },
+        errorCorrectionLevel: 'M'
+      });
+      
+      // Draw QR code
+      ctx.drawImage(
+        qrCanvas, 
+        templatePosition.qrX - (qrSize / 2), 
+        templatePosition.qrY - (qrSize / 2), 
+        qrSize, 
+        qrSize
+      );
+    } catch (error) {
+      console.error("Error generating QR code for name tag:", error);
+    }
+    
+    // UPDATED: Implement text truncation to prevent overflow
+    const truncateText = (text, maxWidth) => {
+      if (!text) return '';
+      
+      let truncated = text;
+      while (ctx.measureText(truncated).width > maxWidth && truncated.length > 0) {
+        truncated = truncated.slice(0, -1);
+      }
+      
+      if (truncated !== text && truncated.length > 3) {
+        truncated = truncated.slice(0, -3) + '...';
+      }
+      
+      return truncated;
+    };
+    
     // Draw name, title, and company text after QR code and logo
     ctx.font = nameFont;
     ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
-    ctx.fillText(fullName, templatePosition.nameX, templatePosition.nameY);
     
-    // Draw title if available
+    // Draw name with truncation if needed
+    const maxNameWidth = template === "business" ? width * 0.8 : width * 0.5;
+    const truncatedName = truncateText(fullName, maxNameWidth);
+    ctx.fillText(truncatedName, templatePosition.nameX, templatePosition.nameY);
+    
+    // Draw title if available with truncation
     if (title) {
       ctx.font = titleFont;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-      ctx.fillText(title, templatePosition.titleX, templatePosition.titleY);
+      const maxTitleWidth = template === "business" ? width * 0.8 : width * 0.5;
+      const truncatedTitle = truncateText(title, maxTitleWidth);
+      ctx.fillText(truncatedTitle, templatePosition.titleX, templatePosition.titleY);
     }
     
-    // Draw company if available  
+    // Draw company if available with truncation
     if (company) {
       ctx.font = companyFont;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-      ctx.fillText(company, templatePosition.companyX, templatePosition.companyY);
+      const maxCompanyWidth = template === "business" ? width * 0.8 : width * 0.5;
+      const truncatedCompany = truncateText(company, maxCompanyWidth);
+      ctx.fillText(truncatedCompany, templatePosition.companyX, templatePosition.companyY);
     }
     
     return new Promise((resolve, reject) => {

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -113,6 +114,7 @@ export const QRCodePreviewGrid = ({
         canvas.width = width;
         canvas.height = height;
         
+        // Fill background
         ctx.fillStyle = templateSettings.nameTag.backgroundColor || "#ffffff";
         ctx.fillRect(0, 0, width, height);
         
@@ -120,6 +122,7 @@ export const QRCodePreviewGrid = ({
         const template = nameTagSettings.template || "classic";
         const borderColor = nameTagSettings.borderColor || "#e2e8f0";
         
+        // Add gradient based on template
         let gradient;
         if (template === "modern" || template === "classic" || template === "minimal") {
           gradient = ctx.createLinearGradient(0, 0, width, 0);
@@ -136,6 +139,7 @@ export const QRCodePreviewGrid = ({
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, width, height);
         
+        // Add border
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = 2;
         ctx.strokeRect(1, 1, width - 2, height - 2);
@@ -158,10 +162,13 @@ export const QRCodePreviewGrid = ({
         const titleMetrics = title ? measureText(ctx, title, titleFont) : { width: 0, height: 0 };
         const companyMetrics = company ? measureText(ctx, company, companyFont) : { width: 0, height: 0 };
         
+        // FIXED: Get template-specific positions
         const getTemplatePosition = () => {
+          // Calculate the maximum text width to avoid overlaps
           const maxTextWidth = Math.max(nameMetrics.width, titleMetrics.width, companyMetrics.width);
           const textContentHeight = nameMetrics.height + titleMetrics.height + companyMetrics.height + 10;
           
+          // IMPORTANT: Define QR Size here to fix "qrSize is not defined" error
           const qrSize = height * 0.7;
           
           switch(template) {
@@ -232,6 +239,8 @@ export const QRCodePreviewGrid = ({
         const templatePosition = getTemplatePosition();
         ctx.textAlign = templatePosition.textAlign;
         
+        // Create white background for QR code first (IMPORTANT: This needs to be done before drawing the QR code)
+        const qrSize = templatePosition.qrSize; // Use the size from template position
         ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
         ctx.fillRect(
           templatePosition.qrX - (qrSize / 2) - 5, 
@@ -240,34 +249,7 @@ export const QRCodePreviewGrid = ({
           qrSize + 10
         );
         
-        try {
-          const vcard = generateVCardData(contact);
-          const { toCanvas } = await import('qrcode');
-          
-          const qrCanvas = document.createElement("canvas");
-          
-          await toCanvas(qrCanvas, vcard, {
-            width: qrSize,
-            margin: 1,
-            color: {
-              dark: nameTagSettings.qrFgColor || "#000000",
-              light: nameTagSettings.qrBgColor || "#ffffff"
-            },
-            errorCorrectionLevel: 'M'
-          });
-          
-          ctx.drawImage(
-            qrCanvas, 
-            templatePosition.qrX - (qrSize / 2), 
-            templatePosition.qrY - (qrSize / 2), 
-            qrSize, 
-            qrSize
-          );
-          
-        } catch (qrError) {
-          console.error("Error generating QR code for name tag:", qrError);
-        }
-        
+        // FIXED: Proper drawing order - Draw LOGO first if needed
         if (nameTagSettings.logo) {
           const img = new Image();
           await new Promise((resolve, reject) => {
@@ -302,20 +284,74 @@ export const QRCodePreviewGrid = ({
           }
         }
         
+        // Draw QR code
+        try {
+          const vcard = generateVCardData(contact);
+          const { toCanvas } = await import('qrcode');
+          
+          const qrCanvas = document.createElement("canvas");
+          
+          await toCanvas(qrCanvas, vcard, {
+            width: qrSize,
+            margin: 1,
+            color: {
+              dark: nameTagSettings.qrFgColor || "#000000",
+              light: nameTagSettings.qrBgColor || "#ffffff"
+            },
+            errorCorrectionLevel: 'M'
+          });
+          
+          ctx.drawImage(
+            qrCanvas, 
+            templatePosition.qrX - (qrSize / 2), 
+            templatePosition.qrY - (qrSize / 2), 
+            qrSize, 
+            qrSize
+          );
+          
+        } catch (qrError) {
+          console.error("Error generating QR code for name tag:", qrError);
+        }
+        
+        // Draw text AFTER QR code to ensure it appears on top if needed
         ctx.font = nameFont;
         ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
-        ctx.fillText(fullName, templatePosition.nameX, templatePosition.nameY);
+        
+        // Implement text truncation to prevent overflow
+        const truncateText = (text, maxWidth) => {
+          if (!text) return '';
+          
+          let truncated = text;
+          while (ctx.measureText(truncated).width > maxWidth && truncated.length > 0) {
+            truncated = truncated.slice(0, -1);
+          }
+          
+          if (truncated !== text && truncated.length > 3) {
+            truncated = truncated.slice(0, -3) + '...';
+          }
+          
+          return truncated;
+        };
+        
+        // Draw name with truncation if needed
+        const maxNameWidth = template === "business" ? width * 0.8 : width * 0.5;
+        const truncatedName = truncateText(fullName, maxNameWidth);
+        ctx.fillText(truncatedName, templatePosition.nameX, templatePosition.nameY);
         
         if (title) {
           ctx.font = titleFont;
           ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-          ctx.fillText(title, templatePosition.titleX, templatePosition.titleY);
+          const maxTitleWidth = template === "business" ? width * 0.8 : width * 0.5;
+          const truncatedTitle = truncateText(title, maxTitleWidth);
+          ctx.fillText(truncatedTitle, templatePosition.titleX, templatePosition.titleY);
         }
         
         if (company) {
           ctx.font = companyFont;
           ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
-          ctx.fillText(company, templatePosition.companyX, templatePosition.companyY);
+          const maxCompanyWidth = template === "business" ? width * 0.8 : width * 0.5;
+          const truncatedCompany = truncateText(company, maxCompanyWidth);
+          ctx.fillText(truncatedCompany, templatePosition.companyX, templatePosition.companyY);
         }
         
         const pngFile = canvas.toDataURL("image/png");
