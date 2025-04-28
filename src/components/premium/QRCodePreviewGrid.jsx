@@ -3,7 +3,7 @@ import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Loader } from "lucide-react";
+import { Loader, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { NameTagPreview } from "./NameTagPreview";
@@ -91,22 +91,32 @@ export const QRCodePreviewGrid = ({
         return;
       }
       
+      // Get dimensions based on size setting
+      const getDimensions = () => {
+        switch(templateSettings.nameTag.size) {
+          case "small": return { width: 350, height: 175 };
+          case "large": return { width: 450, height: 225 };
+          case "medium":
+          default: return { width: 400, height: 200 };
+        }
+      };
+      
+      const dimensions = getDimensions();
+      
       // Set canvas dimensions
-      const width = 400;
-      const height = 200;
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
       
       const nameTagSettings = templateSettings.nameTag;
       
       // Fill background
       ctx.fillStyle = nameTagSettings.backgroundColor;
-      ctx.fillRect(0, 0, width, height);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Add border
       ctx.strokeStyle = nameTagSettings.borderColor;
       ctx.lineWidth = 2;
-      ctx.strokeRect(1, 1, width - 2, height - 2);
+      ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
       
       // Get font family
       let fontFamily = nameTagSettings.font || 'Arial';
@@ -114,28 +124,35 @@ export const QRCodePreviewGrid = ({
       const company = (contact.company || '').trim();
       const title = (contact.title || '').trim();
       
-      // Variables for positioning
-      let yPos = height / 2;
+      // Variables for positioning based on template
+      let contentX = 20;
+      let contentY = canvas.height / 2;
       
       // Draw name
       ctx.font = `bold ${nameTagSettings.fontSize}px ${fontFamily}`;
       ctx.fillStyle = nameTagSettings.nameColor;
-      ctx.textAlign = "center";
-      ctx.fillText(fullName, width / 2, yPos - (title || company ? 20 : 0));
+      ctx.textAlign = "left";
+      
+      if (nameTagSettings.template === "modern" || nameTagSettings.template === "minimal") {
+        ctx.textAlign = "center";
+        contentX = canvas.width / 2;
+      }
+      
+      ctx.fillText(fullName, contentX, contentY - (title || company ? 20 : 0));
       
       // Draw title if available
       if (title) {
         ctx.font = `${nameTagSettings.fontSize - 4}px ${fontFamily}`;
         ctx.fillStyle = nameTagSettings.companyColor;
-        ctx.fillText(title, width / 2, yPos + 10);
-        yPos += 30;
+        ctx.fillText(title, contentX, contentY + 10);
+        contentY += 30;
       }
       
       // Draw company
       if (company) {
         ctx.font = `${nameTagSettings.fontSize - 2}px ${fontFamily}`;
         ctx.fillStyle = nameTagSettings.companyColor;
-        ctx.fillText(company, width / 2, title ? yPos + 10 : yPos + 20);
+        ctx.fillText(company, contentX, contentY + 10);
       }
       
       // Download the name tag
@@ -168,7 +185,7 @@ export const QRCodePreviewGrid = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {currentContacts.map((contact, index) => {
         const actualIndex = indexOfFirstContact + index;
-        return <div key={actualIndex} className={`bg-white rounded-lg transition-all duration-200 hover:shadow-md ${selectedContacts.includes(actualIndex) ? 'ring-2 ring-[#ff7e0c] ring-opacity-50' : 'border border-gray-100'}`}>
+        return <div key={actualIndex} className={`bg-white rounded-lg shadow-sm transition-all duration-200 hover:shadow-md ${selectedContacts.includes(actualIndex) ? 'ring-2 ring-[#ff7e0c] ring-opacity-50' : 'border border-gray-100'}`}>
               <div className="p-4 space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -184,37 +201,59 @@ export const QRCodePreviewGrid = ({
                   </div>
                 </div>
                 
-                {/* QR Code Preview */}
-                <div className="flex justify-center">
-                  <div id={`qr-code-${contact.firstName}-${contact.lastName}`} className="p-4 bg-[#F9FAFB] rounded-lg transition-all duration-200 hover:shadow-sm">
-                    <QRCodeSVG value={generateVCardData(contact)} size={120} level="H" includeMargin={true} fgColor={templateSettings.fgColor} bgColor={templateSettings.bgColor} />
-                  </div>
-                </div>
-
-                {/* Name Tag Preview (if enabled) */}
-                {templateSettings.nameTag?.enabled && (
-                  <div className="flex justify-center">
-                    <div className="w-[200px]">
-                      <NameTagPreview
-                        name={`${contact.firstName} ${contact.lastName}`}
-                        company={contact.company}
-                        title={contact.title}
-                        settings={templateSettings.nameTag}
+                <div className="grid grid-cols-1 gap-4">
+                  {/* QR Code Preview */}
+                  <div className="bg-[#F9FAFB] rounded-lg p-4 flex justify-center">
+                    <div id={`qr-code-${contact.firstName}-${contact.lastName}`} className="p-2 bg-white rounded-lg shadow-sm">
+                      <QRCodeSVG 
+                        value={generateVCardData(contact)} 
+                        size={120} 
+                        level="H" 
+                        includeMargin={true} 
+                        fgColor={templateSettings.fgColor} 
+                        bgColor={templateSettings.bgColor} 
                       />
                     </div>
                   </div>
-                )}
+
+                  {/* Name Tag Preview (if enabled) */}
+                  {templateSettings.nameTag?.enabled && (
+                    <div className="flex justify-center overflow-hidden rounded-lg">
+                      <div className="transform scale-75 origin-center">
+                        <NameTagPreview
+                          name={`${contact.firstName} ${contact.lastName}`}
+                          company={contact.company}
+                          title={contact.title}
+                          settings={templateSettings.nameTag}
+                          qrValue={generateVCardData(contact)}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Download buttons */}
-                <Button variant="secondary" onClick={() => handleDownloadSingle(contact, 'qrcode')} className="w-full text-sm text-[#1A1F2C] transition-colors rounded-sm bg-orange-50 mb-2">
-                  QR-Code herunterladen
-                </Button>
-                
-                {templateSettings.nameTag?.enabled && (
-                  <Button variant="secondary" onClick={() => handleDownloadSingle(contact, 'nametag')} className="w-full text-sm text-[#1A1F2C] transition-colors rounded-sm bg-orange-50">
-                    Namensschild herunterladen
+                <div className="flex flex-col gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleDownloadSingle(contact, 'qrcode')} 
+                    className="w-full flex items-center justify-center gap-2 text-[#1A1F2C] hover:bg-[#ff7e0c] hover:text-white hover:border-[#ff7e0c]"
+                  >
+                    <Download size={16} />
+                    QR-Code herunterladen
                   </Button>
-                )}
+                  
+                  {templateSettings.nameTag?.enabled && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleDownloadSingle(contact, 'nametag')} 
+                      className="w-full flex items-center justify-center gap-2 text-[#1A1F2C] hover:bg-[#ff7e0c] hover:text-white hover:border-[#ff7e0c]"
+                    >
+                      <Download size={16} />
+                      Namensschild herunterladen
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>;
       })}

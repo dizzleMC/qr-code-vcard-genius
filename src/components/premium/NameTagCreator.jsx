@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NameTagPreview } from "./NameTagPreview";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Layout, Check } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const NameTagCreator = ({
   data,
@@ -25,6 +26,19 @@ export const NameTagCreator = ({
     { value: "Helvetica", label: "Helvetica" },
     { value: "Times New Roman", label: "Times New Roman" },
     { value: "Georgia", label: "Georgia" },
+  ];
+  
+  const templateOptions = [
+    { value: "classic", label: "Klassisch" },
+    { value: "modern", label: "Modern" },
+    { value: "business", label: "Business" },
+    { value: "minimal", label: "Minimalistisch" },
+  ];
+  
+  const sizeOptions = [
+    { value: "small", label: "Klein (350 × 175px)" },
+    { value: "medium", label: "Mittel (400 × 200px)" },
+    { value: "large", label: "Groß (450 × 225px)" },
   ];
 
   const handleLogoUpload = (e) => {
@@ -74,6 +88,25 @@ export const NameTagCreator = ({
   const removeLogo = () => {
     onSettingChange('logo', null);
   };
+  
+  // Generate vCard data for QR code preview
+  const generateVCardData = (data) => {
+    const vcard = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      `N:${data.lastName || ''};${data.firstName || ''};;;`,
+      `FN:${data.firstName || ''} ${data.lastName || ''}`,
+      data.title && `TITLE:${data.title}`,
+      data.company && `ORG:${data.company}`,
+      data.email && `EMAIL:${data.email}`,
+      data.phone && `TEL:${data.phone}`,
+      data.website && `URL:${data.website}`,
+      (data.street || data.city) && `ADR:;;${data.street || ''};${data.city || ''};${data.state || ''};${data.zip || ''};${data.country || ''}`,
+      "END:VCARD"
+    ].filter(Boolean).join("\n");
+    
+    return vcard;
+  };
 
   return (
     <div className="space-y-6">
@@ -94,15 +127,63 @@ export const NameTagCreator = ({
 
       {nameTagSettings.enabled && (
         <>
+          {/* Template selection */}
+          <div className="space-y-3">
+            <Label htmlFor="template" className="text-[#1A1F2C]">Layout</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {templateOptions.map((template) => (
+                <Card 
+                  key={template.value}
+                  className={`cursor-pointer transition-all border-2 ${nameTagSettings.template === template.value ? 'border-[#ff7e0c] bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
+                  onClick={() => onSettingChange('template', template.value)}
+                >
+                  <CardContent className="p-3 flex flex-col items-center">
+                    <Layout size={20} className="mb-1" />
+                    <span className="text-sm">{template.label}</span>
+                    {nameTagSettings.template === template.value && (
+                      <div className="absolute top-2 right-2 bg-[#ff7e0c] rounded-full p-0.5">
+                        <Check size={12} className="text-white" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+          
+          {/* Size selection */}
+          <div className="space-y-3">
+            <Label htmlFor="size" className="text-[#1A1F2C]">Größe</Label>
+            <div className="grid grid-cols-3 gap-3">
+              {sizeOptions.map((size) => (
+                <Card 
+                  key={size.value}
+                  className={`cursor-pointer transition-all border-2 ${nameTagSettings.size === size.value ? 'border-[#ff7e0c] bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}
+                  onClick={() => onSettingChange('size', size.value)}
+                >
+                  <CardContent className="p-3 flex items-center justify-center">
+                    <span className="text-sm">{size.label}</span>
+                    {nameTagSettings.size === size.value && (
+                      <div className="absolute top-2 right-2 bg-[#ff7e0c] rounded-full p-0.5">
+                        <Check size={12} className="text-white" />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
           {/* Name tag preview */}
           <div className="bg-[#F9FAFB] p-6 rounded-lg">
             <h3 className="text-sm font-medium mb-4 text-gray-600">Vorschau</h3>
-            <div className="max-w-xs mx-auto">
+            <div className="flex justify-center">
               <NameTagPreview
                 name={`${data.firstName || ''} ${data.lastName || ''}`}
                 company={data.company}
                 title={data.title}
                 settings={nameTagSettings}
+                qrValue={generateVCardData(data)}
               />
             </div>
           </div>
@@ -119,7 +200,7 @@ export const NameTagCreator = ({
                 <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Schriftart wählen" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100]">
                   {fontOptions.map((font) => (
                     <SelectItem key={font.value} value={font.value} style={{ fontFamily: font.value }}>
                       {font.label}

@@ -51,6 +51,8 @@ export const TemplateStep = ({
               data={selectedContact || templateData}
               nameTagSettings={templateSettings.nameTag || {
                 enabled: false,
+                template: "classic",
+                size: "medium",
                 font: "Inter",
                 fontSize: 22,
                 nameColor: "#1A1F2C",

@@ -13,6 +13,8 @@ const Premium = () => {
     bgColor: "#ffffff",
     nameTag: {
       enabled: false,
+      template: "classic", // new: classic, modern, business, minimal
+      size: "medium", // new: small, medium, large
       font: "Inter",
       fontSize: 22,
       nameColor: "#1A1F2C",
@@ -84,9 +86,21 @@ const Premium = () => {
       throw new Error("Canvas context could not be created");
     }
     
+    // Get dimensions based on size setting
+    const getDimensions = () => {
+      switch(nameTagSettings.size) {
+        case "small": return { width: 350, height: 175 };
+        case "large": return { width: 450, height: 225 };
+        case "medium":
+        default: return { width: 400, height: 200 };
+      }
+    };
+    
+    const dimensions = getDimensions();
+    
     // Set canvas dimensions
-    const width = 400;
-    const height = 200;
+    const width = dimensions.width;
+    const height = dimensions.height;
     canvas.width = width;
     canvas.height = height;
     
@@ -120,8 +134,62 @@ const Premium = () => {
     const company = (contact.company || '').trim();
     const title = (contact.title || '').trim();
     
-    // Variables for positioning
-    let yPos = height / 2;
+    // Get the position and layout based on template
+    const getTemplatePosition = () => {
+      switch(nameTagSettings.template) {
+        case "modern":
+          return {
+            logoX: width * 0.75,
+            logoY: 25,
+            nameX: width * 0.25,
+            nameY: height / 2 - 10,
+            titleX: width * 0.25,
+            titleY: height / 2 + 15,
+            companyX: width * 0.25,
+            companyY: height / 2 + 40,
+            textAlign: "right"
+          };
+        case "business":
+          return {
+            logoX: width / 2,
+            logoY: 40,
+            nameX: width / 2,
+            nameY: height / 2 + 10,
+            titleX: width / 2,
+            titleY: height / 2 + 35,
+            companyX: width / 2,
+            companyY: height / 2 + 60,
+            textAlign: "center"
+          };
+        case "minimal":
+          return {
+            logoX: width * 0.25,
+            logoY: 25,
+            nameX: width / 2,
+            nameY: height / 2 - 10,
+            titleX: width / 2,
+            titleY: height / 2 + 15,
+            companyX: width / 2,
+            companyY: height / 2 + 40,
+            textAlign: "center"
+          };
+        case "classic":
+        default:
+          return {
+            logoX: width * 0.25,
+            logoY: 25,
+            nameX: width * 0.25,
+            nameY: height / 2 - 10,
+            titleX: width * 0.25,
+            titleY: height / 2 + 15,
+            companyX: width * 0.25,
+            companyY: height / 2 + 40,
+            textAlign: "left"
+          };
+      }
+    };
+    
+    const templatePosition = getTemplatePosition();
     
     // If there's a logo
     if (nameTagSettings.logo) {
@@ -140,46 +208,100 @@ const Premium = () => {
         const scale = nameTagSettings.logoScale / 100;
         const logoWidth = img.width * scale;
         const logoHeight = img.height * scale;
-        const maxLogoHeight = height * 0.4;
+        const maxLogoHeight = height * 0.3;
         
         // Scale down if needed
         const ratio = Math.min(maxLogoHeight / logoHeight, 1);
         const finalLogoWidth = logoWidth * ratio;
         const finalLogoHeight = logoHeight * ratio;
         
-        // Draw logo centered at the top
+        // Draw logo based on template
         ctx.drawImage(
           img, 
-          (width - finalLogoWidth) / 2,
-          20,
+          templatePosition.logoX - (finalLogoWidth / 2),
+          templatePosition.logoY,
           finalLogoWidth,
           finalLogoHeight
         );
-        
-        // Adjust text starting Y position
-        yPos = 20 + finalLogoHeight + 40;
       }
     }
+    
+    // Set text alignment based on template
+    ctx.textAlign = templatePosition.textAlign;
     
     // Draw name
     ctx.font = `bold ${nameTagSettings.fontSize}px ${fontFamily}`;
     ctx.fillStyle = nameTagSettings.nameColor;
-    ctx.textAlign = "center";
-    ctx.fillText(fullName, width / 2, yPos - (title || company ? 20 : 0));
+    ctx.fillText(fullName, templatePosition.nameX, templatePosition.nameY);
     
     // Draw title if available
     if (title) {
       ctx.font = `${nameTagSettings.fontSize - 4}px ${fontFamily}`;
       ctx.fillStyle = nameTagSettings.companyColor;
-      ctx.fillText(title, width / 2, yPos + 10);
-      yPos += 30;
+      ctx.fillText(title, templatePosition.titleX, templatePosition.titleY);
     }
     
     // Draw company
     if (company) {
       ctx.font = `${nameTagSettings.fontSize - 2}px ${fontFamily}`;
       ctx.fillStyle = nameTagSettings.companyColor;
-      ctx.fillText(company, width / 2, title ? yPos + 10 : yPos + 20);
+      ctx.fillText(company, templatePosition.companyX, templatePosition.companyY);
+    }
+    
+    // Generate QR code and add it to the name tag if needed
+    if (nameTagSettings.template !== "business") {
+      // Create a temp canvas to generate QR code
+      try {
+        const {
+          toCanvas
+        } = await import('qrcode');
+        
+        // Create a vCard for the QR code
+        const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
+        
+        // Create temporary canvas for QR code
+        const qrCanvas = document.createElement("canvas");
+        const qrSize = height * 0.7;
+        
+        // Generate QR code
+        await toCanvas(qrCanvas, vcard, {
+          width: qrSize,
+          margin: 1,
+          color: {
+            dark: "#000000",
+            light: "#ffffff"
+          },
+          errorCorrectionLevel: 'M'
+        });
+        
+        // Position the QR code based on template
+        let qrX, qrY;
+        
+        switch(nameTagSettings.template) {
+          case "modern":
+            qrX = width * 0.8;
+            qrY = height / 2;
+            break;
+          case "minimal":
+            qrX = width * 0.8;
+            qrY = height / 2;
+            break;
+          case "classic":
+          default:
+            qrX = width * 0.75;
+            qrY = height / 2;
+        }
+        
+        // Add a white background for QR code
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(qrX - (qrSize / 2) - 5, qrY - (qrSize / 2) - 5, qrSize + 10, qrSize + 10);
+        
+        // Draw QR code on the name tag
+        ctx.drawImage(qrCanvas, qrX - (qrSize / 2), qrY - (qrSize / 2), qrSize, qrSize);
+      } catch (error) {
+        console.error("Error generating QR code for name tag:", error);
+        // Continue without QR code if generation fails
+      }
     }
     
     // Convert to blob
