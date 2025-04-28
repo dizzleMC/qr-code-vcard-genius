@@ -54,6 +54,10 @@ const Premium = () => {
     });
   };
   
+  const handleApplyQRConfig = () => {
+    toast.success("QR-Code Konfiguration übernommen!");
+  };
+  
   const handleImportSuccess = data => {
     setImportedData(data);
     setCurrentStep(2);
@@ -93,6 +97,9 @@ const Premium = () => {
     };
     
     const dimensions = getDimensions();
+    const { width, height } = dimensions;
+    canvas.width = width;
+    canvas.height = height;
     
     const fillBackgroundWithGradient = () => {
       const bgcolor = nameTagSettings.backgroundColor || "#ffffff";
@@ -256,7 +263,7 @@ const Premium = () => {
       const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
       
       const qrCanvas = document.createElement("canvas");
-      const qrSize = height * 0.7;
+      const qrSize = height * 0.7; // Make sure QR code is large enough to be visible
       
       await toCanvas(qrCanvas, vcard, {
         width: qrSize,
@@ -270,24 +277,35 @@ const Premium = () => {
       
       let qrX, qrY;
       
-      switch(nameTagSettings.template) {
-        case "modern":
-          qrX = width * 0.8;
-          qrY = height / 2;
-          break;
-        case "business":
-          qrX = width - qrSize/2 - 15;
-          qrY = height - qrSize/2 - 15;
-          break;
-        case "minimal":
-          qrX = width * 0.8;
-          qrY = height / 2;
-          break;
-        case "classic":
-        default:
-          qrX = width * 0.75;
-          qrY = height / 2;
-      }
+      const getQrPosition = () => {
+        switch(nameTagSettings.template) {
+          case "modern":
+            return {
+              qrX: width * 0.8,
+              qrY: height / 2
+            };
+          case "business":
+            return {
+              qrX: width - qrSize / 2 - 15,
+              qrY: height - qrSize / 2 - 15
+            };
+          case "minimal":
+            return {
+              qrX: width * 0.8,
+              qrY: height / 2
+            };
+          case "classic":
+          default:
+            return {
+              qrX: width * 0.75,
+              qrY: height / 2
+            };
+        }
+      };
+      
+      const qrPosition = getQrPosition();
+      qrX = qrPosition.qrX;
+      qrY = qrPosition.qrY;
       
       ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
       ctx.fillRect(qrX - (qrSize / 2) - 5, qrY - (qrSize / 2) - 5, qrSize + 10, qrSize + 10);
@@ -333,6 +351,7 @@ const Premium = () => {
 
         const batchPromises = batch.map(async contact => {
           try {
+            // Generate QR code
             const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
 
             const canvas = document.createElement("canvas");
@@ -351,7 +370,8 @@ const Premium = () => {
 
             const qrBlob = await new Promise((resolve, reject) => {
               canvas.toBlob(blob => {
-                if (blob) resolve(blob);else reject(new Error("Failed to create blob"));
+                if (blob) resolve(blob);
+                else reject(new Error("Failed to create blob"));
               }, "image/png");
             });
             
@@ -367,13 +387,145 @@ const Premium = () => {
             const progress = completedCount / totalItems * 100;
             setGenerationProgress(progress);
             
+            // Generate name tag if enabled
             if (templateSettings.nameTag.enabled) {
               try {
                 console.log(`Generating name tag for ${contact.firstName} ${contact.lastName}`);
-                const nameTagBlob = await generateNameTag(contact, templateSettings.nameTag);
+                
+                // Create a new canvas for the name tag
+                const nameTagCanvas = document.createElement("canvas");
+                const ctx = nameTagCanvas.getContext("2d");
+                
+                if (!ctx) {
+                  throw new Error("Canvas context could not be created");
+                }
+                
+                const getDimensions = () => {
+                  switch(templateSettings.nameTag.size) {
+                    case "small": return { width: 350, height: 175, fontSize: 18 };
+                    case "large": return { width: 450, height: 225, fontSize: 26 };
+                    case "medium":
+                    default: return { width: 400, height: 200, fontSize: 22 };
+                  }
+                };
+                
+                const { width, height } = getDimensions();
+                nameTagCanvas.width = width;
+                nameTagCanvas.height = height;
+                
+                // Fill background
+                ctx.fillStyle = templateSettings.nameTag.backgroundColor || "#ffffff";
+                ctx.fillRect(0, 0, width, height);
+                
+                // Add border
+                ctx.strokeStyle = templateSettings.nameTag.borderColor || "#e2e8f0";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(1, 1, width - 2, height - 2);
+                
+                // Draw name, title, company
+                const fontFamily = templateSettings.nameTag.font || "Arial";
+                const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
+                const company = (contact.company || '').trim();
+                const title = (contact.title || '').trim();
+                
+                // Position based on template
+                const template = templateSettings.nameTag.template || "classic";
+                let nameX, nameY, titleX, titleY, companyX, companyY, qrX, qrY;
+                
+                if (template === "modern") {
+                  nameX = width * 0.25;
+                  nameY = height / 2 - 10;
+                  titleX = width * 0.25;
+                  titleY = height / 2 + 15;
+                  companyX = width * 0.25;
+                  companyY = height / 2 + 40;
+                  qrX = width * 0.75;
+                  qrY = height / 2;
+                  ctx.textAlign = "left";
+                } else if (template === "business") {
+                  nameX = width / 2;
+                  nameY = height / 2 + 10;
+                  titleX = width / 2;
+                  titleY = height / 2 + 35;
+                  companyX = width / 2;
+                  companyY = height / 2 + 60;
+                  qrX = width - (height * 0.35) - 15;
+                  qrY = height - (height * 0.35) - 15;
+                  ctx.textAlign = "center";
+                } else if (template === "minimal") {
+                  nameX = width / 2;
+                  nameY = height / 2 - 10;
+                  titleX = width / 2;
+                  titleY = height / 2 + 15;
+                  companyX = width / 2;
+                  companyY = height / 2 + 40;
+                  qrX = width * 0.8;
+                  qrY = height / 2;
+                  ctx.textAlign = "center";
+                } else { // classic
+                  nameX = width * 0.25;
+                  nameY = height / 2 - 10;
+                  titleX = width * 0.25;
+                  titleY = height / 2 + 15;
+                  companyX = width * 0.25;
+                  companyY = height / 2 + 40;
+                  qrX = width * 0.75;
+                  qrY = height / 2;
+                  ctx.textAlign = "left";
+                }
+                
+                // Draw text
+                ctx.font = `bold ${templateSettings.nameTag.fontSize || 22}px ${fontFamily}`;
+                ctx.fillStyle = templateSettings.nameTag.nameColor || "#1A1F2C";
+                ctx.fillText(fullName, nameX, nameY);
+                
+                if (title) {
+                  ctx.font = `${(templateSettings.nameTag.fontSize || 22) - 4}px ${fontFamily}`;
+                  ctx.fillStyle = templateSettings.nameTag.companyColor || "#8E9196";
+                  ctx.fillText(title, titleX, titleY);
+                }
+                
+                if (company) {
+                  ctx.font = `${(templateSettings.nameTag.fontSize || 22) - 2}px ${fontFamily}`;
+                  ctx.fillStyle = templateSettings.nameTag.companyColor || "#8E9196";
+                  ctx.fillText(company, companyX, companyY);
+                }
+                
+                // Add QR code
+                const qrCanvas = document.createElement("canvas");
+                const qrSize = height * 0.7;
+                
+                await toCanvas(qrCanvas, vcard, {
+                  width: qrSize,
+                  margin: 1,
+                  color: {
+                    dark: templateSettings.nameTag.qrFgColor || "#000000",
+                    light: templateSettings.nameTag.qrBgColor || "#ffffff"
+                  },
+                  errorCorrectionLevel: 'M'
+                });
+                
+                // Draw QR background
+                ctx.fillStyle = templateSettings.nameTag.qrBgColor || "#ffffff";
+                ctx.fillRect(qrX - (qrSize / 2) - 5, qrY - (qrSize / 2) - 5, qrSize + 10, qrSize + 10);
+                
+                // Draw QR code
+                ctx.drawImage(qrCanvas, qrX - (qrSize / 2), qrY - (qrSize / 2), qrSize, qrSize);
+                
+                // Convert to blob and add to zip
+                const nameTagBlob = await new Promise((resolve, reject) => {
+                  nameTagCanvas.toBlob(blob => {
+                    if (blob) resolve(blob);
+                    else reject(new Error("Failed to create name tag blob"));
+                  }, "image/png");
+                });
+                
+                if (!nameTagBlob) {
+                  throw new Error("Name tag blob creation failed");
+                }
+                
                 const nameTagFileName = `${contact.firstName || 'contact'}-${contact.lastName || ''}-nametag.png`;
                 zip.file(nameTagFileName, nameTagBlob);
-                
                 console.log(`Generated name tag for ${contact.firstName} ${contact.lastName}`);
               } catch (nameTagError) {
                 console.error(`Error generating name tag: ${nameTagError}`);
@@ -454,7 +606,8 @@ const Premium = () => {
     toast.info("Prozess zurückgesetzt. Sie können neue Kontakte importieren.");
   };
   
-  return <PremiumLayout>
+  return (
+    <PremiumLayout>
       <div style={{
       display: "flex",
       flexDirection: "column",
@@ -497,10 +650,33 @@ const Premium = () => {
 
         {currentStep === 1 && <ImportStep onImportSuccess={handleImportSuccess} />}
         
-        {currentStep === 2 && <TemplateStep templateData={templateData} templateSettings={templateSettings} importedData={importedData} selectedContact={selectedContact} onTemplateChange={handleTemplateChange} onSelectContact={setSelectedContact} onNextStep={() => setCurrentStep(3)} />}
+        {currentStep === 2 && 
+        <TemplateStep 
+          templateData={templateData} 
+          templateSettings={templateSettings} 
+          importedData={importedData} 
+          selectedContact={selectedContact} 
+          onTemplateChange={handleTemplateChange} 
+          onSelectContact={setSelectedContact} 
+          onNextStep={() => setCurrentStep(3)}
+          onApplyQRConfig={handleApplyQRConfig} 
+        />
+      }
         
-        {currentStep === 3 && <GenerateStep importedData={importedData} templateSettings={templateSettings} isGenerating={isGenerating} generationProgress={generationProgress} onGenerate={handleBulkGenerate} onGenerateSelected={handleGenerateSelected} onReset={resetProcess} />}
+        {currentStep === 3 && 
+        <GenerateStep 
+          importedData={importedData} 
+          templateSettings={templateSettings} 
+          isGenerating={isGenerating} 
+          generationProgress={generationProgress} 
+          onGenerate={handleBulkGenerate} 
+          onGenerateSelected={handleGenerateSelected} 
+          onReset={resetProcess} 
+        />
+      }
       </div>
-    </PremiumLayout>;
+    </PremiumLayout>
+  );
 };
+
 export default Premium;

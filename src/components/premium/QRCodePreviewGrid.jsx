@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -50,7 +49,7 @@ export const QRCodePreviewGrid = ({
     onGenerateSelected(selectedContactsData);
   };
   
-  const handleDownloadSingle = (contact, type = 'qrcode') => {
+  const handleDownloadSingle = async (contact, type = 'qrcode') => {
     if (type === 'qrcode') {
       const svg = document.querySelector(`#qr-code-${contact.firstName}-${contact.lastName} svg`);
       if (!svg) {
@@ -82,86 +81,148 @@ export const QRCodePreviewGrid = ({
       };
       img.src = "data:image/svg+xml;base64," + btoa(svgData);
     } else if (type === 'nametag' && templateSettings.nameTag?.enabled) {
-      // For name tag download, we'll use the generateNameTag function from Premium.jsx
-      // Since we can't directly access it, we'll recreate the basic functionality here
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        toast.error("Browser unterstützt keine Canvas-Funktionalität.");
-        return;
-      }
-      
-      // Get dimensions based on size setting
-      const getDimensions = () => {
-        switch(templateSettings.nameTag.size) {
-          case "small": return { width: 350, height: 175 };
-          case "large": return { width: 450, height: 225 };
-          case "medium":
-          default: return { width: 400, height: 200 };
+      try {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        if (!ctx) {
+          toast.error("Browser unterstützt keine Canvas-Funktionalität.");
+          return;
         }
-      };
-      
-      const dimensions = getDimensions();
-      
-      // Set canvas dimensions
-      canvas.width = dimensions.width;
-      canvas.height = dimensions.height;
-      
-      const nameTagSettings = templateSettings.nameTag;
-      
-      // Fill background
-      ctx.fillStyle = nameTagSettings.backgroundColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Add border
-      ctx.strokeStyle = nameTagSettings.borderColor;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
-      
-      // Get font family
-      let fontFamily = nameTagSettings.font || 'Arial';
-      const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
-      const company = (contact.company || '').trim();
-      const title = (contact.title || '').trim();
-      
-      // Variables for positioning based on template
-      let contentX = 20;
-      let contentY = canvas.height / 2;
-      
-      // Draw name
-      ctx.font = `bold ${nameTagSettings.fontSize}px ${fontFamily}`;
-      ctx.fillStyle = nameTagSettings.nameColor;
-      ctx.textAlign = "left";
-      
-      if (nameTagSettings.template === "modern" || nameTagSettings.template === "minimal") {
-        ctx.textAlign = "center";
-        contentX = canvas.width / 2;
+        
+        const getDimensions = () => {
+          switch(templateSettings.nameTag.size) {
+            case "small": return { width: 350, height: 175 };
+            case "large": return { width: 450, height: 225 };
+            case "medium":
+            default: return { width: 400, height: 200 };
+          }
+        };
+        
+        const dimensions = getDimensions();
+        canvas.width = dimensions.width;
+        canvas.height = dimensions.height;
+        
+        const nameTagSettings = templateSettings.nameTag;
+        
+        ctx.fillStyle = nameTagSettings.backgroundColor || "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.strokeStyle = nameTagSettings.borderColor || "#e2e8f0";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+        
+        const fontFamily = nameTagSettings.font || 'Arial';
+        const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
+        const company = (contact.company || '').trim();
+        const title = (contact.title || '').trim();
+        
+        const template = nameTagSettings.template || "classic";
+        let nameX, nameY, titleX, titleY, companyX, companyY, qrX, qrY;
+        
+        if (template === "modern") {
+          nameX = canvas.width * 0.25;
+          nameY = canvas.height / 2 - 10;
+          titleX = canvas.width * 0.25;
+          titleY = canvas.height / 2 + 15;
+          companyX = canvas.width * 0.25;
+          companyY = canvas.height / 2 + 40;
+          qrX = canvas.width * 0.75;
+          qrY = canvas.height / 2;
+          ctx.textAlign = "left";
+        } else if (template === "business") {
+          nameX = canvas.width / 2;
+          nameY = canvas.height / 2 + 10;
+          titleX = canvas.width / 2;
+          titleY = canvas.height / 2 + 35;
+          companyX = canvas.width / 2;
+          companyY = canvas.height / 2 + 60;
+          qrX = canvas.width - (canvas.height * 0.35) - 15;
+          qrY = canvas.height - (canvas.height * 0.35) - 15;
+          ctx.textAlign = "center";
+        } else if (template === "minimal") {
+          nameX = canvas.width / 2;
+          nameY = canvas.height / 2 - 10;
+          titleX = canvas.width / 2;
+          titleY = canvas.height / 2 + 15;
+          companyX = canvas.width / 2;
+          companyY = canvas.height / 2 + 40;
+          qrX = canvas.width * 0.8;
+          qrY = canvas.height / 2;
+          ctx.textAlign = "center";
+        } else { // classic
+          nameX = canvas.width * 0.25;
+          nameY = canvas.height / 2 - 10;
+          titleX = canvas.width * 0.25;
+          titleY = canvas.height / 2 + 15;
+          companyX = canvas.width * 0.25;
+          companyY = canvas.height / 2 + 40;
+          qrX = canvas.width * 0.75;
+          qrY = canvas.height / 2;
+          ctx.textAlign = "left";
+        }
+        
+        ctx.font = `bold ${nameTagSettings.fontSize || 22}px ${fontFamily}`;
+        ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
+        ctx.fillText(fullName, nameX, nameY);
+        
+        if (title) {
+          ctx.font = `${(nameTagSettings.fontSize || 22) - 4}px ${fontFamily}`;
+          ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
+          ctx.fillText(title, titleX, titleY);
+        }
+        
+        if (company) {
+          ctx.font = `${(nameTagSettings.fontSize || 22) - 2}px ${fontFamily}`;
+          ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
+          ctx.fillText(company, companyX, companyY);
+        }
+        
+        const vcard = ["BEGIN:VCARD", "VERSION:3.0", 
+          `N:${contact.lastName || ''};${contact.firstName || ''};;;`, 
+          `FN:${contact.firstName || ''} ${contact.lastName || ''}`, 
+          contact.title && `TITLE:${contact.title}`, 
+          contact.company && `ORG:${contact.company}`, 
+          contact.email && `EMAIL:${contact.email}`, 
+          contact.phone && `TEL:${contact.phone}`, 
+          contact.website && `URL:${contact.website}`, 
+          (contact.street || contact.city) && 
+            `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, 
+          "END:VCARD"
+        ].filter(Boolean).join("\n");
+        
+        const {
+          toCanvas
+        } = await import('qrcode');
+        
+        const qrCanvas = document.createElement("canvas");
+        const qrSize = canvas.height * 0.7;
+        
+        await toCanvas(qrCanvas, vcard, {
+          width: qrSize,
+          margin: 1,
+          color: {
+            dark: nameTagSettings.qrFgColor || "#000000",
+            light: nameTagSettings.qrBgColor || "#ffffff"
+          },
+          errorCorrectionLevel: 'M'
+        });
+        
+        ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
+        ctx.fillRect(qrX - (qrSize / 2) - 5, qrY - (qrSize / 2) - 5, qrSize + 10, qrSize + 10);
+        
+        ctx.drawImage(qrCanvas, qrX - (qrSize / 2), qrY - (qrSize / 2), qrSize, qrSize);
+        
+        const pngFile = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `${contact.firstName || 'contact'}-${contact.lastName || ''}-nametag.png`;
+        downloadLink.href = pngFile;
+        downloadLink.click();
+        toast.success("Namensschild wurde heruntergeladen!");
+      } catch (error) {
+        console.error("Error generating name tag:", error);
+        toast.error("Fehler beim Erstellen des Namensschilds.");
       }
-      
-      ctx.fillText(fullName, contentX, contentY - (title || company ? 20 : 0));
-      
-      // Draw title if available
-      if (title) {
-        ctx.font = `${nameTagSettings.fontSize - 4}px ${fontFamily}`;
-        ctx.fillStyle = nameTagSettings.companyColor;
-        ctx.fillText(title, contentX, contentY + 10);
-        contentY += 30;
-      }
-      
-      // Draw company
-      if (company) {
-        ctx.font = `${nameTagSettings.fontSize - 2}px ${fontFamily}`;
-        ctx.fillStyle = nameTagSettings.companyColor;
-        ctx.fillText(company, contentX, contentY + 10);
-      }
-      
-      // Download the name tag
-      const pngFile = canvas.toDataURL("image/png");
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `${contact.firstName || 'contact'}-${contact.lastName || ''}-nametag.png`;
-      downloadLink.href = pngFile;
-      downloadLink.click();
-      toast.success("Namensschild wurde heruntergeladen!");
     }
   };
 
@@ -202,7 +263,6 @@ export const QRCodePreviewGrid = ({
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4">
-                  {/* QR Code Preview */}
                   <div className="bg-[#F9FAFB] rounded-lg p-4 flex justify-center">
                     <div id={`qr-code-${contact.firstName}-${contact.lastName}`} className="p-2 bg-white rounded-lg shadow-sm">
                       <QRCodeSVG 
@@ -216,7 +276,6 @@ export const QRCodePreviewGrid = ({
                     </div>
                   </div>
 
-                  {/* Name Tag Preview (if enabled) */}
                   {templateSettings.nameTag?.enabled && (
                     <div className="flex justify-center overflow-hidden rounded-lg">
                       <div className="transform scale-75 origin-center">
@@ -232,7 +291,6 @@ export const QRCodePreviewGrid = ({
                   )}
                 </div>
 
-                {/* Download buttons */}
                 <div className="flex flex-col gap-2">
                   <Button 
                     variant="outline" 

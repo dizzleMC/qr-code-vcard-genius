@@ -4,6 +4,7 @@ import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { ContactPreview } from "@/components/ContactPreview";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { NameTagCreator } from "./NameTagCreator";
+import { Save } from "lucide-react";
 
 export const TemplateStep = ({ 
   templateData,
@@ -12,7 +13,8 @@ export const TemplateStep = ({
   selectedContact,
   onTemplateChange,
   onSelectContact,
-  onNextStep 
+  onNextStep,
+  onApplyQRConfig
 }) => {
   const handleNameTagSettingChange = (setting, value) => {
     onTemplateChange('nameTag', {
@@ -36,15 +38,25 @@ export const TemplateStep = ({
           </TabsList>
           
           <TabsContent value="qrcode">
-            <QRCodeDisplay
-              data={selectedContact || templateData}
-              initialSize={templateSettings.size}
-              initialFgColor={templateSettings.fgColor}
-              initialBgColor={templateSettings.bgColor}
-              onSizeChange={(size) => onTemplateChange('size', size)}
-              onFgColorChange={(color) => onTemplateChange('fgColor', color)}
-              onBgColorChange={(color) => onTemplateChange('bgColor', color)}
-            />
+            <div className="space-y-4">
+              <QRCodeDisplay
+                data={selectedContact || templateData}
+                initialSize={templateSettings.size}
+                initialFgColor={templateSettings.fgColor}
+                initialBgColor={templateSettings.bgColor}
+                onSizeChange={(size) => onTemplateChange('size', size)}
+                onFgColorChange={(color) => onTemplateChange('fgColor', color)}
+                onBgColorChange={(color) => onTemplateChange('bgColor', color)}
+              />
+              
+              <Button 
+                onClick={onApplyQRConfig}
+                className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Save size={16} />
+                QR-Code Konfiguration übernehmen
+              </Button>
+            </div>
           </TabsContent>
           
           <TabsContent value="nametag">
