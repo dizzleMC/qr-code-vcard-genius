@@ -4,7 +4,7 @@ import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { ContactPreview } from "@/components/ContactPreview";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { NameTagCreator } from "./NameTagCreator";
-import { Save } from "lucide-react";
+import { Save, ChevronLeft } from "lucide-react";
 
 export const TemplateStep = ({ 
   templateData,
@@ -14,7 +14,8 @@ export const TemplateStep = ({
   onTemplateChange,
   onSelectContact,
   onNextStep,
-  onApplyQRConfig
+  onApplyQRConfig,
+  onPreviousStep
 }) => {
   const handleNameTagSettingChange = (setting, value) => {
     onTemplateChange('nameTag', {
@@ -26,9 +27,20 @@ export const TemplateStep = ({
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       <div className="flex-1 bg-white rounded-xl shadow-sm p-8">
-        <h2 className="text-xl font-semibold mb-6">
-          Schritt 2: QR-Code & Namensschild anpassen
-        </h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold">
+            Schritt 2: QR-Code & Namensschild anpassen
+          </h2>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onPreviousStep}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft size={16} />
+            Zurück
+          </Button>
+        </div>
         
         {/* Always render the tabs regardless of other conditions */}
         <Tabs defaultValue="qrcode" className="mb-6">

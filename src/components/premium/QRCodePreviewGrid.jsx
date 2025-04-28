@@ -48,6 +48,15 @@ export const QRCodePreviewGrid = ({
     const selectedContactsData = selectedContacts.map(index => contacts[index]);
     onGenerateSelected(selectedContactsData);
   };
+
+  const measureText = (ctx, text, font) => {
+    ctx.font = font;
+    const metrics = ctx.measureText(text);
+    return {
+      width: metrics.width,
+      height: parseInt(font, 10) * 1.2
+    };
+  };
   
   const handleDownloadSingle = async (contact, type = 'qrcode') => {
     if (type === 'qrcode') {
@@ -136,8 +145,25 @@ export const QRCodePreviewGrid = ({
         const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
         const company = (contact.company || '').trim();
         const title = (contact.title || '').trim();
+
+        const nameFontSize = Math.max(dimensions.fontSize, 18);
+        const titleFontSize = Math.max(dimensions.fontSize - 6, 12);
+        const companyFontSize = Math.max(dimensions.fontSize - 4, 14);
+        
+        const nameFont = `bold ${nameFontSize}px ${fontFamily}`;
+        const titleFont = `${titleFontSize}px ${fontFamily}`;
+        const companyFont = `${companyFontSize}px ${fontFamily}`;
+        
+        const nameMetrics = measureText(ctx, fullName, nameFont);
+        const titleMetrics = title ? measureText(ctx, title, titleFont) : { width: 0, height: 0 };
+        const companyMetrics = company ? measureText(ctx, company, companyFont) : { width: 0, height: 0 };
         
         const getTemplatePosition = () => {
+          const maxTextWidth = Math.max(nameMetrics.width, titleMetrics.width, companyMetrics.width);
+          const textContentHeight = nameMetrics.height + titleMetrics.height + companyMetrics.height + 10;
+          
+          const qrSize = height * 0.7;
+          
           switch(template) {
             case "modern":
               return {
@@ -147,25 +173,27 @@ export const QRCodePreviewGrid = ({
                 titleY: height / 2 + 15,
                 companyX: width * 0.25,
                 companyY: height / 2 + 40,
-                qrX: width * 0.75,
+                qrX: Math.min(width * 0.8, width - qrSize/2 - 10),
                 qrY: height / 2,
                 logoX: width * 0.25,
                 logoY: 25,
-                textAlign: "left"
+                textAlign: "left",
+                qrSize: qrSize
               };
             case "business":
               return {
                 nameX: width / 2,
-                nameY: height / 2 + 10,
+                nameY: Math.max(height * 0.3, 60),
                 titleX: width / 2,
-                titleY: height / 2 + 35,
+                titleY: Math.min(Math.max(height * 0.3, 60) + 25, height - qrSize - 30),
                 companyX: width / 2,
-                companyY: height / 2 + 60,
-                qrX: width - 70,
-                qrY: height - 70,
+                companyY: Math.min(Math.max(height * 0.3, 60) + 50, height - qrSize - 10),
+                qrX: width - qrSize/2 - 10,
+                qrY: height - qrSize/2 - 10,
                 logoX: width / 2,
-                logoY: 40,
-                textAlign: "center"
+                logoY: 30,
+                textAlign: "center",
+                qrSize: qrSize
               };
             case "minimal":
               return {
@@ -175,32 +203,70 @@ export const QRCodePreviewGrid = ({
                 titleY: height / 2 + 15,
                 companyX: width / 2,
                 companyY: height / 2 + 40,
-                qrX: width * 0.8,
+                qrX: Math.min(width * 0.85, width - qrSize/2 - 10),
                 qrY: height / 2,
                 logoX: width * 0.25,
                 logoY: 25,
-                textAlign: "center"
+                textAlign: "center",
+                qrSize: qrSize
               };
             case "classic":
             default:
               return {
-                nameX: width * 0.25,
+                nameX: Math.min(width * 0.25, (width - maxTextWidth - qrSize) / 2),
                 nameY: height / 2 - 10,
-                titleX: width * 0.25,
+                titleX: Math.min(width * 0.25, (width - maxTextWidth - qrSize) / 2),
                 titleY: height / 2 + 15,
-                companyX: width * 0.25,
+                companyX: Math.min(width * 0.25, (width - maxTextWidth - qrSize) / 2),
                 companyY: height / 2 + 40,
-                qrX: width * 0.75,
+                qrX: Math.max(width * 0.75, width - qrSize/2 - 10),
                 qrY: height / 2,
-                logoX: width * 0.25,
+                logoX: width * 0.2,
                 logoY: 25,
-                textAlign: "left"
+                textAlign: "left",
+                qrSize: qrSize
               };
           }
         };
         
         const templatePosition = getTemplatePosition();
         ctx.textAlign = templatePosition.textAlign;
+        
+        ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
+        ctx.fillRect(
+          templatePosition.qrX - (qrSize / 2) - 5, 
+          templatePosition.qrY - (qrSize / 2) - 5, 
+          qrSize + 10, 
+          qrSize + 10
+        );
+        
+        try {
+          const vcard = generateVCardData(contact);
+          const { toCanvas } = await import('qrcode');
+          
+          const qrCanvas = document.createElement("canvas");
+          
+          await toCanvas(qrCanvas, vcard, {
+            width: qrSize,
+            margin: 1,
+            color: {
+              dark: nameTagSettings.qrFgColor || "#000000",
+              light: nameTagSettings.qrBgColor || "#ffffff"
+            },
+            errorCorrectionLevel: 'M'
+          });
+          
+          ctx.drawImage(
+            qrCanvas, 
+            templatePosition.qrX - (qrSize / 2), 
+            templatePosition.qrY - (qrSize / 2), 
+            qrSize, 
+            qrSize
+          );
+          
+        } catch (qrError) {
+          console.error("Error generating QR code for name tag:", qrError);
+        }
         
         if (nameTagSettings.logo) {
           const img = new Image();
@@ -236,61 +302,20 @@ export const QRCodePreviewGrid = ({
           }
         }
         
-        const nameFontSize = Math.max(dimensions.fontSize, 18);
-        const titleFontSize = Math.max(dimensions.fontSize - 6, 12);
-        const companyFontSize = Math.max(dimensions.fontSize - 4, 14);
-        
-        ctx.font = `bold ${nameFontSize}px ${fontFamily}`;
+        ctx.font = nameFont;
         ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
         ctx.fillText(fullName, templatePosition.nameX, templatePosition.nameY);
         
         if (title) {
-          ctx.font = `${titleFontSize}px ${fontFamily}`;
+          ctx.font = titleFont;
           ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
           ctx.fillText(title, templatePosition.titleX, templatePosition.titleY);
         }
         
         if (company) {
-          ctx.font = `${companyFontSize}px ${fontFamily}`;
+          ctx.font = companyFont;
           ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
           ctx.fillText(company, templatePosition.companyX, templatePosition.companyY);
-        }
-        
-        try {
-          const vcard = generateVCardData(contact);
-          const { toCanvas } = await import('qrcode');
-          
-          const qrCanvas = document.createElement("canvas");
-          const qrSize = height * 0.7;
-          
-          await toCanvas(qrCanvas, vcard, {
-            width: qrSize,
-            margin: 1,
-            color: {
-              dark: nameTagSettings.qrFgColor || "#000000",
-              light: nameTagSettings.qrBgColor || "#ffffff"
-            },
-            errorCorrectionLevel: 'M'
-          });
-          
-          ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
-          ctx.fillRect(
-            templatePosition.qrX - (qrSize / 2) - 5, 
-            templatePosition.qrY - (qrSize / 2) - 5, 
-            qrSize + 10, 
-            qrSize + 10
-          );
-          
-          ctx.drawImage(
-            qrCanvas, 
-            templatePosition.qrX - (qrSize / 2), 
-            templatePosition.qrY - (qrSize / 2), 
-            qrSize, 
-            qrSize
-          );
-          
-        } catch (qrError) {
-          console.error("Error generating QR code for name tag:", qrError);
         }
         
         const pngFile = canvas.toDataURL("image/png");

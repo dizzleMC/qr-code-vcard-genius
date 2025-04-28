@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { toast } from "sonner";
 import { PremiumLayout } from "@/components/premium/PremiumLayout";
@@ -79,6 +80,21 @@ const Premium = () => {
     await generateQRCodes(importedData);
   };
 
+  const handlePreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const measureText = (ctx, text, font) => {
+    ctx.font = font;
+    const metrics = ctx.measureText(text);
+    return {
+      width: metrics.width,
+      height: parseInt(font, 10) * 1.2 // Approximate height based on font size
+    };
+  };
+
   const generateNameTag = async (contact, nameTagSettings) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -149,9 +165,28 @@ const Premium = () => {
     const company = (contact.company || '').trim();
     const title = (contact.title || '').trim();
     
-    // Get template-specific layout positions
+    // Calculate text widths to avoid overlaps
+    const nameFontSize = Math.max(nameTagSettings.fontSize || 22, 18);
+    const titleFontSize = Math.max((nameTagSettings.fontSize || 22) - 6, 12);
+    const companyFontSize = Math.max((nameTagSettings.fontSize || 22) - 4, 14);
+    
+    const nameFont = `bold ${nameFontSize}px ${fontFamily}`;
+    const titleFont = `${titleFontSize}px ${fontFamily}`;
+    const companyFont = `${companyFontSize}px ${fontFamily}`;
+    
+    const nameMetrics = measureText(ctx, fullName, nameFont);
+    const titleMetrics = title ? measureText(ctx, title, titleFont) : { width: 0, height: 0 };
+    const companyMetrics = company ? measureText(ctx, company, companyFont) : { width: 0, height: 0 };
+    
+    // Get template-specific layout positions with improved positioning
     const getTemplatePosition = () => {
-      switch(nameTagSettings.template) {
+      // Calculate the maximum text width to avoid overlaps
+      const maxTextWidth = Math.max(nameMetrics.width, titleMetrics.width, companyMetrics.width);
+      const textContentHeight = nameMetrics.height + titleMetrics.height + companyMetrics.height + 10;
+      
+      const qrSize = height * 0.7;
+      
+      switch(template) {
         case "modern":
           return {
             logoX: width * 0.75,
@@ -162,23 +197,25 @@ const Premium = () => {
             titleY: height / 2 + 15,
             companyX: width * 0.25,
             companyY: height / 2 + 40,
-            qrX: width * 0.75,
+            qrX: Math.min(width * 0.8, width - qrSize/2 - 10),
             qrY: height / 2,
-            textAlign: "left"
+            textAlign: "left",
+            qrSize: qrSize
           };
         case "business":
           return {
             logoX: width / 2,
-            logoY: 40,
+            logoY: 30,
             nameX: width / 2,
-            nameY: height / 2 + 10,
+            nameY: Math.max(height * 0.3, 60),
             titleX: width / 2,
-            titleY: height / 2 + 35,
+            titleY: Math.min(Math.max(height * 0.3, 60) + 25, height - qrSize - 30),
             companyX: width / 2,
-            companyY: height / 2 + 60, 
-            qrX: width - 70, // Position away from text
-            qrY: height - 70, 
-            textAlign: "center"
+            companyY: Math.min(Math.max(height * 0.3, 60) + 50, height - qrSize - 10),
+            qrX: width - qrSize/2 - 10,
+            qrY: height - qrSize/2 - 10,
+            textAlign: "center",
+            qrSize: qrSize
           };
         case "minimal":
           return {
@@ -190,30 +227,72 @@ const Premium = () => {
             titleY: height / 2 + 15,
             companyX: width / 2,
             companyY: height / 2 + 40,
-            qrX: width * 0.8,
+            qrX: Math.min(width * 0.85, width - qrSize/2 - 10),
             qrY: height / 2,
-            textAlign: "center"
+            textAlign: "center",
+            qrSize: qrSize
           };
         case "classic":
         default:
           return {
-            logoX: width * 0.25,
+            logoX: width * 0.2,
             logoY: 25,
-            nameX: width * 0.25,
+            nameX: Math.min(width * 0.25, (width - maxTextWidth - qrSize) / 2),
             nameY: height / 2 - 10,
-            titleX: width * 0.25,
+            titleX: Math.min(width * 0.25, (width - maxTextWidth - qrSize) / 2),
             titleY: height / 2 + 15,
-            companyX: width * 0.25,
+            companyX: Math.min(width * 0.25, (width - maxTextWidth - qrSize) / 2),
             companyY: height / 2 + 40,
-            qrX: width * 0.75,
+            qrX: Math.max(width * 0.75, width - qrSize/2 - 10),
             qrY: height / 2,
-            textAlign: "left"
+            textAlign: "left",
+            qrSize: qrSize
           };
       }
     };
     
     const templatePosition = getTemplatePosition();
     ctx.textAlign = templatePosition.textAlign;
+    
+    // Create white background for QR code first
+    const qrSize = templatePosition.qrSize;
+    ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
+    ctx.fillRect(
+      templatePosition.qrX - (qrSize / 2) - 5, 
+      templatePosition.qrY - (qrSize / 2) - 5, 
+      qrSize + 10, 
+      qrSize + 10
+    );
+    
+    // Generate QR code on separate canvas
+    try {
+      const { toCanvas } = await import('qrcode');
+      
+      const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
+      
+      const qrCanvas = document.createElement("canvas");
+      
+      await toCanvas(qrCanvas, vcard, {
+        width: qrSize,
+        margin: 1,
+        color: {
+          dark: nameTagSettings.qrFgColor || "#000000",
+          light: nameTagSettings.qrBgColor || "#ffffff"
+        },
+        errorCorrectionLevel: 'M'
+      });
+      
+      // Draw QR code
+      ctx.drawImage(
+        qrCanvas, 
+        templatePosition.qrX - (qrSize / 2), 
+        templatePosition.qrY - (qrSize / 2), 
+        qrSize, 
+        qrSize
+      );
+    } catch (error) {
+      console.error("Error generating QR code for name tag:", error);
+    }
     
     // Draw logo if available
     if (nameTagSettings.logo) {
@@ -250,68 +329,23 @@ const Premium = () => {
       }
     }
     
-    // Set text properties based on name tag size
-    const nameFontSize = Math.max(nameTagSettings.fontSize || 22, 18);
-    const titleFontSize = Math.max((nameTagSettings.fontSize || 22) - 6, 12);
-    const companyFontSize = Math.max((nameTagSettings.fontSize || 22) - 4, 14);
-    
-    // Draw name
-    ctx.font = `bold ${nameFontSize}px ${fontFamily}`;
+    // Draw name, title, and company text after QR code and logo
+    ctx.font = nameFont;
     ctx.fillStyle = nameTagSettings.nameColor || "#1A1F2C";
     ctx.fillText(fullName, templatePosition.nameX, templatePosition.nameY);
     
     // Draw title if available
     if (title) {
-      ctx.font = `${titleFontSize}px ${fontFamily}`;
+      ctx.font = titleFont;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
       ctx.fillText(title, templatePosition.titleX, templatePosition.titleY);
     }
     
     // Draw company if available  
     if (company) {
-      ctx.font = `${companyFontSize}px ${fontFamily}`;
+      ctx.font = companyFont;
       ctx.fillStyle = nameTagSettings.companyColor || "#8E9196";
       ctx.fillText(company, templatePosition.companyX, templatePosition.companyY);
-    }
-    
-    // Generate QR code on separate canvas
-    try {
-      const { toCanvas } = await import('qrcode');
-      
-      const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
-      
-      const qrCanvas = document.createElement("canvas");
-      const qrSize = height * 0.7; // Make sure QR code is large enough to be visible
-      
-      await toCanvas(qrCanvas, vcard, {
-        width: qrSize,
-        margin: 1,
-        color: {
-          dark: nameTagSettings.qrFgColor || "#000000",
-          light: nameTagSettings.qrBgColor || "#ffffff"
-        },
-        errorCorrectionLevel: 'M'
-      });
-      
-      // Create white background for QR code
-      ctx.fillStyle = nameTagSettings.qrBgColor || "#ffffff";
-      ctx.fillRect(
-        templatePosition.qrX - (qrSize / 2) - 5, 
-        templatePosition.qrY - (qrSize / 2) - 5, 
-        qrSize + 10, 
-        qrSize + 10
-      );
-      
-      // Draw QR code
-      ctx.drawImage(
-        qrCanvas, 
-        templatePosition.qrX - (qrSize / 2), 
-        templatePosition.qrY - (qrSize / 2), 
-        qrSize, 
-        qrSize
-      );
-    } catch (error) {
-      console.error("Error generating QR code for name tag:", error);
     }
     
     return new Promise((resolve, reject) => {
@@ -542,7 +576,8 @@ const Premium = () => {
           onTemplateChange={handleTemplateChange} 
           onSelectContact={setSelectedContact} 
           onNextStep={() => setCurrentStep(3)}
-          onApplyQRConfig={handleApplyQRConfig} 
+          onApplyQRConfig={handleApplyQRConfig}
+          onPreviousStep={handlePreviousStep}
         />
       }
         
@@ -554,7 +589,8 @@ const Premium = () => {
           generationProgress={generationProgress} 
           onGenerate={handleBulkGenerate} 
           onGenerateSelected={handleGenerateSelected} 
-          onReset={resetProcess} 
+          onReset={resetProcess}
+          onPreviousStep={handlePreviousStep}
         />
       }
       </div>

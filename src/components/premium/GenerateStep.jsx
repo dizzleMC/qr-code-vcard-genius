@@ -1,7 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Loader } from "lucide-react";
+import { Loader, ChevronLeft } from "lucide-react";
 import { QRCodePreviewGrid } from "./QRCodePreviewGrid";
+
 export const GenerateStep = ({
   importedData,
   isGenerating,
@@ -9,12 +11,24 @@ export const GenerateStep = ({
   templateSettings,
   onGenerate,
   onGenerateSelected,
-  onReset
+  onReset,
+  onPreviousStep
 }) => {
   return <div className="bg-white rounded-xl shadow-sm p-8 my-[32px]">
-      <h2 className="text-xl font-semibold mb-6">
-        Schritt 3: QR-Codes generieren
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">
+          Schritt 3: QR-Codes generieren
+        </h2>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onPreviousStep}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft size={16} />
+          Zurück
+        </Button>
+      </div>
       
       <div className="flex-1 bg-white rounded-xl shadow-sm p-6 mb-6">
         <h3 className="text-lg font-semibold mb-4">Zusammenfassung</h3>
