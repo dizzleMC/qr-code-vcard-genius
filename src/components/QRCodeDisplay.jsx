@@ -1,9 +1,11 @@
+
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Download } from "lucide-react";
 
 export const QRCodeDisplay = ({ 
   data, 
@@ -110,11 +112,11 @@ export const QRCodeDisplay = ({
       toast.success("QR-Code wurde heruntergeladen!");
     };
     
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-8 space-y-8">
+    <div className="bg-white rounded-xl shadow-sm p-8 space-y-6">
       <div id="qr-code" className="flex flex-col items-center">
         <div className="p-6 bg-[#F9FAFB] rounded-lg">
           <QRCodeSVG
@@ -131,8 +133,11 @@ export const QRCodeDisplay = ({
       {!previewMode && (
         <>
           <div className="space-y-6">
-            <div className="space-y-3">
-              <Label htmlFor="size" className="text-[#1A1F2C]">QR-Code Größe ({qrSize}px)</Label>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="size" className="text-sm font-medium text-[#1A1F2C]">QR-Code Größe</Label>
+                <span className="text-sm text-[#8E9196]">{qrSize}px</span>
+              </div>
               <Input
                 id="size"
                 type="range"
@@ -144,8 +149,8 @@ export const QRCodeDisplay = ({
               />
             </div>
             
-            <div className="space-y-3">
-              <Label htmlFor="fgColor" className="text-[#1A1F2C]">QR-Code Farbe</Label>
+            <div className="space-y-2">
+              <Label htmlFor="fgColor" className="text-sm font-medium text-[#1A1F2C]">QR-Code Farbe</Label>
               <div className="flex gap-3">
                 <div className="flex flex-col w-12 gap-2">
                   <Input
@@ -153,13 +158,13 @@ export const QRCodeDisplay = ({
                     type="color"
                     value={fgColor}
                     onChange={(e) => handleFgColorChange(e.target.value)}
-                    className="w-12 h-12 p-1 cursor-pointer rounded-lg"
+                    className="w-12 h-12 p-1 cursor-pointer rounded-lg border-none"
                   />
                   <Input
                     type="text"
                     value={fgColor}
                     onChange={(e) => handleFgColorChange(e.target.value)}
-                    className="w-full text-xs p-1"
+                    className="w-full text-xs p-1 text-center"
                   />
                 </div>
                 <div className="flex-1 grid grid-cols-5 gap-2">
@@ -176,8 +181,8 @@ export const QRCodeDisplay = ({
               </div>
             </div>
             
-            <div className="space-y-3">
-              <Label htmlFor="bgColor" className="text-[#1A1F2C]">Hintergrundfarbe</Label>
+            <div className="space-y-2">
+              <Label htmlFor="bgColor" className="text-sm font-medium text-[#1A1F2C]">Hintergrundfarbe</Label>
               <div className="flex gap-3">
                 <div className="flex flex-col w-12 gap-2">
                   <Input
@@ -185,13 +190,13 @@ export const QRCodeDisplay = ({
                     type="color"
                     value={bgColor}
                     onChange={(e) => handleBgColorChange(e.target.value)}
-                    className="w-12 h-12 p-1 cursor-pointer rounded-lg"
+                    className="w-12 h-12 p-1 cursor-pointer rounded-lg border-none"
                   />
                   <Input
                     type="text"
                     value={bgColor}
                     onChange={(e) => handleBgColorChange(e.target.value)}
-                    className="w-full text-xs p-1"
+                    className="w-full text-xs p-1 text-center"
                   />
                 </div>
                 <div className="flex-1 grid grid-cols-5 gap-2">
@@ -212,8 +217,9 @@ export const QRCodeDisplay = ({
           <Button 
             onClick={handleDownload}
             disabled={isFormEmpty}
-            className={`w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium py-2.5`}
+            className="w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium flex items-center justify-center gap-2"
           >
+            <Download size={18} />
             QR-Code Herunterladen
           </Button>
         </>

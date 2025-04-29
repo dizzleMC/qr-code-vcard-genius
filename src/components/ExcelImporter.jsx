@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Upload, Download, FileSpreadsheet } from "lucide-react";
+import { Upload, Download, FileSpreadsheet, Check } from "lucide-react";
 import { downloadExcelTemplate } from "@/utils/excelTemplate";
 
 export const ExcelImporter = ({ onImportSuccess }) => {
@@ -108,14 +108,11 @@ export const ExcelImporter = ({ onImportSuccess }) => {
           mappedRow[key] = findValue(fieldNames);
         }
         
-        console.log("Mapped row:", mappedRow);
         return mappedRow;
       });
       
       if (mappedData.length > 0) {
-        console.log("Final mapped data:", mappedData);
         onImportSuccess(mappedData);
-        toast.success(`${mappedData.length} Kontakte erfolgreich importiert!`);
       } else {
         toast.error("Die Datei enthält keine gültigen Daten.");
       }
@@ -129,17 +126,12 @@ export const ExcelImporter = ({ onImportSuccess }) => {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <div
-        style={{
-          border: `2px dashed ${isDragging ? '#ff7e0c' : '#e2e8f0'}`,
-          borderRadius: "0.5rem",
-          padding: "2rem",
-          textAlign: "center",
-          backgroundColor: isDragging ? "rgba(255, 126, 12, 0.05)" : "#f8fafc",
-          cursor: "pointer",
-          transition: "all 0.2s ease"
-        }}
+        className={`
+          border-2 border-dashed rounded-lg p-8 text-center transition-colors
+          ${isDragging ? 'border-[#ff7e0c] bg-[#ff7e0c]/5' : 'border-gray-200 bg-[#f8fafc]'}
+        `}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -148,52 +140,35 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         <input
           type="file"
           ref={fileInputRef}
-          style={{ display: "none" }}
+          className="hidden"
           accept=".xlsx,.xls,.csv"
           onChange={handleFileInputChange}
         />
         
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "1rem"
-        }}>
-          <div style={{
-            width: "4rem",
-            height: "4rem",
-            borderRadius: "50%",
-            backgroundColor: isDragging ? "rgba(255, 126, 12, 0.1)" : "#e2e8f0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}>
-            <Upload size={24} color={isDragging ? "#ff7e0c" : "#8E9196"} />
+        <div className="flex flex-col items-center gap-4">
+          <div className={`
+            w-16 h-16 rounded-full flex items-center justify-center
+            ${isDragging ? 'bg-[#ff7e0c]/10' : 'bg-gray-100'}
+          `}>
+            <Upload 
+              size={24} 
+              className={isDragging ? 'text-[#ff7e0c]' : 'text-gray-400'} 
+            />
           </div>
           
           <div>
-            <p style={{
-              fontWeight: "500",
-              marginBottom: "0.5rem"
-            }}>
+            <p className="font-medium text-[#1A1F2C] mb-1">
               {fileName || "Klicken Sie hier oder ziehen Sie eine Datei hierher"}
             </p>
-            <p style={{
-              fontSize: "0.875rem",
-              color: "#8E9196"
-            }}>
+            <p className="text-sm text-[#8E9196]">
               Unterstützte Dateiformate: .xlsx, .xls, .csv
             </p>
           </div>
           
           {!fileName && (
-            <div className="flex gap-2">
+            <div className="flex gap-3 mt-2">
               <Button
-                style={{
-                  backgroundColor: "#ff7e0c",
-                  color: "white",
-                  fontWeight: "500"
-                }}
+                className="bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium"
                 onClick={(e) => {
                   e.stopPropagation();
                   fileInputRef.current.click();
@@ -208,11 +183,11 @@ export const ExcelImporter = ({ onImportSuccess }) => {
                   e.stopPropagation();
                   downloadExcelTemplate();
                 }}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 border-gray-200"
               >
                 <FileSpreadsheet size={16} />
                 Vorlage
-                <Download size={16} />
+                <Download size={16} className="ml-1" />
               </Button>
             </div>
           )}
@@ -220,32 +195,17 @@ export const ExcelImporter = ({ onImportSuccess }) => {
       </div>
       
       {fileName && (
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: "1rem",
-          padding: "0.75rem",
-          backgroundColor: "#f8fafc",
-          borderRadius: "0.5rem"
-        }}>
-          <span style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            fontWeight: "500"
-          }}>
-            <Upload size={16} />
+        <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div className="flex items-center gap-2 font-medium text-[#1A1F2C]">
+            <FileSpreadsheet size={16} className="text-[#ff7e0c]" />
             {fileName}
-          </span>
+          </div>
           
           <Button
-            style={{
-              backgroundColor: isProcessing ? "#e2e8f0" : "#ff7e0c",
-              color: "white",
-              fontWeight: "500",
-              opacity: isProcessing ? "0.7" : "1"
-            }}
+            className={`
+              ${isProcessing ? 'bg-gray-200 text-gray-500' : 'bg-[#ff7e0c] hover:bg-[#e67008] text-white'}
+              font-medium
+            `}
             disabled={isProcessing}
             onClick={(e) => {
               e.stopPropagation();
@@ -254,22 +214,40 @@ export const ExcelImporter = ({ onImportSuccess }) => {
               }
             }}
           >
-            {isProcessing ? "Wird verarbeitet..." : "Importieren"}
+            {isProcessing ? (
+              <>
+                <span className="animate-spin mr-2">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24">
+                    <circle 
+                      className="opacity-25" 
+                      cx="12" 
+                      cy="12" 
+                      r="10" 
+                      stroke="currentColor" 
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path 
+                      className="opacity-75" 
+                      fill="currentColor" 
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                </span>
+                Wird verarbeitet...
+              </>
+            ) : (
+              <>
+                <Check size={16} className="mr-1" /> 
+                Importieren
+              </>
+            )}
           </Button>
         </div>
       )}
       
-      <div style={{
-        marginTop: "1.5rem",
-        backgroundColor: "#f8fafc",
-        borderRadius: "0.5rem",
-        padding: "1rem"
-      }}>
-        <h3 style={{
-          fontSize: "1rem",
-          fontWeight: "600",
-          marginBottom: "0.75rem"
-        }}>
+      <div className="p-4 bg-gray-50 border border-gray-100 rounded-lg">
+        <h3 className="text-base font-semibold mb-3 text-[#1A1F2C] flex items-center">
           Hinweise zum Import
           <Button 
             variant="link" 
@@ -277,19 +255,14 @@ export const ExcelImporter = ({ onImportSuccess }) => {
               e.stopPropagation();
               downloadExcelTemplate();
             }}
-            className="text-orange-500 p-0 h-auto flex items-center gap-1 ml-2"
+            className="ml-2 text-[#ff7e0c] p-0 h-auto flex items-center gap-1"
           >
             <FileSpreadsheet size={14} />
             Excel-Vorlage herunterladen
           </Button>
         </h3>
         
-        <ul style={{
-          paddingLeft: "1.25rem",
-          marginBottom: "0",
-          color: "#8E9196",
-          fontSize: "0.875rem"
-        }}>
+        <ul className="list-disc pl-5 text-sm text-[#8E9196] space-y-1">
           <li>Die Excel-Datei sollte eine Kopfzeile mit Spaltenbezeichnungen haben</li>
           <li>Folgende Felder werden erkannt: Vorname, Nachname, Email, Telefon, Firma, etc.</li>
           <li>Leere Zeilen oder Zeilen ohne Namen werden übersprungen</li>

@@ -21,92 +21,39 @@ const Index = () => {
   });
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(to bottom right, rgba(255, 126, 12, 0.1), white)"
-    }}>
-      <div style={{
-        padding: "3rem 1rem",
-        maxWidth: "1200px",
-        margin: "0 auto"
-      }}>
-        <nav style={{
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: "2rem"
-        }}>
-          <ul style={{
-            display: "flex",
-            gap: "2rem",
-            listStyle: "none",
-            padding: 0
-          }}>
-            <li>
-              <Link to="/" style={{
-                fontWeight: "600",
-                color: "#ff7e0c",
-                textDecoration: "none",
-                borderBottom: "2px solid #ff7e0c",
-                paddingBottom: "0.25rem"
-              }}>
-                Einzel QR-Code
-              </Link>
-            </li>
-            <li>
-              <Link to="/premium" style={{
-                fontWeight: "500",
-                color: "#8E9196",
-                textDecoration: "none"
-              }}>
-                Premium Bulk-Generator
-              </Link>
-            </li>
-          </ul>
+    <div className="min-h-screen bg-[#f9fafb]">
+      <div className="max-w-[1200px] mx-auto px-4 py-12">
+        <nav className="flex justify-center mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-1 inline-flex">
+            <Link
+              to="/"
+              className="px-5 py-2.5 rounded-md bg-[#ff7e0c] text-white font-medium text-sm"
+            >
+              Einzel QR-Code
+            </Link>
+            <Link
+              to="/premium"
+              className="px-5 py-2.5 rounded-md text-[#8E9196] font-medium text-sm"
+            >
+              Premium Bulk-Generator
+            </Link>
+          </div>
         </nav>
         
-        <div style={{
-          maxWidth: "768px",
-          margin: "0 auto",
-          textAlign: "center",
-          marginBottom: "3rem"
-        }}>
-          <h1 style={{
-            fontSize: "2.25rem",
-            fontWeight: "600",
-            color: "#1A1F2C",
-            marginBottom: "0.75rem"
-          }}>QR-Code Generator</h1>
-          <p style={{
-            color: "#8E9196",
-            fontSize: "1.125rem"
-          }}>
+        <div className="max-w-[768px] mx-auto text-center mb-10">
+          <h1 className="text-3xl font-bold text-[#1A1F2C] mb-2">
+            QR-Code Generator
+          </h1>
+          <p className="text-[#8E9196] text-lg">
             Erstellen Sie einen QR-Code für Ihre Kontaktdaten
           </p>
         </div>
         
-        <div style={{
-          display: "flex",
-          flexDirection: window.innerWidth < 1024 ? "column" : "row",
-          gap: "4rem",
-          alignItems: "flex-start",
-          justifyContent: "center"
-        }}>
-          <div style={{
-            width: "100%",
-            maxWidth: window.innerWidth < 1024 ? "100%" : "50%",
-            backgroundColor: "white",
-            borderRadius: "0.75rem",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-            padding: "2rem"
-          }}>
+        <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
+          <div className="w-full lg:w-1/2 bg-white rounded-xl shadow-sm p-8">
             <VCardForm onDataChange={setVCardData} />
           </div>
-          <div style={{
-            width: "100%",
-            maxWidth: window.innerWidth < 1024 ? "100%" : "50%",
-            position: window.innerWidth < 1024 ? "static" : "sticky",
-            top: window.innerWidth < 1024 ? "auto" : "2rem"
-          }}>
+          <div className="w-full lg:w-1/2 lg:sticky lg:top-8">
             <QRCodeDisplay data={vCardData} />
           </div>
         </div>

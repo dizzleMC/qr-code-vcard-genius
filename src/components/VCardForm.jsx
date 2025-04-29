@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,175 +31,143 @@ export const VCardForm = ({ onDataChange }) => {
     }
   };
 
-  const inputStyle = {
-    marginTop: "0.25rem",
-    width: "100%",
-    padding: "0.5rem",
-    border: "1px solid #e2e8f0",
-    borderRadius: "0.375rem",
-    fontSize: "1rem"
-  };
-
-  const labelStyle = {
-    display: "block",
-    marginBottom: "0.25rem",
-    fontSize: "0.875rem",
-    fontWeight: "500",
-    color: "#1A1F2C"
-  };
-
-  const formGroupStyle = {
-    marginBottom: "1rem"
-  };
-
-  const gridContainerStyle = {
-    display: "grid",
-    gap: "1rem"
-  };
-
-  const twoColumnGridStyle = {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "1rem"
-  };
-
   return (
-    <div style={{ width: "100%", maxWidth: "36rem" }}>
-      <div style={gridContainerStyle}>
-        <div style={twoColumnGridStyle}>
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="firstName">Vorname</label>
+    <div className="w-full max-w-xl">
+      <div className="grid gap-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="firstName" className="text-sm font-medium text-[#1A1F2C]">Vorname</Label>
             <Input
               id="firstName"
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              style={inputStyle}
+              className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
             />
           </div>
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="lastName">Nachname</label>
+          <div className="space-y-2">
+            <Label htmlFor="lastName" className="text-sm font-medium text-[#1A1F2C]">Nachname</Label>
             <Input
               id="lastName"
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              style={inputStyle}
+              className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
             />
           </div>
         </div>
         
-        <div style={formGroupStyle}>
-          <label style={labelStyle} htmlFor="title">Titel/Position</label>
+        <div className="space-y-2">
+          <Label htmlFor="title" className="text-sm font-medium text-[#1A1F2C]">Titel/Position</Label>
           <Input
             id="title"
             name="title"
             value={formData.title}
             onChange={handleChange}
-            style={inputStyle}
+            className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
           />
         </div>
 
-        <div style={formGroupStyle}>
-          <label style={labelStyle} htmlFor="company">Unternehmen</label>
+        <div className="space-y-2">
+          <Label htmlFor="company" className="text-sm font-medium text-[#1A1F2C]">Unternehmen</Label>
           <Input
             id="company"
             name="company"
             value={formData.company}
             onChange={handleChange}
-            style={inputStyle}
+            className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
           />
         </div>
 
-        <div style={formGroupStyle}>
-          <label style={labelStyle} htmlFor="email">E-Mail</label>
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium text-[#1A1F2C]">E-Mail</Label>
           <Input
             id="email"
             name="email"
             type="email"
             value={formData.email}
             onChange={handleChange}
-            style={inputStyle}
+            className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
           />
         </div>
 
-        <div style={formGroupStyle}>
-          <label style={labelStyle} htmlFor="phone">Telefon</label>
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-sm font-medium text-[#1A1F2C]">Telefon</Label>
           <Input
             id="phone"
             name="phone"
             type="tel"
             value={formData.phone}
             onChange={handleChange}
-            style={inputStyle}
+            className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
           />
         </div>
 
-        <div style={formGroupStyle}>
-          <label style={labelStyle} htmlFor="website">Website</label>
+        <div className="space-y-2">
+          <Label htmlFor="website" className="text-sm font-medium text-[#1A1F2C]">Website</Label>
           <Input
             id="website"
             name="website"
             type="url"
             value={formData.website}
             onChange={handleChange}
-            style={inputStyle}
+            className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
           />
         </div>
 
-        <div style={formGroupStyle}>
-          <label style={labelStyle} htmlFor="street">Straße</label>
+        <div className="space-y-2">
+          <Label htmlFor="street" className="text-sm font-medium text-[#1A1F2C]">Straße</Label>
           <Input
             id="street"
             name="street"
             value={formData.street}
             onChange={handleChange}
-            style={inputStyle}
+            className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
           />
         </div>
 
-        <div style={twoColumnGridStyle}>
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="city">Stadt</label>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="city" className="text-sm font-medium text-[#1A1F2C]">Stadt</Label>
             <Input
               id="city"
               name="city"
               value={formData.city}
               onChange={handleChange}
-              style={inputStyle}
+              className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
             />
           </div>
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="state">Bundesland</label>
+          <div className="space-y-2">
+            <Label htmlFor="state" className="text-sm font-medium text-[#1A1F2C]">Bundesland</Label>
             <Input
               id="state"
               name="state"
               value={formData.state}
               onChange={handleChange}
-              style={inputStyle}
+              className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
             />
           </div>
         </div>
 
-        <div style={twoColumnGridStyle}>
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="zip">PLZ</label>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="zip" className="text-sm font-medium text-[#1A1F2C]">PLZ</Label>
             <Input
               id="zip"
               name="zip"
               value={formData.zip}
               onChange={handleChange}
-              style={inputStyle}
+              className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
             />
           </div>
-          <div style={formGroupStyle}>
-            <label style={labelStyle} htmlFor="country">Land</label>
+          <div className="space-y-2">
+            <Label htmlFor="country" className="text-sm font-medium text-[#1A1F2C]">Land</Label>
             <Input
               id="country"
               name="country"
               value={formData.country}
               onChange={handleChange}
-              style={inputStyle}
+              className="border-gray-200 focus:border-[#ff7e0c] focus:ring-[#ff7e0c]"
             />
           </div>
         </div>

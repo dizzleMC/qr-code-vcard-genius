@@ -4,67 +4,30 @@ import { GuideSection } from "@/components/GuideSection";
 
 export const PremiumLayout = ({ children }) => {
   return (
-    <div 
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(to bottom right, rgba(255, 126, 12, 0.1), white)"
-      }}
-    >
-      <div style={{
-        padding: "3rem 1rem",
-        maxWidth: "1200px",
-        margin: "0 auto"
-      }}>
-        <nav style={{
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: "2rem"
-        }}>
-          <ul style={{
-            display: "flex",
-            gap: "2rem",
-            listStyle: "none",
-            padding: 0
-          }}>
-            <li>
-              <Link to="/" style={{
-                fontWeight: "500",
-                color: "#8E9196",
-                textDecoration: "none"
-              }}>
-                Einzel QR-Code
-              </Link>
-            </li>
-            <li>
-              <Link to="/premium" style={{
-                fontWeight: "600",
-                color: "#ff7e0c",
-                textDecoration: "none",
-                borderBottom: "2px solid #ff7e0c",
-                paddingBottom: "0.25rem"
-              }}>
-                Premium Bulk-Generator
-              </Link>
-            </li>
-          </ul>
+    <div className="min-h-screen bg-[#f9fafb]">
+      <div className="max-w-[1200px] mx-auto px-4 py-12">
+        <nav className="flex justify-center mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-1 inline-flex">
+            <Link
+              to="/"
+              className="px-5 py-2.5 rounded-md text-[#8E9196] font-medium text-sm"
+            >
+              Einzel QR-Code
+            </Link>
+            <Link
+              to="/premium"
+              className="px-5 py-2.5 rounded-md bg-[#ff7e0c] text-white font-medium text-sm"
+            >
+              Premium Bulk-Generator
+            </Link>
+          </div>
         </nav>
         
-        <div style={{
-          maxWidth: "768px",
-          margin: "0 auto",
-          textAlign: "center",
-          marginBottom: "3rem"
-        }}>
-          <h1 style={{
-            fontSize: "2.25rem",
-            fontWeight: "600",
-            color: "#1A1F2C",
-            marginBottom: "0.75rem"
-          }}>QR-Code Bulk Generator</h1>
-          <p style={{
-            color: "#8E9196",
-            fontSize: "1.125rem"
-          }}>
+        <div className="max-w-[768px] mx-auto mb-10 text-center">
+          <h1 className="text-3xl font-bold text-[#1A1F2C] mb-2">
+            QR-Code Bulk Generator
+          </h1>
+          <p className="text-[#8E9196] text-lg">
             Erstellen Sie QR-Codes für mehrere Kontakte auf einmal
           </p>
         </div>

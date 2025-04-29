@@ -7,6 +7,7 @@ import { TemplateStep } from "@/components/premium/TemplateStep";
 import { GenerateStep } from "@/components/premium/GenerateStep";
 import { useTemplateSettings } from "@/components/premium/hooks/useTemplateSettings";
 import { useGenerateQRCodes } from "@/components/premium/hooks/useGenerateQRCodes";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Premium = () => {
   // Template and QR code settings
@@ -87,49 +88,48 @@ const Premium = () => {
   
   return (
     <PremiumLayout>
-      <div style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: "2rem"
-    }}>
-        <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        maxWidth: "600px",
-        margin: "0 auto 2rem auto"
-      }}>
-          {[1, 2, 3].map(step => <div key={step} style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
-        }}>
-              <div style={{
-            width: "3rem",
-            height: "3rem",
-            borderRadius: "50%",
-            backgroundColor: currentStep >= step ? "#ff7e0c" : "#e2e8f0",
-            color: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: "600",
-            marginBottom: "0.5rem"
-          }}>
-                {step}
+      <Card className="mb-8 border-none shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex justify-between max-w-4xl mx-auto">
+            {[1, 2, 3].map((step) => (
+              <div 
+                key={step} 
+                className="flex flex-col items-center relative w-1/3"
+              >
+                <div 
+                  className={`
+                    w-10 h-10 rounded-full flex items-center justify-center mb-3
+                    ${currentStep >= step ? 'bg-[#ff7e0c] text-white' : 'bg-[#f1f5f9] text-[#8E9196]'}
+                    ${currentStep === step ? 'ring-4 ring-[#ff7e0c]/20' : ''}
+                  `}
+                >
+                  {step}
+                </div>
+                
+                {step < 3 && (
+                  <div 
+                    className={`absolute top-5 left-[calc(50%+20px)] right-[calc(50%-20px)] h-0.5 
+                      ${currentStep > step ? 'bg-[#ff7e0c]' : 'bg-[#e2e8f0]'}`}
+                  />
+                )}
+                
+                <span 
+                  className={`text-sm font-medium 
+                    ${currentStep >= step ? 'text-[#1A1F2C]' : 'text-[#8E9196]'}`}
+                >
+                  {step === 1 && "Daten importieren"}
+                  {step === 2 && "Template anpassen"}
+                  {step === 3 && "QR-Codes generieren"}
+                </span>
               </div>
-              <span style={{
-            color: currentStep >= step ? "#1A1F2C" : "#8E9196"
-          }} className="my-[8px] mx-[16px] py-[16px]">
-                {step === 1 && "Daten importieren"}
-                {step === 2 && "Template anpassen"}
-                {step === 3 && "QR-Codes generieren"}
-              </span>
-            </div>)}
-        </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-        {currentStep === 1 && <ImportStep onImportSuccess={handleImportSuccess} />}
-        
-        {currentStep === 2 && 
+      {currentStep === 1 && <ImportStep onImportSuccess={handleImportSuccess} />}
+      
+      {currentStep === 2 && 
         <TemplateStep 
           templateData={templateData} 
           templateSettings={templateSettings} 
@@ -142,8 +142,8 @@ const Premium = () => {
           onPreviousStep={handlePreviousStep}
         />
       }
-        
-        {currentStep === 3 && 
+      
+      {currentStep === 3 && 
         <GenerateStep 
           importedData={importedData} 
           templateSettings={templateSettings} 
@@ -155,7 +155,6 @@ const Premium = () => {
           onPreviousStep={handlePreviousStep}
         />
       }
-      </div>
     </PremiumLayout>
   );
 };
