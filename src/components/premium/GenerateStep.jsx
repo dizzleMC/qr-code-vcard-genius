@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Loader, ChevronLeft, RefreshCw } from "lucide-react";
 import { QRCodePreviewGrid } from "./QRCodePreviewGrid";
-import { Card, CardContent } from "@/components/ui/card";
 
 export const GenerateStep = ({
   importedData,
@@ -16,8 +15,8 @@ export const GenerateStep = ({
   onPreviousStep
 }) => {
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm p-8">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="border border-gray-200 rounded-lg p-8 bg-white">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-[#1A1F2C]">
             Schritt 3: QR-Codes generieren
@@ -33,27 +32,25 @@ export const GenerateStep = ({
           </Button>
         </div>
         
-        <Card className="mb-6 border-gray-100">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4 text-[#1A1F2C]">Zusammenfassung</h3>
-            
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-[#8E9196]">Anzahl Kontakte:</span>
-                <span className="font-semibold text-[#1A1F2C]">{importedData.length}</span>
-              </div>
+        <div className="mb-6 bg-white p-6 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-semibold mb-4 text-[#1A1F2C]">Zusammenfassung</h3>
+          
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-[#64748b]">Anzahl Kontakte:</span>
+              <span className="font-semibold text-[#1A1F2C]">{importedData.length}</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
         
         {isGenerating && (
-          <div className="mb-6 p-4 bg-[#f8fafc] rounded-lg border border-gray-100">
+          <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200">
             <Progress 
               value={generationProgress} 
               className="mb-2 h-2"
               indicatorClassName="bg-[#ff7e0c]"
             />
-            <p className="text-sm text-[#8E9196] flex items-center gap-2">
+            <p className="text-sm text-[#64748b] flex items-center gap-2">
               <Loader className="animate-spin text-[#ff7e0c]" size={16} />
               Generiere QR-Codes... {Math.round(generationProgress)}%
             </p>

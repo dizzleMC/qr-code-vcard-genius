@@ -21,8 +21,8 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
-      <div className="max-w-[1200px] mx-auto px-4 py-12">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-[1200px] mx-auto px-4 py-8">
         <nav className="flex justify-center mb-8">
           <div className="bg-white rounded-lg shadow-sm p-1 inline-flex">
             <Link
@@ -40,17 +40,18 @@ const Index = () => {
           </div>
         </nav>
         
-        <div className="max-w-[768px] mx-auto text-center mb-10">
-          <h1 className="text-3xl font-bold text-[#1A1F2C] mb-2">
+        <div className="text-center mb-10">
+          <p className="text-[#ff7e0c] font-medium mb-2">Features</p>
+          <h1 className="text-4xl font-bold text-[#1A1F2C] mb-4">
             QR-Code Generator
           </h1>
-          <p className="text-[#8E9196] text-lg">
+          <p className="text-[#64748b] max-w-2xl mx-auto">
             Erstellen Sie einen QR-Code für Ihre Kontaktdaten
           </p>
         </div>
         
         <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
-          <div className="w-full lg:w-1/2 bg-white rounded-xl shadow-sm p-8">
+          <div className="w-full lg:w-1/2 bg-white border border-gray-100 rounded-lg shadow-sm p-8">
             <VCardForm onDataChange={setVCardData} />
           </div>
           <div className="w-full lg:w-1/2 lg:sticky lg:top-8">

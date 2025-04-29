@@ -130,7 +130,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
       <div
         className={`
           border-2 border-dashed rounded-lg p-8 text-center transition-colors
-          ${isDragging ? 'border-[#ff7e0c] bg-[#ff7e0c]/5' : 'border-gray-200 bg-[#f8fafc]'}
+          ${isDragging ? 'border-[#ff7e0c] bg-[#ff7e0c]/5' : 'border-gray-200 bg-white'}
         `}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -146,21 +146,15 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         />
         
         <div className="flex flex-col items-center gap-4">
-          <div className={`
-            w-16 h-16 rounded-full flex items-center justify-center
-            ${isDragging ? 'bg-[#ff7e0c]/10' : 'bg-gray-100'}
-          `}>
-            <Upload 
-              size={24} 
-              className={isDragging ? 'text-[#ff7e0c]' : 'text-gray-400'} 
-            />
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+            <Upload size={24} className="text-gray-400" />
           </div>
           
           <div>
             <p className="font-medium text-[#1A1F2C] mb-1">
               {fileName || "Klicken Sie hier oder ziehen Sie eine Datei hierher"}
             </p>
-            <p className="text-sm text-[#8E9196]">
+            <p className="text-sm text-[#64748b]">
               Unterstützte Dateiformate: .xlsx, .xls, .csv
             </p>
           </div>
@@ -185,9 +179,8 @@ export const ExcelImporter = ({ onImportSuccess }) => {
                 }}
                 className="flex items-center gap-1 border-gray-200"
               >
-                <FileSpreadsheet size={16} />
+                <Download size={16} className="mr-1" />
                 Vorlage
-                <Download size={16} className="ml-1" />
               </Button>
             </div>
           )}
@@ -246,28 +239,31 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         </div>
       )}
       
-      <div className="p-4 bg-gray-50 border border-gray-100 rounded-lg">
-        <h3 className="text-base font-semibold mb-3 text-[#1A1F2C] flex items-center">
+      <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg">
+        <h3 className="text-base font-semibold mb-4 text-[#1A1F2C]">
           Hinweise zum Import
+        </h3>
+        
+        <div className="flex items-start mb-4">
           <Button 
             variant="link" 
             onClick={(e) => {
               e.stopPropagation();
               downloadExcelTemplate();
             }}
-            className="ml-2 text-[#ff7e0c] p-0 h-auto flex items-center gap-1"
+            className="text-[#ff7e0c] p-0 h-auto flex items-center gap-1"
           >
             <FileSpreadsheet size={14} />
             Excel-Vorlage herunterladen
           </Button>
-        </h3>
+        </div>
         
-        <ul className="list-disc pl-5 text-sm text-[#8E9196] space-y-1">
-          <li>Die Excel-Datei sollte eine Kopfzeile mit Spaltenbezeichnungen haben</li>
-          <li>Folgende Felder werden erkannt: Vorname, Nachname, Email, Telefon, Firma, etc.</li>
-          <li>Leere Zeilen oder Zeilen ohne Namen werden übersprungen</li>
-          <li>Für ein optimales Ergebnis verwenden Sie die Excel-Vorlage</li>
-        </ul>
+        <div className="space-y-3 text-sm text-[#64748b]">
+          <p>Die Excel-Datei sollte eine Kopfzeile mit Spaltenbezeichnungen haben</p>
+          <p>Folgende Felder werden erkannt: Vorname, Nachname, Email, Telefon, Firma, etc.</p>
+          <p>Leere Zeilen oder Zeilen ohne Namen werden übersprungen</p>
+          <p>Für ein optimales Ergebnis verwenden Sie die Excel-Vorlage</p>
+        </div>
       </div>
     </div>
   );
