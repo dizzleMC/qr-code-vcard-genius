@@ -7,6 +7,7 @@ import { TemplateStep } from "@/components/premium/TemplateStep";
 import { GenerateStep } from "@/components/premium/GenerateStep";
 import { useTemplateSettings } from "@/components/premium/hooks/useTemplateSettings";
 import { useGenerateQRCodes } from "@/components/premium/hooks/useGenerateQRCodes";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Premium = () => {
   // Template and QR code settings
@@ -86,75 +87,59 @@ const Premium = () => {
   };
   
   return (
-    <PremiumLayout>
-      <div style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: "2rem"
-    }}>
-        <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        maxWidth: "600px",
-        margin: "0 auto 2rem auto"
-      }}>
-          {[1, 2, 3].map(step => <div key={step} style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
-        }}>
-              <div style={{
-            width: "3rem",
-            height: "3rem",
-            borderRadius: "50%",
-            backgroundColor: currentStep >= step ? "#ff7e0c" : "#e2e8f0",
-            color: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: "600",
-            marginBottom: "0.5rem"
-          }}>
-                {step}
-              </div>
-              <span style={{
-            color: currentStep >= step ? "#1A1F2C" : "#8E9196"
-          }} className="my-[8px] mx-[16px] py-[16px]">
-                {step === 1 && "Daten importieren"}
-                {step === 2 && "Template anpassen"}
-                {step === 3 && "QR-Codes generieren"}
-              </span>
-            </div>)}
-        </div>
-
-        {currentStep === 1 && <ImportStep onImportSuccess={handleImportSuccess} />}
+    <PremiumLayout currentStep={currentStep}>
+      <div className="space-y-8">
+        {currentStep === 1 && (
+          <Card className="overflow-hidden border-none shadow-md">
+            <CardHeader className="bg-white border-b border-gray-100 pb-4">
+              <CardTitle>Daten importieren</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 bg-white">
+              <ImportStep onImportSuccess={handleImportSuccess} />
+            </CardContent>
+          </Card>
+        )}
         
-        {currentStep === 2 && 
-        <TemplateStep 
-          templateData={templateData} 
-          templateSettings={templateSettings} 
-          importedData={importedData} 
-          selectedContact={selectedContact} 
-          onTemplateChange={handleTemplateChange} 
-          onSelectContact={setSelectedContact} 
-          onNextStep={() => setCurrentStep(3)}
-          onApplyQRConfig={handleApplyQRConfig}
-          onPreviousStep={handlePreviousStep}
-        />
-      }
+        {currentStep === 2 && (
+          <Card className="overflow-hidden border-none shadow-md">
+            <CardHeader className="bg-white border-b border-gray-100 pb-4">
+              <CardTitle>QR-Code & Namensschild anpassen</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 bg-white">
+              <TemplateStep 
+                templateData={templateData} 
+                templateSettings={templateSettings} 
+                importedData={importedData} 
+                selectedContact={selectedContact} 
+                onTemplateChange={handleTemplateChange} 
+                onSelectContact={setSelectedContact} 
+                onNextStep={() => setCurrentStep(3)}
+                onApplyQRConfig={handleApplyQRConfig}
+                onPreviousStep={handlePreviousStep}
+              />
+            </CardContent>
+          </Card>
+        )}
         
-        {currentStep === 3 && 
-        <GenerateStep 
-          importedData={importedData} 
-          templateSettings={templateSettings} 
-          isGenerating={isGenerating} 
-          generationProgress={generationProgress} 
-          onGenerate={handleBulkGenerateQR} 
-          onGenerateSelected={handleGenerateSelectedQR} 
-          onReset={resetProcess}
-          onPreviousStep={handlePreviousStep}
-        />
-      }
+        {currentStep === 3 && (
+          <Card className="overflow-hidden border-none shadow-md">
+            <CardHeader className="bg-white border-b border-gray-100 pb-4">
+              <CardTitle>QR-Codes generieren</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 bg-white">
+              <GenerateStep 
+                importedData={importedData} 
+                templateSettings={templateSettings} 
+                isGenerating={isGenerating} 
+                generationProgress={generationProgress} 
+                onGenerate={handleBulkGenerateQR} 
+                onGenerateSelected={handleGenerateSelectedQR} 
+                onReset={resetProcess}
+                onPreviousStep={handlePreviousStep}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </PremiumLayout>
   );

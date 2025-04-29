@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Loader, ChevronLeft } from "lucide-react";
+import { Loader, ChevronLeft, Download, RefreshCcw } from "lucide-react";
 import { QRCodePreviewGrid } from "./QRCodePreviewGrid";
 
 export const GenerateStep = ({
@@ -14,57 +14,86 @@ export const GenerateStep = ({
   onReset,
   onPreviousStep
 }) => {
-  return <div className="bg-white rounded-xl shadow-sm p-8 my-[32px]">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">
-          Schritt 3: QR-Codes generieren
-        </h2>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onPreviousStep}
-          className="flex items-center gap-2"
-        >
-          <ChevronLeft size={16} />
-          Zurück
-        </Button>
-      </div>
-      
-      <div className="flex-1 bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">Zusammenfassung</h3>
+  return (
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-medium mb-4">Zusammenfassung</h3>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <span className="text-gray-600">Anzahl Kontakte</span>
+              <span className="font-medium text-gray-900">{importedData.length}</span>
+            </div>
+            
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <span className="text-gray-600">QR-Code Größe</span>
+              <span className="font-medium text-gray-900">{templateSettings.size}px</span>
+            </div>
+            
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <span className="text-gray-600">Namensschild</span>
+              <span className="font-medium text-gray-900">{templateSettings.nameTag?.enabled ? 'Aktiviert' : 'Deaktiviert'}</span>
+            </div>
+          </div>
+        </div>
         
-        <ul className="list-none p-0 m-0">
-          <li className="flex justify-between mb-2">
-            <span>Anzahl Kontakte:</span>
-            <span className="font-medium">{importedData.length}</span>
-          </li>
-        </ul>
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-medium mb-4">Aktionen</h3>
+          
+          <div className="space-y-4">
+            <Button
+              onClick={onGenerate}
+              disabled={isGenerating || importedData.length === 0}
+              className="w-full bg-accent hover:bg-accent/90 text-white flex items-center justify-center gap-2"
+              size="lg"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader className="animate-spin" size={16} />
+                  Generiere...
+                </>
+              ) : (
+                <>
+                  <Download size={16} />
+                  Alle QR-Codes generieren & herunterladen
+                </>
+              )}
+            </Button>
+            
+            <Button
+              onClick={onReset}
+              variant="outline"
+              className="w-full border-gray-300 flex items-center justify-center gap-2"
+              size="lg"
+            >
+              <RefreshCcw size={16} />
+              Prozess zurücksetzen
+            </Button>
+          </div>
+        </div>
       </div>
       
-      {isGenerating && <div className="mb-6">
-          <Progress value={generationProgress} className="mb-2" />
+      {isGenerating && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-medium mb-4">Fortschritt</h3>
+          <Progress value={generationProgress} className="h-2 mb-2" />
           <p className="text-sm text-gray-600 flex items-center gap-2">
             <Loader className="animate-spin" size={16} />
             Generiere QR-Codes... {Math.round(generationProgress)}%
           </p>
-        </div>}
+        </div>
+      )}
       
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-4">QR-Code Vorschau</h3>
-        <QRCodePreviewGrid contacts={importedData} templateSettings={templateSettings} onGenerateSelected={onGenerateSelected} isGenerating={isGenerating} />
+      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <h3 className="text-lg font-medium mb-6">QR-Code Vorschau</h3>
+        <QRCodePreviewGrid 
+          contacts={importedData} 
+          templateSettings={templateSettings} 
+          onGenerateSelected={onGenerateSelected} 
+          isGenerating={isGenerating} 
+        />
       </div>
-      
-      <div className="flex gap-4">
-        <Button onClick={onReset} variant="outline" className="flex-1">
-          Zurücksetzen
-        </Button>
-        
-        <Button onClick={onGenerate} disabled={isGenerating || importedData.length === 0} className="flex-2 bg-[#ff7e0c] text-white font-medium">
-          {isGenerating ? <span className="flex items-center gap-2">
-              <Loader className="animate-spin" size={16} />
-              Generiere...
-            </span> : "Alle QR-Codes generieren & herunterladen"}
-        </Button>
-      </div>
-    </div>;
+    </div>
+  );
 };
