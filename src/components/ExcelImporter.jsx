@@ -129,8 +129,8 @@ export const ExcelImporter = ({ onImportSuccess }) => {
     <div className="space-y-6">
       <div
         className={`
-          border-2 border-dashed rounded-lg p-8 text-center transition-colors
-          ${isDragging ? 'border-[#ff7e0c] bg-[#ff7e0c]/5' : 'border-gray-200 bg-white'}
+          border-2 border-dashed rounded-xl p-10 text-center transition-all
+          ${isDragging ? 'border-accent bg-accent-light' : 'border-gray-200 bg-gradient-to-b from-white to-gray-50'}
         `}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -145,14 +145,14 @@ export const ExcelImporter = ({ onImportSuccess }) => {
           onChange={handleFileInputChange}
         />
         
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-            <Upload size={24} className="text-gray-400" />
+        <div className="flex flex-col items-center gap-5">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[#ff7e0c]/10 to-[#ff9a41]/10 flex items-center justify-center">
+            <Upload size={32} className="text-accent" />
           </div>
           
           <div>
-            <p className="font-medium text-[#1A1F2C] mb-1">
-              {fileName || "Klicken Sie hier oder ziehen Sie eine Datei hierher"}
+            <p className="font-medium text-[#1A1F2C] text-lg mb-1">
+              {fileName || "Klicken oder ziehen Sie Ihre Excel-Datei hierher"}
             </p>
             <p className="text-sm text-[#64748b]">
               Unterstützte Dateiformate: .xlsx, .xls, .csv
@@ -162,7 +162,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
           {!fileName && (
             <div className="flex gap-3 mt-2">
               <Button
-                className="bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium"
+                className="bg-gradient-to-r from-[#ff7e0c] to-[#ff9a41] hover:from-[#e67008] hover:to-[#e68a37] text-white font-medium shadow-sm transition-transform hover:scale-[1.02]"
                 onClick={(e) => {
                   e.stopPropagation();
                   fileInputRef.current.click();
@@ -177,7 +177,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
                   e.stopPropagation();
                   downloadExcelTemplate();
                 }}
-                className="flex items-center gap-1 border-gray-200"
+                className="flex items-center gap-1 border-gray-200 hover:bg-gray-50"
               >
                 <Download size={16} className="mr-1" />
                 Vorlage
@@ -188,15 +188,15 @@ export const ExcelImporter = ({ onImportSuccess }) => {
       </div>
       
       {fileName && (
-        <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-100">
+        <div className="flex justify-between items-center p-5 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 shadow-sm">
           <div className="flex items-center gap-2 font-medium text-[#1A1F2C]">
-            <FileSpreadsheet size={16} className="text-[#ff7e0c]" />
+            <FileSpreadsheet size={18} className="text-accent" />
             {fileName}
           </div>
           
           <Button
             className={`
-              ${isProcessing ? 'bg-gray-200 text-gray-500' : 'bg-[#ff7e0c] hover:bg-[#e67008] text-white'}
+              ${isProcessing ? 'bg-gray-200 text-gray-500' : 'bg-gradient-to-r from-[#ff7e0c] to-[#ff9a41] hover:from-[#e67008] hover:to-[#e68a37] text-white shadow-sm transition-transform hover:scale-[1.02]'}
               font-medium
             `}
             disabled={isProcessing}
@@ -239,7 +239,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         </div>
       )}
       
-      <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg">
+      <div className="p-6 bg-gradient-to-r from-gray-50 to-white border border-gray-100 rounded-xl shadow-sm">
         <h3 className="text-base font-semibold mb-4 text-[#1A1F2C]">
           Hinweise zum Import
         </h3>
@@ -251,7 +251,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
               e.stopPropagation();
               downloadExcelTemplate();
             }}
-            className="text-[#ff7e0c] p-0 h-auto flex items-center gap-1"
+            className="text-accent p-0 h-auto flex items-center gap-1 hover:text-[#e67008]"
           >
             <FileSpreadsheet size={14} />
             Excel-Vorlage herunterladen
@@ -259,10 +259,22 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         </div>
         
         <div className="space-y-3 text-sm text-[#64748b]">
-          <p>Die Excel-Datei sollte eine Kopfzeile mit Spaltenbezeichnungen haben</p>
-          <p>Folgende Felder werden erkannt: Vorname, Nachname, Email, Telefon, Firma, etc.</p>
-          <p>Leere Zeilen oder Zeilen ohne Namen werden übersprungen</p>
-          <p>Für ein optimales Ergebnis verwenden Sie die Excel-Vorlage</p>
+          <p className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>
+            Die Excel-Datei sollte eine Kopfzeile mit Spaltenbezeichnungen haben
+          </p>
+          <p className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>
+            Folgende Felder werden erkannt: Vorname, Nachname, Email, Telefon, Firma, etc.
+          </p>
+          <p className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>
+            Leere Zeilen oder Zeilen ohne Namen werden übersprungen
+          </p>
+          <p className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>
+            Für ein optimales Ergebnis verwenden Sie die Excel-Vorlage
+          </p>
         </div>
       </div>
     </div>
