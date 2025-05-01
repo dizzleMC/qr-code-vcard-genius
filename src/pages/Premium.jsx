@@ -93,37 +93,30 @@ const Premium = () => {
           QRCode Bulk Generator
         </h1>
         <p className="text-[#64748b] max-w-2xl mx-auto">
-          Erstellen Sie professionelle QR-Codes und Namensschilder für all Ihre Kontakte mit einem Klick.
+          vCards als QR-Codes generieren – schnell, unkompliziert & individuell
         </p>
 
-        <div className="flex justify-center mb-16 mt-12">
-          <div className="flex items-center max-w-3xl w-full">
-            {[
-              { text: "Excel Import", desc: "Importieren Sie Ihre Kontakte", done: currentStep > 0, active: currentStep === 1 },
-              { text: "Anpassung", desc: "Gestalten Sie Ihre QR-Codes", done: currentStep > 1, active: currentStep === 2 },
-              { text: "Generierung", desc: "Laden Sie Ihre Dateien herunter", done: false, active: currentStep === 3 }
-            ].map((step, idx) => (
-              <div key={idx} className="flex flex-1 items-center">
-                <div className="flex flex-col items-center flex-1">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                    step.done ? "bg-gradient-to-r from-[#ff7e0c] to-[#ff9a41]" : 
-                    step.active ? "bg-gradient-to-r from-[#ff7e0c] to-[#ff9a41] ring-4 ring-orange-100" : "bg-gray-200"
+        <div className="flex justify-center mt-12 mb-16">
+          <div className="relative w-full max-w-3xl">
+            <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gray-200 -translate-y-1/2"></div>
+            <div className="flex justify-between relative z-10">
+              {[
+                { text: "Excel Import", desc: "Importieren Sie Ihre Kontakte", active: currentStep === 1, done: currentStep > 1 },
+                { text: "Anpassung", desc: "Gestalten Sie Ihre QR-Codes", active: currentStep === 2, done: currentStep > 2 },
+                { text: "Generierung", desc: "Laden Sie Ihre Dateien herunter", active: currentStep === 3, done: false }
+              ].map((step, idx) => (
+                <div key={idx} className="flex flex-col items-center bg-white px-4">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all border-2 ${
+                    step.done ? "bg-[#ff7e0c] border-[#ff7e0c] text-white" : 
+                    step.active ? "border-[#ff7e0c] text-[#ff7e0c]" : "border-gray-300 text-gray-400"
                   }`}>
-                    {step.done || step.active ? (
-                      <span className="text-white font-medium text-lg">{idx + 1}</span>
-                    ) : (
-                      <span className="text-gray-500 font-medium text-lg">{idx + 1}</span>
-                    )}
+                    {idx + 1}
                   </div>
-                  <span className="font-medium">{step.text}</span>
-                  <span className="text-sm text-gray-500">{step.desc}</span>
+                  <span className="font-medium text-sm">{step.text}</span>
+                  <span className="text-xs text-gray-500">{step.desc}</span>
                 </div>
-                
-                {idx < 2 && (
-                  <div className={`flex-1 h-1 rounded-full ${idx < currentStep - 1 ? "bg-gradient-to-r from-[#ff7e0c] to-[#ff9a41]" : "bg-gray-200"}`} />
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
