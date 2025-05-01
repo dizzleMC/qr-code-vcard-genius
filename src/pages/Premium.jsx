@@ -88,35 +88,61 @@ const Premium = () => {
   return (
     <PremiumLayout>
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <p className="text-accent text-sm font-semibold tracking-wide uppercase mb-2">Premium Features</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#1A1F2C] mb-4">
-            QR-Code Bulk Generator
+        <div className="text-center">
+          <p className="text-[#ff7e0c] text-sm font-medium mb-2">Features</p>
+          <h1 className="text-3xl font-bold text-[#1A1F2C] mb-4">
+            QRCode Bluk generator
           </h1>
-          <p className="text-[#64748b] max-w-2xl mx-auto">
+          <p className="text-[#64748b] mb-8">
             vCards als QR-Codes generieren – schnell, unkompliziert & individuell
           </p>
           
-          <div className="mt-12 mb-16">
-            <div className="relative max-w-3xl mx-auto">
-              <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-100 -translate-y-1/2"></div>
+          <div className="mb-12 max-w-2xl mx-auto">
+            <p className="text-[#4B5563] text-left text-sm leading-relaxed mb-12">
+              Mit unserer Software können Sie mehrere digitale Visitenkarten (vCards) in nur wenigen Minuten erstellen – ganz ohne manuellen Aufwand. Einfach eine Excel-Datei hochladen, und wir generieren automatisch QR-Codes für jede einzelne Kontaktperson. Ideal für Unternehmen, Messen, Events oder Teams mit vielen Mitarbeitenden.
+            </p>
+            
+            <div className="relative">
+              {/* Progress line */}
+              <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gray-200 -translate-y-1/2"></div>
+              
+              {/* Progress steps */}
               <div className="flex justify-between relative z-10">
-                {[
-                  { text: "Excel Import", desc: "Importieren Sie Ihre Kontakte", active: currentStep === 1, done: currentStep > 1 },
-                  { text: "Anpassung", desc: "Gestalten Sie Ihre QR-Codes", active: currentStep === 2, done: currentStep > 2 },
-                  { text: "Generierung", desc: "Laden Sie Ihre Dateien herunter", active: currentStep === 3, done: false }
-                ].map((step, idx) => (
-                  <div key={idx} className="flex flex-col items-center">
-                    <div className={`w-8 h-8 bg-white rounded-full flex items-center justify-center mb-2 transition-all border ${
-                      step.done ? "border-none bg-accent text-white" : 
-                      step.active ? "border-accent text-accent" : "border-gray-200 text-gray-400"
-                    }`}>
-                      {idx + 1}
-                    </div>
-                    <span className={`font-medium text-sm ${step.active ? "text-[#1A1F2C]" : "text-gray-500"}`}>{step.text}</span>
-                    <span className="text-xs text-gray-400">{step.desc}</span>
+                {/* Step 1 */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${
+                    currentStep === 1 ? 'bg-[#ff7e0c] text-white' : 
+                    currentStep > 1 ? 'bg-[#ff7e0c] text-white' : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    <span className="text-sm font-medium">1</span>
                   </div>
-                ))}
+                  <span className="text-sm font-medium text-center">Daten hochladen</span>
+                  <span className="text-xs text-[#ff7e0c] text-center whitespace-nowrap">Datei mit den gewünschten Daten hochladen</span>
+                </div>
+                
+                {/* Step 2 */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${
+                    currentStep === 2 ? 'bg-[#ff7e0c] text-white' : 
+                    currentStep > 2 ? 'bg-[#ff7e0c] text-white' : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    <span className="text-sm font-medium">2</span>
+                  </div>
+                  <span className="text-sm font-medium text-center">Stil einstellen</span>
+                  <span className="text-xs text-gray-500 text-center whitespace-nowrap">Passe das Aussehen deines QR-Codes an.</span>
+                </div>
+                
+                {/* Step 3 */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${
+                    currentStep === 3 ? 'bg-[#ff7e0c] text-white' : 
+                    currentStep > 3 ? 'bg-[#ff7e0c] text-white' : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    <span className="text-sm font-medium">3</span>
+                  </div>
+                  <span className="text-sm font-medium text-center">Dateien herunterladen</span>
+                  <span className="text-xs text-gray-500 text-center whitespace-nowrap">Dateien einzeln oder gesammelt herunterladen</span>
+                </div>
               </div>
             </div>
           </div>

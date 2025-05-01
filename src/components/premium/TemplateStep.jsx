@@ -4,7 +4,7 @@ import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { NameTagCreator } from "./NameTagCreator";
-import { ChevronLeft, CheckCircle } from "lucide-react";
+import { ChevronLeft, Check } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 export const TemplateStep = ({ 
@@ -26,13 +26,11 @@ export const TemplateStep = ({
   };
 
   const predefinedColors = [
-    "#000000", "#1A1F2C", "#3B82F6", "#10B981", "#F97316", 
-    "#8B5CF6", "#EC4899", "#EF4444", "#6B7280", "#94A3B8"
+    "#ff7e0c", "#4ADE80", "#3B82F6", "#1A1F2C", "#6B7280"
   ];
   
   const backgroundColors = [
-    "#FFFFFF", "#F8F9FA", "#F3F4F6", "#E5E7EB", "#F0FDF4", 
-    "#EFF6FF", "#FEF3F2", "#F5F3FF", "#FDF2F8", "#FEF9C3"
+    "#FFFFFF", "#FEF9C3", "#E5DEFF", "#F5F3FF", "#E7FEE1"
   ];
 
   const getInitials = (firstName, lastName) => {
@@ -46,27 +44,36 @@ export const TemplateStep = ({
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent text-white text-sm font-medium">2</div>
-          <h2 className="text-lg font-semibold text-[#1A1F2C]">QR-Code & Namensschild anpassen</h2>
+        <div>
+          <h2 className="text-xl font-bold text-[#1A1F2C] mb-1">Schritt 2: QR-Code & Namensschild anpassen</h2>
         </div>
         <Button 
           variant="outline" 
           size="sm" 
           onClick={onPreviousStep}
-          className="flex items-center gap-2 border-gray-200"
+          className="flex items-center gap-2 border-gray-200 text-gray-600"
         >
           <ChevronLeft size={16} />
           Zurück
         </Button>
       </div>
       
-      <div className="border border-gray-200 rounded-xl bg-white p-0 shadow-sm overflow-hidden">
+      <div className="border border-gray-100 rounded-xl bg-white shadow-sm overflow-hidden">
         <Tabs defaultValue="qrcode" className="w-full">
           <div className="border-b border-gray-100">
             <TabsList className="w-full bg-white rounded-none h-14 px-6">
-              <TabsTrigger value="qrcode" className="flex-1 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-accent data-[state=active]:rounded-none">QR-Code</TabsTrigger>
-              <TabsTrigger value="nametag" className="flex-1 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-accent data-[state=active]:rounded-none">Namensschild</TabsTrigger>
+              <TabsTrigger 
+                value="qrcode" 
+                className="flex-1 text-[#64748b] data-[state=active]:border-b-2 data-[state=active]:border-[#ff7e0c] data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#1A1F2C] data-[state=active]:rounded-none rounded-none"
+              >
+                QR-Code
+              </TabsTrigger>
+              <TabsTrigger 
+                value="nametag" 
+                className="flex-1 text-[#64748b] data-[state=active]:border-b-2 data-[state=active]:border-[#ff7e0c] data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#1A1F2C] data-[state=active]:rounded-none rounded-none"
+              >
+                Namensschild
+              </TabsTrigger>
             </TabsList>
           </div>
           
@@ -90,29 +97,33 @@ export const TemplateStep = ({
                 
                 <div className="space-y-5 p-5 border border-gray-100 rounded-lg bg-gray-50">
                   <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <label className="text-sm font-medium text-gray-700">Größe</label>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-[#1A1F2C]">Größe</span>
                       <span className="text-sm text-gray-500">{templateSettings.size}px</span>
                     </div>
-                    <Slider
-                      defaultValue={[templateSettings.size]}
-                      min={100}
-                      max={400}
-                      step={10}
-                      onValueChange={handleSizeChange}
-                      className="my-4"
-                    />
+                    <div className="px-2">
+                      <Slider
+                        defaultValue={[templateSettings.size]}
+                        min={100}
+                        max={400}
+                        step={10}
+                        onValueChange={handleSizeChange}
+                        className="my-4"
+                      />
+                    </div>
                   </div>
                   
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700">QR-Code Farbe</label>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-[#1A1F2C]">Farben</span>
+                    </div>
                     <div className="grid grid-cols-5 gap-2">
                       {predefinedColors.map(color => (
                         <button
                           key={color}
                           type="button"
-                          className={`w-full aspect-square rounded-md border transition-all ${
-                            templateSettings.fgColor === color ? 'border-accent ring-1 ring-accent/20' : 'border-gray-200'
+                          className={`w-full aspect-square rounded-md transition-all ${
+                            templateSettings.fgColor === color ? 'ring-2 ring-gray-300' : ''
                           }`}
                           style={{ backgroundColor: color }}
                           onClick={() => onTemplateChange('fgColor', color)}
@@ -123,14 +134,16 @@ export const TemplateStep = ({
                   </div>
                   
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-gray-700">Hintergrundfarbe</label>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-[#1A1F2C]">Hintergrund</span>
+                    </div>
                     <div className="grid grid-cols-5 gap-2">
                       {backgroundColors.map(color => (
                         <button
                           key={color}
                           type="button"
-                          className={`w-full aspect-square rounded-md border transition-all ${
-                            templateSettings.bgColor === color ? 'border-accent ring-1 ring-accent/20' : 'border-gray-200'
+                          className={`w-full aspect-square rounded-md border border-gray-200 transition-all ${
+                            templateSettings.bgColor === color ? 'ring-2 ring-gray-300' : ''
                           }`}
                           style={{ backgroundColor: color }}
                           onClick={() => onTemplateChange('bgColor', color)}
@@ -142,9 +155,9 @@ export const TemplateStep = ({
                   
                   <Button
                     onClick={onApplyQRConfig}
-                    className="w-full flex items-center justify-center gap-2 mt-3 bg-green-600 hover:bg-green-700 text-white"
+                    className="w-full flex items-center justify-center gap-2 mt-3 bg-green-500 hover:bg-green-600 text-white"
                   >
-                    <CheckCircle size={16} />
+                    <Check size={16} />
                     QR-Code Konfiguration übernehmen
                   </Button>
                 </div>
@@ -152,7 +165,10 @@ export const TemplateStep = ({
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="font-medium text-gray-700">Kontakte ({importedData.length})</h3>
+                  <h3 className="font-medium text-[#1A1F2C]">Importierte Daten</h3>
+                  <span className="text-sm bg-[#ff7e0c]/10 text-[#ff7e0c] px-2 py-1 rounded font-medium">
+                    {importedData.length} Kontakte
+                  </span>
                 </div>
                 
                 <div className="border border-gray-200 rounded-lg overflow-hidden">
@@ -169,7 +185,7 @@ export const TemplateStep = ({
                         {importedData.map((contact, index) => (
                           <TableRow 
                             key={index} 
-                            className={`cursor-pointer hover:bg-gray-50 ${selectedContact === contact ? 'bg-accent/5' : ''}`}
+                            className={`cursor-pointer hover:bg-gray-50 ${selectedContact === contact ? 'bg-[#ff7e0c]/5' : ''}`}
                             onClick={() => onSelectContact(contact)}
                           >
                             <TableCell>
@@ -195,7 +211,7 @@ export const TemplateStep = ({
                 
                 <Button
                   onClick={onNextStep}
-                  className="w-full bg-accent hover:bg-accent/90 text-white"
+                  className="w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white"
                 >
                   Weiter zu Schritt 3
                 </Button>
@@ -217,7 +233,7 @@ export const TemplateStep = ({
             <div className="mt-6">
               <Button
                 onClick={onNextStep}
-                className="w-full bg-accent hover:bg-accent/90 text-white"
+                className="w-full bg-[#ff7e0c] hover:bg-[#e67008] text-white"
               >
                 Weiter zu Schritt 3
               </Button>

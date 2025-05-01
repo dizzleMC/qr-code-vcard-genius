@@ -17,23 +17,22 @@ export const GenerateStep = ({
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent text-white text-sm font-medium">3</div>
-          <h2 className="text-lg font-semibold text-[#1A1F2C]">QR-Codes generieren</h2>
+        <div>
+          <h2 className="text-xl font-bold text-[#1A1F2C] mb-1">Schritt 3: QR-Codes generieren</h2>
         </div>
         <Button 
           variant="outline" 
           size="sm" 
           onClick={onPreviousStep}
-          className="flex items-center gap-2 border-gray-200"
+          className="flex items-center gap-2 border-gray-200 text-gray-600"
         >
           <ChevronLeft size={16} />
           Zurück
         </Button>
       </div>
       
-      <div className="border border-gray-200 rounded-xl bg-white p-6 shadow-sm space-y-6">
-        <div className="p-5 bg-gray-50 border border-gray-100 rounded-lg">
+      <div className="border border-gray-100 rounded-xl bg-white p-6 shadow-sm space-y-6">
+        <div className="p-5 bg-gray-50 border border-gray-200 rounded-lg">
           <h3 className="text-base font-medium mb-3 text-[#1A1F2C]">Zusammenfassung</h3>
           
           <div className="flex justify-between items-center py-3 px-4 bg-white rounded-md border border-gray-100">
@@ -80,7 +79,7 @@ export const GenerateStep = ({
           <Button 
             onClick={onGenerate} 
             disabled={isGenerating || importedData.length === 0} 
-            className="sm:flex-grow-[3] bg-accent hover:bg-accent/90 text-white font-medium py-2.5"
+            className="sm:flex-grow-[3] bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium py-2.5"
           >
             {isGenerating ? (
               <span className="flex items-center gap-2">
