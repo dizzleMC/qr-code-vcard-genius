@@ -12,12 +12,12 @@ export const ImportStep = ({
   
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
-      <h2 className="text-xl font-semibold mb-6 text-[#1A1F2C] flex items-center">
-        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-[#ff7e0c] to-[#ff9a41] text-white text-sm font-bold mr-3">1</span>
-        Excel-Datei importieren
-      </h2>
+      <div className="flex items-center mb-6 space-x-3">
+        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent text-white text-sm font-medium">1</div>
+        <h2 className="text-lg font-semibold text-[#1A1F2C]">Excel-Datei importieren</h2>
+      </div>
       
-      <div className="border border-gray-200 rounded-xl shadow-card bg-white p-8 mb-6">
+      <div className="border border-gray-200 rounded-xl bg-white p-8 mb-6 shadow-sm">
         <ExcelImporter onImportSuccess={handleImportSuccess} />
       </div>
     </div>

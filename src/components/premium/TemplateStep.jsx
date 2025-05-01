@@ -4,8 +4,7 @@ import { QRCodeDisplay } from "@/components/QRCodeDisplay";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { NameTagCreator } from "./NameTagCreator";
-import { Save, ChevronLeft, CheckCircle, User } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { ChevronLeft, CheckCircle } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 export const TemplateStep = ({ 
@@ -45,35 +44,37 @@ export const TemplateStep = ({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      <div className="flex-1 bg-white rounded-xl shadow-sm p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-[#ff7e0c] to-[#ff9a41] text-white text-sm font-bold">2</span>
-            QR-Code & Namensschild anpassen
-          </h2>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onPreviousStep}
-            className="flex items-center gap-2"
-          >
-            <ChevronLeft size={16} />
-            Zurück
-          </Button>
+    <div className="max-w-3xl mx-auto animate-fade-in">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-accent text-white text-sm font-medium">2</div>
+          <h2 className="text-lg font-semibold text-[#1A1F2C]">QR-Code & Namensschild anpassen</h2>
         </div>
-        
-        <Tabs defaultValue="qrcode" className="mb-6">
-          <TabsList className="w-full mb-6 bg-gray-100 p-1 rounded-lg">
-            <TabsTrigger value="qrcode" className="w-1/2 rounded-md">QR-Code</TabsTrigger>
-            <TabsTrigger value="nametag" className="w-1/2 rounded-md">Namensschild</TabsTrigger>
-          </TabsList>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onPreviousStep}
+          className="flex items-center gap-2 border-gray-200"
+        >
+          <ChevronLeft size={16} />
+          Zurück
+        </Button>
+      </div>
+      
+      <div className="border border-gray-200 rounded-xl bg-white p-0 shadow-sm overflow-hidden">
+        <Tabs defaultValue="qrcode" className="w-full">
+          <div className="border-b border-gray-100">
+            <TabsList className="w-full bg-white rounded-none h-14 px-6">
+              <TabsTrigger value="qrcode" className="flex-1 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-accent data-[state=active]:rounded-none">QR-Code</TabsTrigger>
+              <TabsTrigger value="nametag" className="flex-1 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-accent data-[state=active]:rounded-none">Namensschild</TabsTrigger>
+            </TabsList>
+          </div>
           
-          <TabsContent value="qrcode">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-8">
+          <TabsContent value="qrcode" className="p-6 mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-6">
                 <div className="flex justify-center">
-                  <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                  <div className="p-6 bg-gray-50 border border-gray-100 rounded-lg">
                     <QRCodeDisplay
                       data={selectedContact || templateData}
                       initialSize={templateSettings.size}
@@ -82,15 +83,15 @@ export const TemplateStep = ({
                       onSizeChange={(size) => onTemplateChange('size', size)}
                       onFgColorChange={(color) => onTemplateChange('fgColor', color)}
                       onBgColorChange={(color) => onTemplateChange('bgColor', color)}
-                      showControls={false}
+                      previewMode={true}
                     />
                   </div>
                 </div>
                 
-                <div className="space-y-6">
-                  <div className="space-y-2">
+                <div className="space-y-5 p-5 border border-gray-100 rounded-lg bg-gray-50">
+                  <div className="space-y-3">
                     <div className="flex justify-between">
-                      <label className="text-sm font-medium text-gray-700">Größe ({templateSettings.size}px)</label>
+                      <label className="text-sm font-medium text-gray-700">Größe</label>
                       <span className="text-sm text-gray-500">{templateSettings.size}px</span>
                     </div>
                     <Slider
@@ -99,19 +100,19 @@ export const TemplateStep = ({
                       max={400}
                       step={10}
                       onValueChange={handleSizeChange}
-                      className="accent-[#ff7e0c]"
+                      className="my-4"
                     />
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <label className="text-sm font-medium text-gray-700">QR-Code Farbe</label>
                     <div className="grid grid-cols-5 gap-2">
                       {predefinedColors.map(color => (
                         <button
                           key={color}
                           type="button"
-                          className={`w-full aspect-square rounded-lg border-2 transition-all ${
-                            templateSettings.fgColor === color ? 'border-[#ff7e0c] ring-2 ring-orange-200' : 'border-gray-200'
+                          className={`w-full aspect-square rounded-md border transition-all ${
+                            templateSettings.fgColor === color ? 'border-accent ring-1 ring-accent/20' : 'border-gray-200'
                           }`}
                           style={{ backgroundColor: color }}
                           onClick={() => onTemplateChange('fgColor', color)}
@@ -121,15 +122,15 @@ export const TemplateStep = ({
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <label className="text-sm font-medium text-gray-700">Hintergrundfarbe</label>
                     <div className="grid grid-cols-5 gap-2">
                       {backgroundColors.map(color => (
                         <button
                           key={color}
                           type="button"
-                          className={`w-full aspect-square rounded-lg border-2 transition-all ${
-                            templateSettings.bgColor === color ? 'border-[#ff7e0c] ring-2 ring-orange-200' : 'border-gray-200'
+                          className={`w-full aspect-square rounded-md border transition-all ${
+                            templateSettings.bgColor === color ? 'border-accent ring-1 ring-accent/20' : 'border-gray-200'
                           }`}
                           style={{ backgroundColor: color }}
                           onClick={() => onTemplateChange('bgColor', color)}
@@ -138,67 +139,52 @@ export const TemplateStep = ({
                       ))}
                     </div>
                   </div>
+                  
+                  <Button
+                    onClick={onApplyQRConfig}
+                    className="w-full flex items-center justify-center gap-2 mt-3 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <CheckCircle size={16} />
+                    QR-Code Konfiguration übernehmen
+                  </Button>
                 </div>
-                
-                <Button 
-                  onClick={onApplyQRConfig}
-                  className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Save size={16} />
-                  QR-Code Konfiguration übernehmen
-                </Button>
               </div>
 
               <div className="space-y-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium">Kontakte ({importedData.length})</h3>
-                  <Button variant="outline" size="sm" onClick={onNextStep}>
-                    Weiter
-                  </Button>
+                <div className="flex justify-between items-center">
+                  <h3 className="font-medium text-gray-700">Kontakte ({importedData.length})</h3>
                 </div>
                 
                 <div className="border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="max-h-[500px] overflow-y-auto">
+                  <div className="max-h-[460px] overflow-y-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[40px]"></TableHead>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="w-[50px]"></TableHead>
                           <TableHead>Name</TableHead>
                           <TableHead className="hidden md:table-cell">Email</TableHead>
-                          <TableHead className="hidden md:table-cell w-[120px]">Team</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {importedData.map((contact, index) => (
                           <TableRow 
                             key={index} 
-                            className={`cursor-pointer hover:bg-gray-50 ${selectedContact === contact ? 'bg-orange-50' : ''}`}
+                            className={`cursor-pointer hover:bg-gray-50 ${selectedContact === contact ? 'bg-accent/5' : ''}`}
                             onClick={() => onSelectContact(contact)}
                           >
                             <TableCell>
-                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
+                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600">
                                 {getInitials(contact.firstName, contact.lastName)}
                               </div>
                             </TableCell>
                             <TableCell>
                               <div>
-                                <p className="font-medium">{contact.firstName} {contact.lastName}</p>
-                                <p className="text-xs text-gray-500">{contact.title || 'Keine Rolle'}</p>
+                                <p className="font-medium text-gray-800">{contact.firstName} {contact.lastName}</p>
+                                <p className="text-xs text-gray-500">{contact.title || contact.company || '-'}</p>
                               </div>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell text-gray-600">
+                            <TableCell className="hidden md:table-cell text-gray-600 text-sm">
                               {contact.email || '-'}
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              {contact.team ? (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                  {contact.team}
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                  Kein Team
-                                </span>
-                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -206,43 +192,38 @@ export const TemplateStep = ({
                     </Table>
                   </div>
                 </div>
+                
+                <Button
+                  onClick={onNextStep}
+                  className="w-full bg-accent hover:bg-accent/90 text-white"
+                >
+                  Weiter zu Schritt 3
+                </Button>
               </div>
             </div>
           </TabsContent>
           
-          <TabsContent value="nametag">
+          <TabsContent value="nametag" className="mt-0 p-6">
             <NameTagCreator
               data={selectedContact || templateData}
-              nameTagSettings={templateSettings.nameTag || {
-                enabled: false,
-                template: "classic",
-                size: "medium",
-                font: "Inter",
-                fontSize: 22,
-                nameColor: "#1A1F2C",
-                companyColor: "#8E9196",
-                logo: null,
-                logoScale: 100,
-                backgroundColor: "#ffffff",
-                borderColor: "#e2e8f0",
-                qrFgColor: "#000000",
-                qrBgColor: "#ffffff"
-              }}
+              nameTagSettings={templateSettings.nameTag}
               onSettingChange={handleNameTagSettingChange}
               qrCodeSettings={{
                 fgColor: templateSettings.fgColor,
                 bgColor: templateSettings.bgColor
               }}
             />
+            
+            <div className="mt-6">
+              <Button
+                onClick={onNextStep}
+                className="w-full bg-accent hover:bg-accent/90 text-white"
+              >
+                Weiter zu Schritt 3
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
-        
-        <Button
-          onClick={onNextStep}
-          className="mt-6 w-full bg-[#ff7e0c] text-white font-medium"
-        >
-          Weiter zu Schritt 3
-        </Button>
       </div>
     </div>
   );

@@ -87,68 +87,70 @@ const Premium = () => {
 
   return (
     <PremiumLayout>
-      <div className="text-center mb-10 max-w-3xl mx-auto">
-        <p className="text-accent font-medium mb-2">Premium Features</p>
-        <h1 className="text-4xl font-bold text-[#1A1F2C] mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#1A1F2C] to-[#4A5568]">
-          QRCode Bulk Generator
-        </h1>
-        <p className="text-[#64748b] max-w-2xl mx-auto">
-          vCards als QR-Codes generieren – schnell, unkompliziert & individuell
-        </p>
-
-        <div className="flex justify-center mt-12 mb-16">
-          <div className="relative w-full max-w-3xl">
-            <div className="absolute top-1/2 left-0 w-full h-[2px] bg-gray-200 -translate-y-1/2"></div>
-            <div className="flex justify-between relative z-10">
-              {[
-                { text: "Excel Import", desc: "Importieren Sie Ihre Kontakte", active: currentStep === 1, done: currentStep > 1 },
-                { text: "Anpassung", desc: "Gestalten Sie Ihre QR-Codes", active: currentStep === 2, done: currentStep > 2 },
-                { text: "Generierung", desc: "Laden Sie Ihre Dateien herunter", active: currentStep === 3, done: false }
-              ].map((step, idx) => (
-                <div key={idx} className="flex flex-col items-center bg-white px-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all border-2 ${
-                    step.done ? "bg-[#ff7e0c] border-[#ff7e0c] text-white" : 
-                    step.active ? "border-[#ff7e0c] text-[#ff7e0c]" : "border-gray-300 text-gray-400"
-                  }`}>
-                    {idx + 1}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="text-center mb-12">
+          <p className="text-accent text-sm font-semibold tracking-wide uppercase mb-2">Premium Features</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#1A1F2C] mb-4">
+            QR-Code Bulk Generator
+          </h1>
+          <p className="text-[#64748b] max-w-2xl mx-auto">
+            vCards als QR-Codes generieren – schnell, unkompliziert & individuell
+          </p>
+          
+          <div className="mt-12 mb-16">
+            <div className="relative max-w-3xl mx-auto">
+              <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-100 -translate-y-1/2"></div>
+              <div className="flex justify-between relative z-10">
+                {[
+                  { text: "Excel Import", desc: "Importieren Sie Ihre Kontakte", active: currentStep === 1, done: currentStep > 1 },
+                  { text: "Anpassung", desc: "Gestalten Sie Ihre QR-Codes", active: currentStep === 2, done: currentStep > 2 },
+                  { text: "Generierung", desc: "Laden Sie Ihre Dateien herunter", active: currentStep === 3, done: false }
+                ].map((step, idx) => (
+                  <div key={idx} className="flex flex-col items-center">
+                    <div className={`w-8 h-8 bg-white rounded-full flex items-center justify-center mb-2 transition-all border ${
+                      step.done ? "border-none bg-accent text-white" : 
+                      step.active ? "border-accent text-accent" : "border-gray-200 text-gray-400"
+                    }`}>
+                      {idx + 1}
+                    </div>
+                    <span className={`font-medium text-sm ${step.active ? "text-[#1A1F2C]" : "text-gray-500"}`}>{step.text}</span>
+                    <span className="text-xs text-gray-400">{step.desc}</span>
                   </div>
-                  <span className="font-medium text-sm">{step.text}</span>
-                  <span className="text-xs text-gray-500">{step.desc}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {currentStep === 1 && <ImportStep onImportSuccess={handleImportSuccess} />}
-      
-      {currentStep === 2 && 
-        <TemplateStep 
-          templateData={templateData} 
-          templateSettings={templateSettings} 
-          importedData={importedData} 
-          selectedContact={selectedContact} 
-          onTemplateChange={handleTemplateChange} 
-          onSelectContact={setSelectedContact} 
-          onNextStep={() => setCurrentStep(3)}
-          onApplyQRConfig={handleApplyQRConfig}
-          onPreviousStep={handlePreviousStep}
-        />
-      }
-      
-      {currentStep === 3 && 
-        <GenerateStep 
-          importedData={importedData} 
-          templateSettings={templateSettings} 
-          isGenerating={isGenerating} 
-          generationProgress={generationProgress} 
-          onGenerate={handleBulkGenerateQR} 
-          onGenerateSelected={handleGenerateSelectedQR} 
-          onReset={resetProcess}
-          onPreviousStep={handlePreviousStep}
-        />
-      }
+        {currentStep === 1 && <ImportStep onImportSuccess={handleImportSuccess} />}
+        
+        {currentStep === 2 && 
+          <TemplateStep 
+            templateData={templateData} 
+            templateSettings={templateSettings} 
+            importedData={importedData} 
+            selectedContact={selectedContact} 
+            onTemplateChange={handleTemplateChange} 
+            onSelectContact={setSelectedContact} 
+            onNextStep={() => setCurrentStep(3)}
+            onApplyQRConfig={handleApplyQRConfig}
+            onPreviousStep={handlePreviousStep}
+          />
+        }
+        
+        {currentStep === 3 && 
+          <GenerateStep 
+            importedData={importedData} 
+            templateSettings={templateSettings} 
+            isGenerating={isGenerating} 
+            generationProgress={generationProgress} 
+            onGenerate={handleBulkGenerateQR} 
+            onGenerateSelected={handleGenerateSelectedQR} 
+            onReset={resetProcess}
+            onPreviousStep={handlePreviousStep}
+          />
+        }
+      </div>
     </PremiumLayout>
   );
 };
