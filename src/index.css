@@ -100,7 +100,7 @@
     @apply bg-white text-foreground;
   }
 
-  /* Fix for color issues */
+  /* Fix für Farbprobleme - Direkte Festlegung der Farben */
   .bg-orange-500 {
     background-color: #f97316;
   }
@@ -115,6 +115,27 @@
 
   .hover\:bg-orange-600:hover {
     background-color: #ea580c;
+  }
+  
+  /* Direkte Farbdefinitionen für bessere Sichtbarkeit */
+  .bg-white {
+    background-color: #ffffff;
+  }
+  
+  .border-gray-100 {
+    border-color: #f3f4f6;
+  }
+  
+  .text-gray-600 {
+    color: #4b5563;
+  }
+  
+  .text-gray-700 {
+    color: #374151;
+  }
+  
+  .text-gray-900 {
+    color: #111827;
   }
 }
 
