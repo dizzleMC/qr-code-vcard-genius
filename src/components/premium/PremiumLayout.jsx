@@ -9,13 +9,13 @@ export const PremiumLayout = ({ children }) => {
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-1 inline-flex">
             <Link
               to="/"
-              className="px-5 py-2 rounded-md text-[#64748b] font-medium text-sm transition-all hover:text-gray-700"
+              className="px-5 py-2 rounded-md text-slate-600 font-medium text-sm transition-all hover:text-gray-700"
             >
               Einzel QR-Code
             </Link>
             <Link
               to="/premium"
-              className="px-5 py-2 rounded-md bg-accent text-white font-medium text-sm shadow-sm transition-transform hover:scale-[1.02]"
+              className="px-5 py-2 rounded-md bg-orange-500 text-white font-medium text-sm shadow-sm transition-transform hover:scale-[1.02]"
             >
               Premium Bulk-Generator
             </Link>
