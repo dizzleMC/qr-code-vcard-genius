@@ -111,7 +111,7 @@ const Premium = () => {
                 {/* Step 1 */}
                 <div className="w-80 flex flex-col items-center">
                   <div className={`w-6 h-6 rounded-xl flex items-center justify-center mb-3 ${
-                    currentStep === 1 ? 'bg-orange-500 shadow-[0px_0px_0px_4px_rgba(158,119,237,0.24)]' : 
+                    currentStep === 1 ? 'bg-orange-500 shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
                     currentStep > 1 ? 'bg-orange-500' : 'bg-white border border-gray-200'
                   }`}>
                     <span className={`w-2 h-2 rounded-full ${currentStep >= 1 ? 'bg-white' : 'bg-gray-300'}`}></span>
@@ -129,7 +129,7 @@ const Premium = () => {
                 {/* Step 2 */}
                 <div className="w-80 flex flex-col items-center">
                   <div className={`w-6 h-6 rounded-xl flex items-center justify-center mb-3 ${
-                    currentStep === 2 ? 'bg-orange-500 shadow-[0px_0px_0px_4px_rgba(158,119,237,0.24)]' : 
+                    currentStep === 2 ? 'bg-orange-500 shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
                     currentStep > 2 ? 'bg-orange-500' : 'bg-white border border-gray-200'
                   }`}>
                     <span className={`w-2 h-2 rounded-full ${currentStep >= 2 ? 'bg-white' : 'bg-gray-300'}`}></span>
@@ -147,7 +147,7 @@ const Premium = () => {
                 {/* Step 3 */}
                 <div className="w-80 flex flex-col items-center">
                   <div className={`w-6 h-6 rounded-xl flex items-center justify-center mb-3 ${
-                    currentStep === 3 ? 'bg-orange-500 shadow-[0px_0px_0px_4px_rgba(158,119,237,0.24)]' : 
+                    currentStep === 3 ? 'bg-orange-500 shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
                     currentStep > 3 ? 'bg-orange-500' : 'bg-white border border-gray-200'
                   }`}>
                     <span className={`w-2 h-2 rounded-full ${currentStep >= 3 ? 'bg-white' : 'bg-gray-300'}`}></span>

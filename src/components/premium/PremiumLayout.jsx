@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export const PremiumLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-white py-8">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-6">
         <nav className="flex justify-center mb-10">
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-1 inline-flex">
             <Link
