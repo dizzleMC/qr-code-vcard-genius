@@ -1,26 +1,12 @@
-
 import { useState } from "react";
-import { 
-  Accordion, 
-  AccordionContent, 
-  AccordionItem, 
-  AccordionTrigger 
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { downloadExcelTemplate } from "@/utils/excelTemplate";
 import { HelpCircle, FileSpreadsheet, Download } from "lucide-react";
-
 export const GuideSection = () => {
   const [expandedSection, setExpandedSection] = useState("item-1");
-  
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+  return <div className="bg-white rounded-lg shadow-md p-6 mb-8 my-[32px]">
       <h2 className="text-2xl font-semibold mb-4">Anleitung: So erstellen Sie QR-Codes für mehrere Kontakte</h2>
       <p className="text-gray-600 mb-6">
         Folgen Sie dieser Schritt-für-Schritt-Anleitung, um QR-Codes für Ihre Kontakte zu erstellen.
@@ -64,11 +50,7 @@ export const GuideSection = () => {
                 Laden Sie unsere vorgefertigte Excel-Vorlage herunter, die bereits alle benötigten Spalten enthält.
               </p>
               <div className="mt-3">
-                <Button 
-                  variant="outline" 
-                  onClick={downloadExcelTemplate}
-                  className="flex items-center gap-2 bg-white hover:bg-orange-50"
-                >
+                <Button variant="outline" onClick={downloadExcelTemplate} className="flex items-center gap-2 bg-white hover:bg-orange-50">
                   <FileSpreadsheet size={16} />
                   Excel-Vorlage herunterladen
                   <Download size={16} />
@@ -339,6 +321,5 @@ export const GuideSection = () => {
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-    </div>
-  );
+    </div>;
 };
