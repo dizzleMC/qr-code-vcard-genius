@@ -129,8 +129,8 @@ export const ExcelImporter = ({ onImportSuccess }) => {
     <div className="space-y-6">
       <div
         className={`
-          border-2 border-dashed rounded-xl p-12 text-center transition-all
-          ${isDragging ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-white'}
+          border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer
+          ${isDragging ? 'border-[#ff7e0c] bg-[#FFF7ED]' : 'border-gray-200 bg-white'}
         `}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -146,12 +146,12 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         />
         
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-            <Upload size={28} className="text-slate-600" />
+          <div className="w-20 h-20 rounded-full bg-[#FFF7ED] flex items-center justify-center">
+            <Upload size={32} className="text-[#ff7e0c]" />
           </div>
           
           <div>
-            <p className="font-medium text-gray-900 text-lg mb-1">
+            <p className="font-medium text-gray-900 text-xl mb-1">
               {fileName || "Klicken Sie hier oder ziehen Sie eine Datei hierher"}
             </p>
             <p className="text-sm text-slate-600">
@@ -162,7 +162,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
           {!fileName && (
             <div className="flex gap-3 mt-2">
               <Button
-                className="bg-orange-500 hover:bg-orange-600 text-white font-medium"
+                className="bg-[#ff7e0c] hover:bg-[#e67008] text-white font-medium py-2.5"
                 onClick={(e) => {
                   e.stopPropagation();
                   fileInputRef.current.click();
@@ -188,15 +188,15 @@ export const ExcelImporter = ({ onImportSuccess }) => {
       </div>
       
       {fileName && (
-        <div className="flex justify-between items-center p-5 bg-gray-50 rounded-xl border border-gray-200">
+        <div className="flex justify-between items-center p-5 bg-[#F9FAFB] rounded-xl border border-gray-200">
           <div className="flex items-center gap-2 font-medium text-gray-900">
-            <FileSpreadsheet size={18} className="text-orange-500" />
+            <FileSpreadsheet size={18} className="text-[#ff7e0c]" />
             {fileName}
           </div>
           
           <Button
             className={`
-              ${isProcessing ? 'bg-gray-200 text-gray-500' : 'bg-orange-500 hover:bg-orange-600 text-white'}
+              ${isProcessing ? 'bg-gray-200 text-gray-500' : 'bg-[#ff7e0c] hover:bg-[#e67008] text-white'}
               font-medium
             `}
             disabled={isProcessing}
@@ -239,7 +239,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         </div>
       )}
       
-      <div className="p-6 bg-gray-50 border border-gray-200 rounded-xl">
+      <div className="p-6 bg-[#F9FAFB] border border-gray-200 rounded-xl">
         <h3 className="text-base font-semibold mb-4 text-gray-900">
           Hinweise zum Import
         </h3>
@@ -251,7 +251,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
               e.stopPropagation();
               downloadExcelTemplate();
             }}
-            className="text-orange-500 p-0 h-auto flex items-center gap-1 hover:text-orange-600"
+            className="text-[#ff7e0c] p-0 h-auto flex items-center gap-1 hover:text-[#e67008]"
           >
             <FileSpreadsheet size={14} />
             Excel-Vorlage herunterladen
@@ -260,19 +260,19 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         
         <div className="space-y-3 text-sm text-slate-600">
           <p className="flex items-start gap-2">
-            <span className="min-w-[6px] h-[6px] rounded-full bg-orange-500 inline-block mt-[0.4rem]"></span>
+            <span className="min-w-[6px] h-[6px] rounded-full bg-[#ff7e0c] inline-block mt-[0.4rem]"></span>
             <span>Die Excel-Datei sollte eine Kopfzeile mit Spaltenbezeichnungen haben</span>
           </p>
           <p className="flex items-start gap-2">
-            <span className="min-w-[6px] h-[6px] rounded-full bg-orange-500 inline-block mt-[0.4rem]"></span>
+            <span className="min-w-[6px] h-[6px] rounded-full bg-[#ff7e0c] inline-block mt-[0.4rem]"></span>
             <span>Folgende Felder werden erkannt: Vorname, Nachname, Email, Telefon, Firma, etc.</span>
           </p>
           <p className="flex items-start gap-2">
-            <span className="min-w-[6px] h-[6px] rounded-full bg-orange-500 inline-block mt-[0.4rem]"></span>
+            <span className="min-w-[6px] h-[6px] rounded-full bg-[#ff7e0c] inline-block mt-[0.4rem]"></span>
             <span>Leere Zeilen oder Zeilen ohne Namen werden übersprungen</span>
           </p>
           <p className="flex items-start gap-2">
-            <span className="min-w-[6px] h-[6px] rounded-full bg-orange-500 inline-block mt-[0.4rem]"></span>
+            <span className="min-w-[6px] h-[6px] rounded-full bg-[#ff7e0c] inline-block mt-[0.4rem]"></span>
             <span>Für ein optimales Ergebnis verwenden Sie die Excel-Vorlage</span>
           </p>
         </div>

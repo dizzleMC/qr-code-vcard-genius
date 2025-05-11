@@ -61,17 +61,11 @@ export const TemplateStep = ({
       <div className="border border-gray-100 rounded-xl bg-white shadow-sm overflow-hidden">
         <Tabs defaultValue="qrcode" className="w-full">
           <div className="border-b border-gray-100">
-            <TabsList className="w-full bg-white rounded-none h-14 px-6">
-              <TabsTrigger 
-                value="qrcode" 
-                className="flex-1 text-[#64748b] data-[state=active]:border-b-2 data-[state=active]:border-[#ff7e0c] data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#1A1F2C] data-[state=active]:rounded-none rounded-none"
-              >
+            <TabsList className="rounded-none px-6">
+              <TabsTrigger value="qrcode">
                 QR-Code
               </TabsTrigger>
-              <TabsTrigger 
-                value="nametag" 
-                className="flex-1 text-[#64748b] data-[state=active]:border-b-2 data-[state=active]:border-[#ff7e0c] data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-[#1A1F2C] data-[state=active]:rounded-none rounded-none"
-              >
+              <TabsTrigger value="nametag">
                 Namensschild
               </TabsTrigger>
             </TabsList>
@@ -81,7 +75,7 @@ export const TemplateStep = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="flex justify-center">
-                  <div className="p-6 bg-gray-50 border border-gray-100 rounded-lg">
+                  <div className="p-6 rounded-lg bg-[#F9FAFB] border border-gray-100">
                     <QRCodeDisplay
                       data={selectedContact || templateData}
                       initialSize={templateSettings.size}
@@ -95,20 +89,19 @@ export const TemplateStep = ({
                   </div>
                 </div>
                 
-                <div className="space-y-5 p-5 border border-gray-100 rounded-lg bg-gray-50">
+                <div className="space-y-5 p-5 rounded-lg bg-[#F9FAFB] border border-gray-100">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-[#1A1F2C]">Größe</span>
                       <span className="text-sm text-gray-500">{templateSettings.size}px</span>
                     </div>
-                    <div className="px-2">
+                    <div className="px-2 py-4">
                       <Slider
                         defaultValue={[templateSettings.size]}
                         min={100}
                         max={400}
                         step={10}
                         onValueChange={handleSizeChange}
-                        className="my-4"
                       />
                     </div>
                   </div>
@@ -155,7 +148,7 @@ export const TemplateStep = ({
                   
                   <Button
                     onClick={onApplyQRConfig}
-                    className="w-full flex items-center justify-center gap-2 mt-3 bg-green-500 hover:bg-green-600 text-white"
+                    className="w-full flex items-center justify-center gap-2 mt-3 bg-[#4ADE80] hover:bg-[#3BC46D] text-white"
                   >
                     <Check size={16} />
                     QR-Code Konfiguration übernehmen
@@ -175,10 +168,10 @@ export const TemplateStep = ({
                   <div className="max-h-[460px] overflow-y-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-gray-50">
+                        <TableRow className="bg-[#F9FAFB]">
                           <TableHead className="w-[50px]"></TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead className="hidden md:table-cell">Email</TableHead>
+                          <TableHead className="font-medium">Name</TableHead>
+                          <TableHead className="hidden md:table-cell font-medium">Email</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
