@@ -109,8 +109,8 @@ const Premium = () => {
               {/* Progress steps */}
               <div className="flex justify-between relative z-10">
                 {/* Step 1 */}
-                <div className="w-80 flex flex-col items-center">
-                  <div className={`w-6 h-6 rounded-xl flex items-center justify-center mb-3 ${
+                <div className="flex flex-col items-center text-center w-1/3">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center mb-3 ${
                     currentStep === 1 ? 'bg-[#ff7e0c] shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
                     currentStep > 1 ? 'bg-[#ff7e0c]' : 'bg-white border border-gray-200'
                   }`}>
@@ -120,15 +120,15 @@ const Premium = () => {
                     <span className={`text-sm font-semibold ${currentStep === 1 ? 'text-[#e67008]' : 'text-slate-700'}`}>
                       Daten hochladen
                     </span>
-                    <span className={`text-sm ${currentStep === 1 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
+                    <span className={`text-xs ${currentStep === 1 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
                       Datei mit den gewünschten Daten hochladen
                     </span>
                   </div>
                 </div>
                 
                 {/* Step 2 */}
-                <div className="w-80 flex flex-col items-center">
-                  <div className={`w-6 h-6 rounded-xl flex items-center justify-center mb-3 ${
+                <div className="flex flex-col items-center text-center w-1/3">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center mb-3 ${
                     currentStep === 2 ? 'bg-[#ff7e0c] shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
                     currentStep > 2 ? 'bg-[#ff7e0c]' : 'bg-white border border-gray-200'
                   }`}>
@@ -138,15 +138,15 @@ const Premium = () => {
                     <span className={`text-sm font-semibold ${currentStep === 2 ? 'text-[#e67008]' : 'text-slate-700'}`}>
                       Stil einstellen
                     </span>
-                    <span className={`text-sm ${currentStep === 2 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
+                    <span className={`text-xs ${currentStep === 2 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
                       Passe das Aussehen deines QR-Codes an.
                     </span>
                   </div>
                 </div>
                 
                 {/* Step 3 */}
-                <div className="w-80 flex flex-col items-center">
-                  <div className={`w-6 h-6 rounded-xl flex items-center justify-center mb-3 ${
+                <div className="flex flex-col items-center text-center w-1/3">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center mb-3 ${
                     currentStep === 3 ? 'bg-[#ff7e0c] shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
                     currentStep > 3 ? 'bg-[#ff7e0c]' : 'bg-white border border-gray-200'
                   }`}>
@@ -156,7 +156,7 @@ const Premium = () => {
                     <span className={`text-sm font-semibold ${currentStep === 3 ? 'text-[#e67008]' : 'text-slate-700'}`}>
                       Dateien herunterladen
                     </span>
-                    <span className={`text-sm ${currentStep === 3 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
+                    <span className={`text-xs ${currentStep === 3 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
                       Dateien einzeln oder gesammelt herunterladen
                     </span>
                   </div>

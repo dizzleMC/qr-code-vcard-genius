@@ -174,6 +174,44 @@
   .shadow-\[0px_0px_0px_4px_rgba\(255\,126\,12\,0\.24\)\] {
     box-shadow: 0px 0px 0px 4px rgba(255,126,12,0.24);
   }
+  
+  /* Button colors for the mockup */
+  .bg-green-500 {
+    background-color: #4ADE80;
+  }
+  
+  .hover\:bg-green-600:hover {
+    background-color: #3BC46D;
+  }
+  
+  .bg-blue-500 {
+    background-color: #3B82F6;
+  }
+  
+  .hover\:bg-blue-600:hover {
+    background-color: #2563EB;
+  }
+  
+  .bg-gray-500 {
+    background-color: #6B7280;
+  }
+  
+  .hover\:bg-gray-600:hover {
+    background-color: #4B5563;
+  }
+  
+  /* Background colors from mockup */
+  .bg-cream {
+    background-color: #FEF9C3;
+  }
+  
+  .bg-lavender {
+    background-color: #E5DEFF;
+  }
+  
+  .bg-mint {
+    background-color: #E7FEE1;
+  }
 }
 
 @layer utilities {
