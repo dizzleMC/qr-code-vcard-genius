@@ -1,28 +1,77 @@
 
 import { Link } from "react-router-dom";
+import { GuideSection } from "@/components/GuideSection";
 
 export const PremiumLayout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-white py-8">
-      <div className="max-w-6xl mx-auto px-6">
-        <nav className="flex justify-center mb-10">
-          <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-1 inline-flex">
-            <Link
-              to="/"
-              className="px-5 py-2 rounded-md text-slate-600 font-medium text-sm transition-all hover:text-gray-700"
-            >
-              Einzel QR-Code
-            </Link>
-            <Link
-              to="/premium"
-              className="px-5 py-2 rounded-md bg-[#ff7e0c] text-white font-medium text-sm shadow-sm transition-transform hover:scale-[1.02]"
-            >
-              Premium Bulk-Generator
-            </Link>
-          </div>
+    <div 
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(to bottom right, rgba(255, 126, 12, 0.1), white)"
+      }}
+    >
+      <div style={{
+        padding: "3rem 1rem",
+        maxWidth: "1200px",
+        margin: "0 auto"
+      }}>
+        <nav style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "2rem"
+        }}>
+          <ul style={{
+            display: "flex",
+            gap: "2rem",
+            listStyle: "none",
+            padding: 0
+          }}>
+            <li>
+              <Link to="/" style={{
+                fontWeight: "500",
+                color: "#8E9196",
+                textDecoration: "none"
+              }}>
+                Einzel QR-Code
+              </Link>
+            </li>
+            <li>
+              <Link to="/premium" style={{
+                fontWeight: "600",
+                color: "#ff7e0c",
+                textDecoration: "none",
+                borderBottom: "2px solid #ff7e0c",
+                paddingBottom: "0.25rem"
+              }}>
+                Premium Bulk-Generator
+              </Link>
+            </li>
+          </ul>
         </nav>
         
+        <div style={{
+          maxWidth: "768px",
+          margin: "0 auto",
+          textAlign: "center",
+          marginBottom: "3rem"
+        }}>
+          <h1 style={{
+            fontSize: "2.25rem",
+            fontWeight: "600",
+            color: "#1A1F2C",
+            marginBottom: "0.75rem"
+          }}>QR-Code Bulk Generator</h1>
+          <p style={{
+            color: "#8E9196",
+            fontSize: "1.125rem"
+          }}>
+            Erstellen Sie QR-Codes für mehrere Kontakte auf einmal
+          </p>
+        </div>
+        
         {children}
+        
+        <GuideSection />
       </div>
     </div>
   );

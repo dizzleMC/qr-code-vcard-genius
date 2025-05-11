@@ -21,40 +21,92 @@ const Index = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <div className="max-w-[1200px] mx-auto px-4 py-8">
-        <nav className="flex justify-center mb-8">
-          <div className="bg-white rounded-xl shadow-md p-1 inline-flex">
-            <Link
-              to="/"
-              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#ff7e0c] to-[#ff9a41] text-white font-medium text-sm shadow-sm transition-transform hover:scale-[1.02]"
-            >
-              Einzel QR-Code
-            </Link>
-            <Link
-              to="/premium"
-              className="px-6 py-2.5 rounded-lg text-[#8E9196] font-medium text-sm transition-all hover:text-gray-700"
-            >
-              Premium Bulk-Generator
-            </Link>
-          </div>
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(to bottom right, rgba(255, 126, 12, 0.1), white)"
+    }}>
+      <div style={{
+        padding: "3rem 1rem",
+        maxWidth: "1200px",
+        margin: "0 auto"
+      }}>
+        <nav style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "2rem"
+        }}>
+          <ul style={{
+            display: "flex",
+            gap: "2rem",
+            listStyle: "none",
+            padding: 0
+          }}>
+            <li>
+              <Link to="/" style={{
+                fontWeight: "600",
+                color: "#ff7e0c",
+                textDecoration: "none",
+                borderBottom: "2px solid #ff7e0c",
+                paddingBottom: "0.25rem"
+              }}>
+                Einzel QR-Code
+              </Link>
+            </li>
+            <li>
+              <Link to="/premium" style={{
+                fontWeight: "500",
+                color: "#8E9196",
+                textDecoration: "none"
+              }}>
+                Premium Bulk-Generator
+              </Link>
+            </li>
+          </ul>
         </nav>
         
-        <div className="text-center mb-10">
-          <p className="text-accent font-medium mb-2">Features</p>
-          <h1 className="text-4xl font-bold text-[#1A1F2C] mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#1A1F2C] to-[#4A5568]">
-            QR-Code Generator
-          </h1>
-          <p className="text-[#64748b] max-w-2xl mx-auto">
+        <div style={{
+          maxWidth: "768px",
+          margin: "0 auto",
+          textAlign: "center",
+          marginBottom: "3rem"
+        }}>
+          <h1 style={{
+            fontSize: "2.25rem",
+            fontWeight: "600",
+            color: "#1A1F2C",
+            marginBottom: "0.75rem"
+          }}>QR-Code Generator</h1>
+          <p style={{
+            color: "#8E9196",
+            fontSize: "1.125rem"
+          }}>
             Erstellen Sie einen QR-Code für Ihre Kontaktdaten
           </p>
         </div>
         
-        <div className="flex flex-col lg:flex-row gap-8 items-start justify-center">
-          <div className="w-full lg:w-1/2 bg-white border border-gray-100 rounded-xl shadow-card p-8 animate-fade-in">
+        <div style={{
+          display: "flex",
+          flexDirection: window.innerWidth < 1024 ? "column" : "row",
+          gap: "4rem",
+          alignItems: "flex-start",
+          justifyContent: "center"
+        }}>
+          <div style={{
+            width: "100%",
+            maxWidth: window.innerWidth < 1024 ? "100%" : "50%",
+            backgroundColor: "white",
+            borderRadius: "0.75rem",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+            padding: "2rem"
+          }}>
             <VCardForm onDataChange={setVCardData} />
           </div>
-          <div className="w-full lg:w-1/2 lg:sticky lg:top-8 animate-fade-in" style={{animationDelay: "0.2s"}}>
+          <div style={{
+            width: "100%",
+            maxWidth: window.innerWidth < 1024 ? "100%" : "50%",
+            position: window.innerWidth < 1024 ? "static" : "sticky",
+            top: window.innerWidth < 1024 ? "auto" : "2rem"
+          }}>
             <QRCodeDisplay data={vCardData} />
           </div>
         </div>

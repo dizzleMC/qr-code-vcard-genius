@@ -1,46 +1,25 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { PremiumLayout } from "@/components/premium/PremiumLayout";
 import { ImportStep } from "@/components/premium/ImportStep";
 import { TemplateStep } from "@/components/premium/TemplateStep";
 import { GenerateStep } from "@/components/premium/GenerateStep";
-import { useTemplateSettings } from "@/components/premium/hooks/useTemplateSettings";
-import { useGenerateQRCodes } from "@/components/premium/hooks/useGenerateQRCodes";
-import { PremiumLayout } from "@/components/premium/PremiumLayout";
 
 const Premium = () => {
-  // Template and QR code settings
-  const initialTemplateSettings = {
+  const [templateSettings, setTemplateSettings] = useState({
     size: 200,
     fgColor: "#1A1F2C",
-    bgColor: "#ffffff",
-    nameTag: {
-      enabled: false,
-      template: "classic",
-      size: "medium",
-      font: "Inter",
-      fontSize: 22,
-      nameColor: "#1A1F2C",
-      companyColor: "#8E9196",
-      logo: null,
-      logoScale: 100,
-      backgroundColor: "#ffffff",
-      borderColor: "#e2e8f0",
-      qrFgColor: "#000000",
-      qrBgColor: "#ffffff"
-    }
-  };
+    bgColor: "#ffffff"
+  });
   
-  const [templateSettings, handleTemplateChange] = useTemplateSettings(initialTemplateSettings);
-  const { isGenerating, generationProgress, handleGenerateSelected, handleBulkGenerate } = useGenerateQRCodes();
-  
-  // Main state
   const [importedData, setImportedData] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedContact, setSelectedContact] = useState(null);
+  const [generationProgress, setGenerationProgress] = useState(0);
   
-  // Example data for template preview
-  const [templateData] = useState({
+  const [templateData, setTemplateData] = useState({
     firstName: "Max",
     lastName: "Mustermann",
     title: "CEO",
@@ -52,33 +31,193 @@ const Premium = () => {
     city: "Musterstadt",
     state: "Bayern",
     zip: "80000",
-    country: "Deutschland"
+    country: "Deutschland",
   });
   
-  // Event handlers
-  const handleApplyQRConfig = () => {
-    toast.success("QR-Code Konfiguration übernommen!");
+  const handleTemplateChange = (setting, value) => {
+    setTemplateSettings({
+      ...templateSettings,
+      [setting]: value
+    });
   };
   
-  const handleImportSuccess = data => {
+  const handleImportSuccess = (data) => {
     setImportedData(data);
     setCurrentStep(2);
   };
-
-  const handlePreviousStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+  
+  // Modified to handle generation of only selected contacts
+  const handleGenerateSelected = async (selectedContacts) => {
+    if (selectedContacts.length === 0) {
+      toast.error("Keine Kontakte ausgewählt.");
+      return;
     }
-  };
-
-  const handleBulkGenerateQR = () => {
-    handleBulkGenerate(importedData, templateSettings);
+    
+    await generateQRCodes(selectedContacts);
   };
   
-  const handleGenerateSelectedQR = (selectedContacts) => {
-    handleGenerateSelected(selectedContacts, templateSettings);
+  // Modified to handle generation of all contacts
+  const handleBulkGenerate = async () => {
+    if (importedData.length === 0) {
+      toast.error("Keine Daten zum Generieren vorhanden.");
+      return;
+    }
+    
+    await generateQRCodes(importedData);
   };
-
+  
+  // Improved QR code generation logic into a separate function
+  const generateQRCodes = async (contactsToGenerate) => {
+    setIsGenerating(true);
+    setGenerationProgress(0);
+    
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      
+      // Import qrcode library
+      const { toCanvas } = await import('qrcode');
+      
+      let completedCount = 0;
+      const totalContacts = contactsToGenerate.length;
+      console.log(`Starting generation of ${totalContacts} QR codes`);
+      
+      // Process in smaller batches for better UI responsiveness
+      const batchSize = 3;
+      const batches = [];
+      
+      for (let i = 0; i < totalContacts; i += batchSize) {
+        batches.push(contactsToGenerate.slice(i, i + batchSize));
+      }
+      
+      console.log(`Split into ${batches.length} batches of max ${batchSize} contacts each`);
+      
+      // Process each batch sequentially to avoid memory issues
+      for (const [batchIndex, batch] of batches.entries()) {
+        console.log(`Processing batch ${batchIndex + 1}/${batches.length}`);
+        
+        // Process contacts within each batch in parallel
+        const batchPromises = batch.map(async (contact) => {
+          try {
+            // Generate vCard data
+            const vcard = [
+              "BEGIN:VCARD",
+              "VERSION:3.0",
+              `N:${contact.lastName || ''};${contact.firstName || ''};;;`,
+              `FN:${contact.firstName || ''} ${contact.lastName || ''}`,
+              contact.title && `TITLE:${contact.title}`,
+              contact.company && `ORG:${contact.company}`,
+              contact.email && `EMAIL:${contact.email}`,
+              contact.phone && `TEL:${contact.phone}`,
+              contact.website && `URL:${contact.website}`,
+              (contact.street || contact.city) && 
+                `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`,
+              "END:VCARD"
+            ].filter(Boolean).join("\n");
+            
+            // Create a canvas element
+            const canvas = document.createElement("canvas");
+            const options = {
+              width: templateSettings.size || 200,
+              margin: 4,
+              color: {
+                dark: templateSettings.fgColor || "#1A1F2C",
+                light: templateSettings.bgColor || "#ffffff"
+              },
+              errorCorrectionLevel: 'H'
+            };
+            
+            console.log(`Generating QR code for ${contact.firstName} ${contact.lastName}`);
+            
+            // Generate QR code on canvas
+            await toCanvas(canvas, vcard, options);
+            
+            // Convert to blob
+            const blob = await new Promise((resolve, reject) => {
+              canvas.toBlob((blob) => {
+                if (blob) resolve(blob);
+                else reject(new Error("Failed to create blob"));
+              }, "image/png");
+            });
+            
+            if (!blob) {
+              throw new Error("Blob creation failed");
+            }
+            
+            console.log(`Generated QR code for ${contact.firstName} ${contact.lastName}, size: ${blob.size} bytes`);
+            
+            const fileName = `${contact.firstName || 'contact'}-${contact.lastName || ''}-qr.png`;
+            zip.file(fileName, blob);
+            
+          } catch (error) {
+            console.error(`Error generating QR code for contact ${contact.firstName} ${contact.lastName}:`, error);
+            throw error; // Re-throw so the outer try-catch can handle it
+          } finally {
+            completedCount++;
+            const progress = (completedCount / totalContacts) * 100;
+            setGenerationProgress(progress);
+            console.log(`Progress: ${Math.round(progress)}%`);
+          }
+        });
+        
+        // Wait for all contacts in this batch to complete
+        try {
+          await Promise.all(batchPromises);
+        } catch (error) {
+          console.error("Error in batch processing:", error);
+          toast.error(`Ein Fehler ist aufgetreten: ${error.message}`);
+          // We'll continue to the next batch despite errors
+        }
+      }
+      
+      // After all batches are processed, create the ZIP file
+      const filesInZip = Object.keys(zip.files).length;
+      console.log(`Files in zip: ${filesInZip}`);
+      
+      if (filesInZip > 0) {
+        try {
+          console.log("Generating final ZIP file...");
+          const content = await zip.generateAsync({ 
+            type: "blob",
+            compression: "DEFLATE",
+            compressionOptions: { level: 6 }
+          });
+          
+          console.log(`ZIP generated, size: ${content.size} bytes`);
+          
+          if (content && content.size > 0) {
+            const downloadLink = document.createElement("a");
+            const url = URL.createObjectURL(content);
+            downloadLink.href = url;
+            downloadLink.download = "qr-codes.zip";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            setTimeout(() => {
+              URL.revokeObjectURL(url);
+            }, 1000);
+            
+            toast.success(`${filesInZip} QR-Codes wurden erfolgreich generiert und heruntergeladen!`);
+          } else {
+            console.error("Generated ZIP has no size");
+            toast.error("Die generierte ZIP-Datei ist leer. Bitte versuchen Sie es erneut.");
+          }
+        } catch (error) {
+          console.error("Error generating ZIP:", error);
+          toast.error(`Fehler beim Erstellen der ZIP-Datei: ${error.message}`);
+        }
+      } else {
+        toast.error("Es konnten keine QR-Codes generiert werden. Bitte versuchen Sie es erneut.");
+      }
+    } catch (error) {
+      console.error("Fehler beim Generieren der QR-Codes:", error);
+      toast.error(`Fehler beim Generieren der QR-Codes: ${error.message}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  
   const resetProcess = () => {
     setImportedData([]);
     setCurrentStep(1);
@@ -87,113 +226,69 @@ const Premium = () => {
 
   return (
     <PremiumLayout>
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-[#ff7e0c] text-base font-semibold mb-3">Features</p>
-          <h1 className="text-4xl font-semibold text-[#1A1F2C] mb-3">
-            QRCode Bluk generator
-          </h1>
-          <p className="text-xl mb-8">
-            vCards als QR-Codes generieren – schnell, unkompliziert & individuell
-          </p>
-          
-          <div className="mb-12 max-w-3xl mx-auto">
-            <p className="text-slate-600 text-xl leading-loose mb-12">
-              Mit unserer Software können Sie mehrere digitale Visitenkarten (vCards) in nur wenigen Minuten erstellen – ganz ohne manuellen Aufwand. Einfach eine Excel-Datei hochladen, und wir generieren automatisch QR-Codes für jede einzelne Kontaktperson. Ideal für Unternehmen, Messen, Events oder Teams mit vielen Mitarbeitenden.
-            </p>
-            
-            <div className="relative mt-16">
-              {/* Progress line */}
-              <div className="absolute top-1/2 left-0 w-full h-0.5 bg-gray-200 -translate-y-1/2"></div>
-              
-              {/* Progress steps */}
-              <div className="flex justify-between relative z-10">
-                {/* Step 1 */}
-                <div className="flex flex-col items-center text-center w-1/3">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center mb-3 ${
-                    currentStep === 1 ? 'bg-[#ff7e0c] shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
-                    currentStep > 1 ? 'bg-[#ff7e0c]' : 'bg-white border border-gray-200'
-                  }`}>
-                    <span className={`w-2 h-2 rounded-full ${currentStep >= 1 ? 'bg-white' : 'bg-gray-300'}`}></span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className={`text-sm font-semibold ${currentStep === 1 ? 'text-[#e67008]' : 'text-slate-700'}`}>
-                      Daten hochladen
-                    </span>
-                    <span className={`text-xs ${currentStep === 1 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
-                      Datei mit den gewünschten Daten hochladen
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Step 2 */}
-                <div className="flex flex-col items-center text-center w-1/3">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center mb-3 ${
-                    currentStep === 2 ? 'bg-[#ff7e0c] shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
-                    currentStep > 2 ? 'bg-[#ff7e0c]' : 'bg-white border border-gray-200'
-                  }`}>
-                    <span className={`w-2 h-2 rounded-full ${currentStep >= 2 ? 'bg-white' : 'bg-gray-300'}`}></span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className={`text-sm font-semibold ${currentStep === 2 ? 'text-[#e67008]' : 'text-slate-700'}`}>
-                      Stil einstellen
-                    </span>
-                    <span className={`text-xs ${currentStep === 2 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
-                      Passe das Aussehen deines QR-Codes an.
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Step 3 */}
-                <div className="flex flex-col items-center text-center w-1/3">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center mb-3 ${
-                    currentStep === 3 ? 'bg-[#ff7e0c] shadow-[0px_0px_0px_4px_rgba(255,126,12,0.24)]' : 
-                    currentStep > 3 ? 'bg-[#ff7e0c]' : 'bg-white border border-gray-200'
-                  }`}>
-                    <span className={`w-2 h-2 rounded-full ${currentStep >= 3 ? 'bg-white' : 'bg-gray-300'}`}></span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className={`text-sm font-semibold ${currentStep === 3 ? 'text-[#e67008]' : 'text-slate-700'}`}>
-                      Dateien herunterladen
-                    </span>
-                    <span className={`text-xs ${currentStep === 3 ? 'text-[#ff7e0c]' : 'text-slate-600'}`}>
-                      Dateien einzeln oder gesammelt herunterladen
-                    </span>
-                  </div>
-                </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          maxWidth: "600px",
+          margin: "0 auto 2rem auto"
+        }}>
+          {[1, 2, 3].map((step) => (
+            <div key={step} style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center"
+            }}>
+              <div style={{
+                width: "3rem",
+                height: "3rem",
+                borderRadius: "50%",
+                backgroundColor: currentStep >= step ? "#ff7e0c" : "#e2e8f0",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "600",
+                marginBottom: "0.5rem"
+              }}>
+                {step}
               </div>
+              <span style={{ color: currentStep >= step ? "#1A1F2C" : "#8E9196" }}>
+                {step === 1 && "Daten importieren"}
+                {step === 2 && "Template anpassen"}
+                {step === 3 && "QR-Codes generieren"}
+              </span>
             </div>
-          </div>
+          ))}
         </div>
 
-        {currentStep === 1 && <ImportStep onImportSuccess={handleImportSuccess} />}
+        {currentStep === 1 && (
+          <ImportStep onImportSuccess={handleImportSuccess} />
+        )}
         
-        {currentStep === 2 && 
-          <TemplateStep 
-            templateData={templateData} 
-            templateSettings={templateSettings} 
-            importedData={importedData} 
-            selectedContact={selectedContact} 
-            onTemplateChange={handleTemplateChange} 
-            onSelectContact={setSelectedContact} 
+        {currentStep === 2 && (
+          <TemplateStep
+            templateData={templateData}
+            templateSettings={templateSettings}
+            importedData={importedData}
+            selectedContact={selectedContact}
+            onTemplateChange={handleTemplateChange}
+            onSelectContact={setSelectedContact}
             onNextStep={() => setCurrentStep(3)}
-            onApplyQRConfig={handleApplyQRConfig}
-            onPreviousStep={handlePreviousStep}
           />
-        }
+        )}
         
-        {currentStep === 3 && 
-          <GenerateStep 
-            importedData={importedData} 
-            templateSettings={templateSettings} 
-            isGenerating={isGenerating} 
-            generationProgress={generationProgress} 
-            onGenerate={handleBulkGenerateQR} 
-            onGenerateSelected={handleGenerateSelectedQR} 
+        {currentStep === 3 && (
+          <GenerateStep
+            importedData={importedData}
+            templateSettings={templateSettings}
+            isGenerating={isGenerating}
+            generationProgress={generationProgress}
+            onGenerate={handleBulkGenerate}
+            onGenerateSelected={handleGenerateSelected}
             onReset={resetProcess}
-            onPreviousStep={handlePreviousStep}
           />
-        }
+        )}
       </div>
     </PremiumLayout>
   );
