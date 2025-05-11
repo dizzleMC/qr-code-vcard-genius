@@ -45,10 +45,10 @@ export const GenerateStep = ({
           <div className="p-5 bg-gray-50 border border-gray-100 rounded-lg">
             <Progress 
               value={generationProgress} 
-              className="h-1.5 mb-3"
+              className="h-1.5 mb-3 bg-gray-200 [&>div]:bg-[#ff7e0c]"
             />
             <p className="text-sm text-gray-600 flex items-center gap-2">
-              <Loader className="animate-spin text-accent" size={14} />
+              <Loader className="animate-spin text-[#ff7e0c]" size={14} />
               Generiere QR-Codes... {Math.round(generationProgress)}%
             </p>
           </div>

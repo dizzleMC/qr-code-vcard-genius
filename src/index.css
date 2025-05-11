@@ -102,19 +102,19 @@
 
   /* Fix für Farbprobleme - Direkte Festlegung der Farben */
   .bg-orange-500 {
-    background-color: #f97316;
+    background-color: #ff7e0c;
   }
 
   .text-orange-500 {
-    color: #f97316;
+    color: #ff7e0c;
   }
-
+  
   .text-orange-700 {
-    color: #c2410c;
+    color: #e67008;
   }
 
   .hover\:bg-orange-600:hover {
-    background-color: #ea580c;
+    background-color: #e67008;
   }
   
   /* Direkte Farbdefinitionen für bessere Sichtbarkeit */
@@ -136,6 +136,43 @@
   
   .text-gray-900 {
     color: #111827;
+  }
+  
+  /* Zusätzliche Farbdefinitionen für das Premium-Feature */
+  .bg-orange-500\/10, .bg-\[#ff7e0c\]\/10 {
+    background-color: rgba(255, 126, 12, 0.1);
+  }
+  
+  .bg-\[#ff7e0c\] {
+    background-color: #ff7e0c;
+  }
+  
+  .hover\:bg-\[#e67008\]:hover {
+    background-color: #e67008;
+  }
+  
+  .text-\[#ff7e0c\] {
+    color: #ff7e0c;
+  }
+  
+  .text-\[#e67008\] {
+    color: #e67008;
+  }
+  
+  .text-\[#1A1F2C\] {
+    color: #1A1F2C;
+  }
+  
+  .bg-\[#1A1F2C\] {
+    background-color: #1A1F2C;
+  }
+  
+  .border-\[#ff7e0c\] {
+    border-color: #ff7e0c;
+  }
+  
+  .shadow-\[0px_0px_0px_4px_rgba\(255\,126\,12\,0\.24\)\] {
+    box-shadow: 0px 0px 0px 4px rgba(255,126,12,0.24);
   }
 }
 

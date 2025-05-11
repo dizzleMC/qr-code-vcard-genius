@@ -16,7 +16,7 @@ export const ImportStep = ({
   return (
     <div className="max-w-3xl mx-auto animate-fade-in">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Schritt 1: Excel-Datei importieren</h2>
+        <h2 className="text-xl font-semibold text-[#1A1F2C] mb-4">Schritt 1: Excel-Datei importieren</h2>
       </div>
       
       <div className="border border-gray-100 rounded-xl bg-white shadow-sm p-8 mb-6">
@@ -25,7 +25,7 @@ export const ImportStep = ({
         </div>
         
         <div className="mt-8 border-t border-gray-100 pt-6">
-          <h3 className="font-medium text-gray-900 mb-3">Hinweise zum Import</h3>
+          <h3 className="font-medium text-[#1A1F2C] mb-3">Hinweise zum Import</h3>
           <ul className="space-y-2 text-gray-600 text-sm mb-4">
             <li>• Die Excel-Datei sollte eine Kopfzeile mit Spaltenbezeichnungen haben</li>
             <li>• Folgende Felder werden erkannt: Vorname, Nachname, Email, Telefon, Firma, etc.</li>

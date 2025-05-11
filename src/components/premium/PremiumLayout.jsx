@@ -15,7 +15,7 @@ export const PremiumLayout = ({ children }) => {
             </Link>
             <Link
               to="/premium"
-              className="px-5 py-2 rounded-md bg-orange-500 text-white font-medium text-sm shadow-sm transition-transform hover:scale-[1.02]"
+              className="px-5 py-2 rounded-md bg-[#ff7e0c] text-white font-medium text-sm shadow-sm transition-transform hover:scale-[1.02]"
             >
               Premium Bulk-Generator
             </Link>
