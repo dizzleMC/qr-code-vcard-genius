@@ -8,17 +8,23 @@ const Index = () => {
   const [vCardData, setVCardData] = useState({
     firstName: "",
     lastName: "",
+    academicTitle: "",
     title: "",
     company: "",
     email: "",
     phone: "",
+    mobile: "",
+    phone_work: "",
     website: "",
     street: "",
     city: "",
     state: "",
     zip: "",
     country: "",
+    id: "",
   });
+
+  console.log("Index.jsx - Current vCard data:", vCardData);
 
   return (
     <div style={{

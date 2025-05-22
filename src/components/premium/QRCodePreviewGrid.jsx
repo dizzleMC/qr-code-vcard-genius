@@ -24,25 +24,28 @@ export const QRCodePreviewGrid = ({
       `${contact.academicTitle} ${contact.firstName || ''}` : 
       (contact.firstName || '');
       
+    console.log("Generating vCard for contact:", contact);
+      
     const vcard = [
       "BEGIN:VCARD", 
       "VERSION:3.0", 
       `N:${contact.lastName || ''};${formattedFirstName};;;`, 
       `FN:${formattedFirstName} ${contact.lastName || ''}`,
-      // Add TITLE field for standard compliance
+      `SOURCE:https://www.yourvcard.de/vcard/${contact.id || ''}`,
       contact.title && `TITLE:${contact.title}`,
-      // Modified ORG field to include title for better iOS compatibility
-      contact.company && `ORG:${contact.company}${contact.title ? ';' + contact.title : ''}`,
-      // Add ROLE field as another way to capture job title for iOS
       contact.title && `ROLE:${contact.title}`,
+      contact.company && `ORG:${contact.company}`,
       contact.email && `EMAIL:${contact.email}`,
-      contact.phone && `TEL:${contact.phone}`,
-      contact.website && `URL:${contact.website}`,
+      contact.phone && `TEL;TYPE=voice:${contact.phone}`,
+      contact.mobile && `TEL;TYPE=cell:${contact.mobile}`,
+      contact.phone_work && `TEL;TYPE=work:${contact.phone_work}`,
+      contact.website && `URL;TYPE=Website:${contact.website}`,
       (contact.street || contact.city) && 
         `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`,
       "END:VCARD"
     ].filter(Boolean).join("\n");
     
+    console.log("Generated vCard:", vcard);
     return vcard;
   };
   

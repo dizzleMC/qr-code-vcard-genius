@@ -68,6 +68,8 @@ export const ExcelImporter = ({ onImportSuccess }) => {
       
       // Improved column mapping with more flexible field name detection
       const mappedData = jsonData.map(row => {
+        console.log("Processing row:", row);
+        
         // Create an array of all possible field names for each data type
         const fieldMappings = {
           firstName: ["Vorname", "First Name", "FirstName", "Vorname (First Name)", "Name", "Given Name"],
@@ -87,9 +89,15 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         
         // Function to find a value in the row using any of the possible field names
         const findValue = (fieldNames) => {
+          // Debug: Display all row keys for troubleshooting
+          console.log("Available row keys:", Object.keys(row));
+          
           // First try exact match
           const exactMatch = fieldNames.find(name => row[name] !== undefined);
-          if (exactMatch) return row[exactMatch];
+          if (exactMatch) {
+            console.log(`Found exact match for ${fieldNames[0]}: ${exactMatch} = ${row[exactMatch]}`);
+            return row[exactMatch];
+          }
           
           // Try case-insensitive match if exact match fails
           const rowKeys = Object.keys(row);
@@ -97,9 +105,24 @@ export const ExcelImporter = ({ onImportSuccess }) => {
             const matchKey = rowKeys.find(key => 
               key.toLowerCase() === fieldName.toLowerCase()
             );
-            if (matchKey) return row[matchKey];
+            if (matchKey) {
+              console.log(`Found case-insensitive match for ${fieldNames[0]}: ${matchKey} = ${row[matchKey]}`);
+              return row[matchKey];
+            }
           }
           
+          // Try partial match if exact and case-insensitive match fails
+          for (const fieldName of fieldNames) {
+            const matchKey = rowKeys.find(key => 
+              key.toLowerCase().includes(fieldName.toLowerCase())
+            );
+            if (matchKey) {
+              console.log(`Found partial match for ${fieldNames[0]}: ${matchKey} = ${row[matchKey]}`);
+              return row[matchKey];
+            }
+          }
+          
+          console.log(`No match found for ${fieldNames[0]}`);
           return ''; // Return empty string if no match found
         };
         
