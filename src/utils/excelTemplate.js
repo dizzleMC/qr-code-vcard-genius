@@ -9,6 +9,7 @@ export const generateExcelTemplate = () => {
   const headers = [
     "Vorname (First Name)",
     "Nachname (Last Name)",
+    "Akademischer Titel (Academic Title)",
     "Titel (Title/Position)",
     "Firma (Company)",
     "Email (Email)",
@@ -26,6 +27,7 @@ export const generateExcelTemplate = () => {
     {
       "Vorname (First Name)": "Max",
       "Nachname (Last Name)": "Mustermann",
+      "Akademischer Titel (Academic Title)": "Dr.",
       "Titel (Title/Position)": "Geschäftsführer",
       "Firma (Company)": "Beispiel GmbH",
       "Email (Email)": "max.mustermann@beispiel.de",
@@ -40,6 +42,7 @@ export const generateExcelTemplate = () => {
     {
       "Vorname (First Name)": "Anna",
       "Nachname (Last Name)": "Schmidt",
+      "Akademischer Titel (Academic Title)": "Prof.",
       "Titel (Title/Position)": "Marketing Manager",
       "Firma (Company)": "Muster AG",
       "Email (Email)": "a.schmidt@muster-ag.de",

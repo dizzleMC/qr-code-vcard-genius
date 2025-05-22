@@ -72,6 +72,7 @@ export const ExcelImporter = ({ onImportSuccess }) => {
         const fieldMappings = {
           firstName: ["Vorname", "First Name", "FirstName", "Vorname (First Name)", "Name", "Given Name"],
           lastName: ["Nachname", "Last Name", "LastName", "Nachname (Last Name)", "Familienname", "Surname"],
+          academicTitle: ["Akademischer Titel", "Academic Title", "Akademischer Titel (Academic Title)", "Doktortitel", "Dr.", "Title Academic"],
           title: ["Titel", "Title", "Position", "Titel (Title/Position)", "JobTitle", "Rolle", "Role"],
           company: ["Firma", "Company", "Unternehmen", "Firma (Company)", "Organisation", "Organization"],
           email: ["Email", "E-Mail", "EmailAddress", "Email (Email)", "Mail"],

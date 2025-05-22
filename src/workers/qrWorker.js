@@ -38,11 +38,16 @@ self.onmessage = async function(e) {
 };
 
 function generateVCardData(contact) {
+  // Format the name with academic title if available
+  const formattedFirstName = contact.academicTitle ? 
+    `${contact.academicTitle} ${contact.firstName || ''}` : 
+    (contact.firstName || '');
+
   return [
     "BEGIN:VCARD",
     "VERSION:3.0",
-    `N:${contact.lastName || ''};${contact.firstName || ''};;;`,
-    `FN:${contact.firstName || ''} ${contact.lastName || ''}`,
+    `N:${contact.lastName || ''};${formattedFirstName};;;`,
+    `FN:${formattedFirstName} ${contact.lastName || ''}`,
     contact.title && `TITLE:${contact.title}`,
     contact.company && `ORG:${contact.company}`,
     contact.email && `EMAIL:${contact.email}`,
