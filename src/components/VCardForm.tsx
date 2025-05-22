@@ -55,6 +55,18 @@ export const VCardForm = ({ onDataChange }: VCardFormProps) => {
   return (
     <div className="grid gap-6 w-full max-w-xl">
       <div className="grid gap-4">
+        <div>
+          <Label htmlFor="academicTitle">Akademischer Titel</Label>
+          <Input
+            id="academicTitle"
+            name="academicTitle"
+            value={formData.academicTitle}
+            onChange={handleChange}
+            className="mt-1"
+            placeholder="z.B. Dr., Prof."
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="firstName">Vorname</Label>
