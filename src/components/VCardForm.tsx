@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +7,7 @@ import { toast } from "sonner";
 export interface VCardData {
   firstName: string;
   lastName: string;
+  academicTitle: string;
   title: string;
   company: string;
   email: string;
@@ -26,6 +28,7 @@ export const VCardForm = ({ onDataChange }: VCardFormProps) => {
   const [formData, setFormData] = useState<VCardData>({
     firstName: "",
     lastName: "",
+    academicTitle: "",
     title: "",
     company: "",
     email: "",

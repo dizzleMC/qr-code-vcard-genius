@@ -66,8 +66,12 @@ export const QRCodeDisplay = ({
       "VERSION:3.0",
       `N:${data.lastName || ''};${formattedFirstName};;;`,
       `FN:${formattedFirstName} ${data.lastName || ''}`,
+      // Add TITLE field for standard compliance
       data.title && `TITLE:${data.title}`,
-      data.company && `ORG:${data.company}`,
+      // Modified ORG field to include title for better iOS compatibility
+      data.company && `ORG:${data.company}${data.title ? ';' + data.title : ''}`,
+      // Add ROLE field as another way to capture job title for iOS
+      data.title && `ROLE:${data.title}`,
       data.email && `EMAIL:${data.email}`,
       data.phone && `TEL:${data.phone}`,
       data.website && `URL:${data.website}`,

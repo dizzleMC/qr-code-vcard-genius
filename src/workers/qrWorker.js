@@ -48,8 +48,12 @@ function generateVCardData(contact) {
     "VERSION:3.0",
     `N:${contact.lastName || ''};${formattedFirstName};;;`,
     `FN:${formattedFirstName} ${contact.lastName || ''}`,
+    // Add TITLE field for standard compliance
     contact.title && `TITLE:${contact.title}`,
-    contact.company && `ORG:${contact.company}`,
+    // Modified ORG field to include title for better iOS compatibility
+    contact.company && `ORG:${contact.company}${contact.title ? ';' + contact.title : ''}`,
+    // Add ROLE field as another way to capture job title for iOS
+    contact.title && `ROLE:${contact.title}`,
     contact.email && `EMAIL:${contact.email}`,
     contact.phone && `TEL:${contact.phone}`,
     contact.website && `URL:${contact.website}`,
