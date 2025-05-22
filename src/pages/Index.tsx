@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { VCardForm, type VCardData } from "@/components/VCardForm";
 import { QRCodeDisplay } from "@/components/QRCodeDisplay";
@@ -6,6 +7,7 @@ const Index = () => {
   const [vCardData, setVCardData] = useState<VCardData>({
     firstName: "",
     lastName: "",
+    academicTitle: "",
     title: "",
     company: "",
     email: "",
