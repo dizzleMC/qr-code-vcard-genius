@@ -12,12 +12,15 @@ export interface VCardData {
   company: string;
   email: string;
   phone: string;
+  mobile?: string;
+  phone_work?: string;
   website: string;
   street: string;
   city: string;
   state: string;
   zip: string;
   country: string;
+  id?: string;
 }
 
 interface VCardFormProps {

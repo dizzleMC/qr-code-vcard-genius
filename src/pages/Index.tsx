@@ -12,12 +12,15 @@ const Index = () => {
     company: "",
     email: "",
     phone: "",
+    mobile: "",
+    phone_work: "",
     website: "",
     street: "",
     city: "",
     state: "",
     zip: "",
     country: "",
+    id: "",
   });
 
   return (

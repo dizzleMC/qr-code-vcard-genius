@@ -29,16 +29,16 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
       "VERSION:3.0",
       `N:${data.lastName || ''};${formattedFirstName};;;`,
       `FN:${formattedFirstName} ${data.lastName || ''}`,
-      // Add TITLE field for standard compliance
+      `SOURCE:https://www.yourvcard.de/vcard/${data.id || ''}`,
       data.title && `TITLE:${data.title}`,
-      // Modified ORG field to include title for better iOS compatibility
-      data.company && `ORG:${data.company}${data.title ? ';' + data.title : ''}`,
-      // Add ROLE field as another way to capture job title for iOS
       data.title && `ROLE:${data.title}`,
+      data.company && `ORG:${data.company}`,
       data.email && `EMAIL:${data.email}`,
-      data.phone && `TEL:${data.phone}`,
-      data.website && `URL:${data.website}`,
-      data.street && data.city && `ADR:;;${data.street};${data.city};${data.state};${data.zip};${data.country}`,
+      data.phone && `TEL;TYPE=voice:${data.phone}`,
+      data.mobile && `TEL;TYPE=cell:${data.mobile}`,
+      data.phone_work && `TEL;TYPE=work:${data.phone_work}`,
+      data.website && `URL;TYPE=Website:${data.website}`,
+      (data.street || data.city) && `ADR:;;${data.street || ''};${data.city || ''};${data.state || ''};${data.zip || ''};${data.country || ''}`,
       "END:VCARD"
     ].filter(Boolean).join("\n");
     
