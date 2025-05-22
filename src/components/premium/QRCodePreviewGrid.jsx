@@ -24,8 +24,9 @@ export const QRCodePreviewGrid = ({
       `${contact.academicTitle} ${contact.firstName || ''}` : 
       (contact.firstName || '');
       
-    console.log("Generating vCard for contact:", contact);
+    console.log("QRCodePreviewGrid - Generating vCard for contact:", contact);
       
+    // Standardized vCard format
     const vcard = [
       "BEGIN:VCARD", 
       "VERSION:3.0", 
@@ -45,7 +46,7 @@ export const QRCodePreviewGrid = ({
       "END:VCARD"
     ].filter(Boolean).join("\n");
     
-    console.log("Generated vCard:", vcard);
+    console.log("QRCodePreviewGrid - Generated vCard:", vcard);
     return vcard;
   };
   

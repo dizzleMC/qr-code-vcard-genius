@@ -63,6 +63,7 @@ export const QRCodeDisplay = ({
       `${data.academicTitle} ${data.firstName || ''}` : 
       (data.firstName || '');
 
+    // Standardized vCard format
     const vcard = [
       "BEGIN:VCARD",
       "VERSION:3.0",

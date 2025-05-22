@@ -67,16 +67,16 @@ export const ExcelImporter = ({ onImportSuccess }) => {
       }
       
       // Improved column mapping with more flexible field name detection
-      const mappedData = jsonData.map(row => {
-        console.log("Processing row:", row);
+      const mappedData = jsonData.map((row, index) => {
+        console.log(`Processing row ${index + 1}:`, row);
         
         // Create an array of all possible field names for each data type
         const fieldMappings = {
           firstName: ["Vorname", "First Name", "FirstName", "Vorname (First Name)", "Name", "Given Name"],
           lastName: ["Nachname", "Last Name", "LastName", "Nachname (Last Name)", "Familienname", "Surname"],
           academicTitle: ["Akademischer Titel", "Academic Title", "Akademischer Titel (Academic Title)", "Doktortitel", "Dr.", "Title Academic"],
-          title: ["Titel", "Title", "Position", "Titel (Title/Position)", "JobTitle", "Rolle", "Role"],
-          company: ["Firma", "Company", "Unternehmen", "Firma (Company)", "Organisation", "Organization"],
+          title: ["Titel", "Title", "Position", "Titel (Title/Position)", "JobTitle", "Rolle", "Role", "Tätigkeit", "Beruf", "Funktion", "Job", "Position (Title)"],
+          company: ["Firma", "Company", "Unternehmen", "Firma (Company)", "Organisation", "Organization", "Arbeitgeber", "Employer"],
           email: ["Email", "E-Mail", "EmailAddress", "Email (Email)", "Mail"],
           phone: ["Telefon", "Phone", "Tel", "Telefonnummer", "Telefon (Phone)", "Mobile", "Mobil"],
           website: ["Website", "Webseite", "URL", "Website (Website)", "Homepage", "Web"],

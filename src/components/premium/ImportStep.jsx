@@ -7,6 +7,14 @@ export const ImportStep = ({
 }) => {
   const handleImportSuccess = data => {
     console.log("ImportStep - Received imported data:", data);
+    // Debug log to check if imported data has company and title fields
+    data.forEach((contact, index) => {
+      console.log(`Contact ${index + 1}:`, {
+        name: `${contact.firstName} ${contact.lastName}`,
+        title: contact.title,
+        company: contact.company
+      });
+    });
     onImportSuccess(data);
     toast.success(`${data.length} Kontakte erfolgreich importiert!`);
   };

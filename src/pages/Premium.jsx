@@ -333,7 +333,33 @@ const Premium = () => {
 
         const batchPromises = batch.map(async contact => {
           try {
-            const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
+            // Standardized vCard format
+            const formattedFirstName = contact.academicTitle ? 
+              `${contact.academicTitle} ${contact.firstName || ''}` : 
+              (contact.firstName || '');
+                
+            console.log("Premium.jsx - Generating vCard for contact:", contact);
+                
+            const vcard = [
+              "BEGIN:VCARD",
+              "VERSION:3.0",
+              `N:${contact.lastName || ''};${formattedFirstName};;;`,
+              `FN:${formattedFirstName} ${contact.lastName || ''}`,
+              `SOURCE:https://www.yourvcard.de/vcard/${contact.id || ''}`,
+              contact.title && `TITLE:${contact.title}`,
+              contact.title && `ROLE:${contact.title}`,
+              contact.company && `ORG:${contact.company}`,
+              contact.email && `EMAIL:${contact.email}`,
+              contact.phone && `TEL;TYPE=voice:${contact.phone}`,
+              contact.mobile && `TEL;TYPE=cell:${contact.mobile}`,
+              contact.phone_work && `TEL;TYPE=work:${contact.phone_work}`,
+              contact.website && `URL;TYPE=Website:${contact.website}`,
+              (contact.street || contact.city) && 
+                `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`,
+              "END:VCARD"
+            ].filter(Boolean).join("\n");
+            
+            console.log("Premium.jsx - Generated vCard:", vcard);
 
             const canvas = document.createElement("canvas");
             const options = {
