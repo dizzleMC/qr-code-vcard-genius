@@ -19,7 +19,26 @@ export const QRCodePreviewGrid = ({
   const contactsPerPage = 9;
   
   const generateVCardData = contact => {
-    const vcard = ["BEGIN:VCARD", "VERSION:3.0", `N:${contact.lastName || ''};${contact.firstName || ''};;;`, `FN:${contact.firstName || ''} ${contact.lastName || ''}`, contact.title && `TITLE:${contact.title}`, contact.company && `ORG:${contact.company}`, contact.email && `EMAIL:${contact.email}`, contact.phone && `TEL:${contact.phone}`, contact.website && `URL:${contact.website}`, (contact.street || contact.city) && `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`, "END:VCARD"].filter(Boolean).join("\n");
+    // Format the name with academic title if available
+    const formattedFirstName = contact.academicTitle ? 
+      `${contact.academicTitle} ${contact.firstName || ''}` : 
+      (contact.firstName || '');
+      
+    const vcard = [
+      "BEGIN:VCARD", 
+      "VERSION:3.0", 
+      `N:${contact.lastName || ''};${formattedFirstName};;;`, 
+      `FN:${formattedFirstName} ${contact.lastName || ''}`,
+      contact.title && `TITLE:${contact.title}`,
+      contact.company && `ORG:${contact.company}`,
+      contact.email && `EMAIL:${contact.email}`,
+      contact.phone && `TEL:${contact.phone}`,
+      contact.website && `URL:${contact.website}`,
+      (contact.street || contact.city) && 
+        `ADR:;;${contact.street || ''};${contact.city || ''};${contact.state || ''};${contact.zip || ''};${contact.country || ''}`,
+      "END:VCARD"
+    ].filter(Boolean).join("\n");
+    
     return vcard;
   };
   
@@ -192,7 +211,7 @@ export const QRCodePreviewGrid = ({
                     <Checkbox id={`contact-${actualIndex}`} checked={selectedContacts.includes(actualIndex)} onCheckedChange={() => toggleContactSelection(index)} className="text-[#ff7e0c]" />
                     <div>
                       <h3 className="font-medium text-[#1A1F2C] truncate max-w-[180px]">
-                        {contact.firstName} {contact.lastName}
+                        {contact.academicTitle && `${contact.academicTitle} `}{contact.firstName} {contact.lastName}
                       </h3>
                       {contact.company && <p className="text-sm text-[#8E9196] truncate max-w-[180px]">
                           {contact.company}
@@ -221,7 +240,7 @@ export const QRCodePreviewGrid = ({
                     <div className="flex justify-center overflow-hidden rounded-lg">
                       <div className="transform scale-75 origin-center">
                         <NameTagPreview
-                          name={`${contact.firstName} ${contact.lastName}`}
+                          name={`${contact.academicTitle ? contact.academicTitle + ' ' : ''}${contact.firstName} ${contact.lastName}`}
                           company={contact.company}
                           title={contact.title}
                           settings={templateSettings.nameTag}

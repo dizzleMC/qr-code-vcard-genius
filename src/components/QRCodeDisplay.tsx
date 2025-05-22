@@ -1,3 +1,4 @@
+
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { VCardData } from "./VCardForm";
@@ -18,11 +19,16 @@ export const QRCodeDisplay = ({ data }: QRCodeDisplayProps) => {
   const isFormEmpty = Object.values(data).every(value => value === "");
 
   const generateVCardData = (data: VCardData): string => {
+    // Format the name with academic title if available
+    const formattedFirstName = data.academicTitle ? 
+      `${data.academicTitle} ${data.firstName || ''}` : 
+      (data.firstName || '');
+
     const vcard = [
       "BEGIN:VCARD",
       "VERSION:3.0",
-      `N:${data.lastName};${data.firstName};;;`,
-      `FN:${data.firstName} ${data.lastName}`,
+      `N:${data.lastName || ''};${formattedFirstName};;;`,
+      `FN:${formattedFirstName} ${data.lastName || ''}`,
       data.title && `TITLE:${data.title}`,
       data.company && `ORG:${data.company}`,
       data.email && `EMAIL:${data.email}`,
