@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { PremiumLayout } from "@/components/premium/PremiumLayout";
+import { PremiumStepIndicator } from "@/components/premium/PremiumStepIndicator";
 import { ImportStep } from "@/components/premium/ImportStep";
 import { TemplateStep } from "@/components/premium/TemplateStep";
 import { GenerateStep } from "@/components/premium/GenerateStep";
@@ -480,53 +481,47 @@ const Premium = () => {
     toast.info("Prozess zurückgesetzt. Sie können neue Kontakte importieren.");
   };
   
-  return <PremiumLayout>
-      <div style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: "2rem"
-    }}>
-        <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        maxWidth: "600px",
-        margin: "0 auto 2rem auto"
-      }}>
-          {[1, 2, 3].map(step => <div key={step} style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center"
-        }}>
-              <div style={{
-            width: "3rem",
-            height: "3rem",
-            borderRadius: "50%",
-            backgroundColor: currentStep >= step ? "#ff7e0c" : "#e2e8f0",
-            color: "white",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: "600",
-            marginBottom: "0.5rem"
-          }}>
-                {step}
-              </div>
-              <span style={{
-            color: currentStep >= step ? "#1A1F2C" : "#8E9196"
-          }} className="my-[8px] mx-[16px] py-[16px]">
-                {step === 1 && "Daten importieren"}
-                {step === 2 && "Template anpassen"}
-                {step === 3 && "QR-Codes generieren"}
-              </span>
-            </div>)}
-        </div>
+  return (
+    <PremiumLayout>
+      <div className="space-y-12">
+        {/* Premium Step Indicator */}
+        <PremiumStepIndicator 
+          currentStep={currentStep} 
+          completedSteps={[]} 
+        />
 
-        {currentStep === 1 && <ImportStep onImportSuccess={handleImportSuccess} />}
-        
-        {currentStep === 2 && <TemplateStep templateData={templateData} templateSettings={templateSettings} importedData={importedData} selectedContact={selectedContact} onTemplateChange={handleTemplateChange} onSelectContact={setSelectedContact} onNextStep={() => setCurrentStep(3)} />}
-        
-        {currentStep === 3 && <GenerateStep importedData={importedData} templateSettings={templateSettings} isGenerating={isGenerating} generationProgress={generationProgress} onGenerate={handleBulkGenerate} onGenerateSelected={handleGenerateSelected} onReset={resetProcess} />}
+        {/* Step Content with animations */}
+        <div className="animate-fade-in">
+          {currentStep === 1 && (
+            <ImportStep onImportSuccess={handleImportSuccess} />
+          )}
+          
+          {currentStep === 2 && (
+            <TemplateStep 
+              templateData={templateData} 
+              templateSettings={templateSettings} 
+              importedData={importedData} 
+              selectedContact={selectedContact} 
+              onTemplateChange={handleTemplateChange} 
+              onSelectContact={setSelectedContact} 
+              onNextStep={() => setCurrentStep(3)} 
+            />
+          )}
+          
+          {currentStep === 3 && (
+            <GenerateStep 
+              importedData={importedData} 
+              templateSettings={templateSettings} 
+              isGenerating={isGenerating} 
+              generationProgress={generationProgress} 
+              onGenerate={handleBulkGenerate} 
+              onGenerateSelected={handleGenerateSelected} 
+              onReset={resetProcess} 
+            />
+          )}
+        </div>
       </div>
-    </PremiumLayout>;
+    </PremiumLayout>
+  );
 };
 export default Premium;

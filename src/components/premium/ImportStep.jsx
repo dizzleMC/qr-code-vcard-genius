@@ -1,10 +1,10 @@
 
 import { toast } from "sonner";
 import { ExcelImporter } from "@/components/ExcelImporter";
+import { PremiumCard } from "./PremiumCard";
+import { Upload } from "lucide-react";
 
-export const ImportStep = ({
-  onImportSuccess
-}) => {
+export const ImportStep = ({ onImportSuccess }) => {
   const handleImportSuccess = data => {
     console.log("ImportStep - Received imported data:", data);
     // Debug log to check if imported data has company and title fields
@@ -19,10 +19,16 @@ export const ImportStep = ({
     toast.success(`${data.length} Kontakte erfolgreich importiert!`);
   };
   
-  return <div className="bg-white rounded-xl shadow-sm p-8 py-[33px] my-[33px]">
-      <h2 className="text-xl font-semibold mb-6">
-        Schritt 1: Excel-Datei importieren
-      </h2>
-      <ExcelImporter onImportSuccess={handleImportSuccess} />
-    </div>;
+  return (
+    <div className="max-w-4xl mx-auto">
+      <PremiumCard
+        title="Excel-Datei importieren"
+        description="Laden Sie Ihre Kontaktdaten hoch, um QR-Codes zu generieren"
+        icon={Upload}
+        className="p-8"
+      >
+        <ExcelImporter onImportSuccess={handleImportSuccess} />
+      </PremiumCard>
+    </div>
+  );
 };

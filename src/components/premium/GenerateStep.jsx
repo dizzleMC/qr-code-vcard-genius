@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Loader } from "lucide-react";
+import { Loader, Download, BarChart3 } from "lucide-react";
 import { QRCodePreviewGrid } from "./QRCodePreviewGrid";
+import { PremiumCard } from "./PremiumCard";
+
 export const GenerateStep = ({
   importedData,
   isGenerating,
@@ -11,46 +13,110 @@ export const GenerateStep = ({
   onGenerateSelected,
   onReset
 }) => {
-  return <div className="bg-white rounded-xl shadow-sm p-8 my-[32px]">
-      <h2 className="text-xl font-semibold mb-6">
-        Schritt 3: QR-Codes generieren
-      </h2>
+  return (
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Summary Card */}
+      <PremiumCard
+        title="Zusammenfassung"
+        description="Übersicht Ihrer importierten Kontakte"
+        icon={BarChart3}
+        className="p-6"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="text-center p-4 bg-gradient-primary/5 rounded-lg border border-primary/10">
+            <div className="text-2xl font-bold text-primary mb-1">
+              {importedData.length}
+            </div>
+            <div className="text-sm text-muted-foreground">Kontakte</div>
+          </div>
+          
+          <div className="text-center p-4 bg-gradient-primary/5 rounded-lg border border-primary/10">
+            <div className="text-2xl font-bold text-primary mb-1">
+              {templateSettings.nameTag.enabled ? importedData.length * 2 : importedData.length}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {templateSettings.nameTag.enabled ? "QR-Codes + Namensschilder" : "QR-Codes"}
+            </div>
+          </div>
+          
+          <div className="text-center p-4 bg-gradient-primary/5 rounded-lg border border-primary/10">
+            <div className="text-2xl font-bold text-primary mb-1">
+              {templateSettings.size}px
+            </div>
+            <div className="text-sm text-muted-foreground">QR-Code Größe</div>
+          </div>
+        </div>
+      </PremiumCard>
       
-      <div className="flex-1 bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">Zusammenfassung</h3>
-        
-        <ul className="list-none p-0 m-0">
-          <li className="flex justify-between mb-2">
-            <span>Anzahl Kontakte:</span>
-            <span className="font-medium">{importedData.length}</span>
-          </li>
-        </ul>
-      </div>
+      {/* Progress Bar */}
+      {isGenerating && (
+        <PremiumCard className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">
+                Generierung läuft...
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {Math.round(generationProgress)}%
+              </span>
+            </div>
+            <Progress 
+              value={generationProgress} 
+              className="h-3 bg-glass-bg"
+            />
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <Loader className="animate-spin w-4 h-4" />
+              Erstelle QR-Codes und bereite Download vor...
+            </p>
+          </div>
+        </PremiumCard>
+      )}
       
-      {isGenerating && <div className="mb-6">
-          <Progress value={generationProgress} className="mb-2" />
-          <p className="text-sm text-gray-600 flex items-center gap-2">
-            <Loader className="animate-spin" size={16} />
-            Generiere QR-Codes... {Math.round(generationProgress)}%
-          </p>
-        </div>}
+      {/* Preview Grid */}
+      <PremiumCard
+        title="QR-Code Vorschau"
+        description="Überprüfen Sie Ihre QR-Codes vor dem Download"
+        icon={Download}
+        className="p-6"
+      >
+        <QRCodePreviewGrid 
+          contacts={importedData} 
+          templateSettings={templateSettings} 
+          onGenerateSelected={onGenerateSelected} 
+          isGenerating={isGenerating} 
+        />
+      </PremiumCard>
       
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-4">QR-Code Vorschau</h3>
-        <QRCodePreviewGrid contacts={importedData} templateSettings={templateSettings} onGenerateSelected={onGenerateSelected} isGenerating={isGenerating} />
-      </div>
-      
-      <div className="flex gap-4">
-        <Button onClick={onReset} variant="outline" className="flex-1">
+      {/* Action Buttons */}
+      <div className="flex gap-4 justify-center">
+        <Button 
+          onClick={onReset} 
+          variant="outline" 
+          className="px-8"
+          disabled={isGenerating}
+        >
           Zurücksetzen
         </Button>
         
-        <Button onClick={onGenerate} disabled={isGenerating || importedData.length === 0} className="flex-2 bg-[#ff7e0c] text-white font-medium">
-          {isGenerating ? <span className="flex items-center gap-2">
-              <Loader className="animate-spin" size={16} />
+        <Button 
+          onClick={onGenerate} 
+          disabled={isGenerating || importedData.length === 0} 
+          variant="premium"
+          className="px-8"
+        >
+          {isGenerating ? (
+            <span className="flex items-center gap-2">
+              <Loader className="animate-spin w-4 h-4" />
               Generiere...
-            </span> : "Alle QR-Codes generieren & herunterladen"}
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              Alle QR-Codes generieren & herunterladen
+            </span>
+          )}
         </Button>
       </div>
-    </div>;
+    </div>
+  );
 };

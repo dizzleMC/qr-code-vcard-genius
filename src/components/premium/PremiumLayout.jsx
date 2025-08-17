@@ -1,77 +1,82 @@
 
 import { Link } from "react-router-dom";
 import { GuideSection } from "@/components/GuideSection";
+import { Sparkles, QrCode } from "lucide-react";
 
 export const PremiumLayout = ({ children }) => {
   return (
-    <div 
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(to bottom right, rgba(255, 126, 12, 0.1), white)"
-      }}
-    >
-      <div style={{
-        padding: "3rem 1rem",
-        maxWidth: "1200px",
-        margin: "0 auto"
-      }}>
-        <nav style={{
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: "2rem"
-        }}>
-          <ul style={{
-            display: "flex",
-            gap: "2rem",
-            listStyle: "none",
-            padding: 0
-          }}>
-            <li>
-              <Link to="/" style={{
-                fontWeight: "500",
-                color: "#8E9196",
-                textDecoration: "none"
-              }}>
-                Einzel QR-Code
-              </Link>
-            </li>
-            <li>
-              <Link to="/premium" style={{
-                fontWeight: "600",
-                color: "#ff7e0c",
-                textDecoration: "none",
-                borderBottom: "2px solid #ff7e0c",
-                paddingBottom: "0.25rem"
-              }}>
-                Premium Bulk-Generator
-              </Link>
-            </li>
-          </ul>
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-primary-glow/5 relative overflow-hidden">
+      {/* Floating orbs for premium feel */}
+      <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-primary opacity-10 rounded-full blur-3xl animate-float"></div>
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-primary-glow/20 to-primary/10 rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}}></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
+        {/* Premium Navigation */}
+        <nav className="flex justify-center mb-12">
+          <div className="flex items-center gap-8 bg-gradient-card backdrop-blur-sm border border-glass-border rounded-full px-8 py-4 shadow-glass">
+            <Link 
+              to="/" 
+              className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105 group"
+            >
+              <QrCode className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+              <span className="font-medium">Einzel QR-Code</span>
+            </Link>
+            <div className="w-px h-6 bg-border"></div>
+            <Link 
+              to="/premium" 
+              className="flex items-center gap-2 text-primary font-semibold relative group"
+            >
+              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
+              <span className="bg-gradient-primary bg-clip-text text-transparent">Premium Bulk-Generator</span>
+              <div className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-primary rounded-full"></div>
+            </Link>
+          </div>
         </nav>
         
-        <div style={{
-          maxWidth: "768px",
-          margin: "0 auto",
-          textAlign: "center",
-          marginBottom: "3rem"
-        }}>
-          <h1 style={{
-            fontSize: "2.25rem",
-            fontWeight: "600",
-            color: "#1A1F2C",
-            marginBottom: "0.75rem"
-          }}>QR-Code Bulk Generator</h1>
-          <p style={{
-            color: "#8E9196",
-            fontSize: "1.125rem"
-          }}>
-            Erstellen Sie QR-Codes für mehrere Kontakte auf einmal
+        {/* Premium Header */}
+        <div className="text-center mb-16 max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-gradient-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6 animate-fade-in">
+            <Sparkles className="w-4 h-4" />
+            Premium Features
+          </div>
+          
+          <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-foreground via-primary to-primary-glow bg-clip-text text-transparent mb-6 animate-slide-up">
+            QR-Code Bulk Generator
+          </h1>
+          
+          <p className="text-xl text-muted-foreground leading-relaxed animate-fade-in" style={{animationDelay: '0.2s'}}>
+            Erstellen Sie professionelle QR-Codes für mehrere Kontakte auf einmal mit 
+            <span className="text-primary font-semibold"> Premium-Design</span> und erweiterten Features
           </p>
+          
+          {/* Feature highlights */}
+          <div className="flex flex-wrap justify-center gap-4 mt-8">
+            {[
+              "Bulk-Export", 
+              "Premium-Templates", 
+              "Glassmorphism-Design", 
+              "Erweiterte Anpassungen"
+            ].map((feature, index) => (
+              <span 
+                key={feature}
+                className="px-3 py-1 bg-glass-bg backdrop-blur-sm border border-glass-border rounded-full text-sm text-muted-foreground animate-scale-in"
+                style={{animationDelay: `${0.4 + index * 0.1}s`}}
+              >
+                {feature}
+              </span>
+            ))}
+          </div>
         </div>
         
-        {children}
+        {/* Premium Content Container */}
+        <div className="animate-fade-in" style={{animationDelay: '0.6s'}}>
+          {children}
+        </div>
         
-        <GuideSection />
+        {/* Premium Guide Section */}
+        <div className="mt-20 animate-fade-in" style={{animationDelay: '0.8s'}}>
+          <GuideSection />
+        </div>
       </div>
     </div>
   );
