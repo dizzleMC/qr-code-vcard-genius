@@ -47,13 +47,7 @@ export const PremiumLayout = ({
           </p>
           
           {/* Feature highlights */}
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
-            {["Bulk-Export", "Premium-Templates", "Glassmorphism-Design", "Erweiterte Anpassungen"].map((feature, index) => <span key={feature} className="px-3 py-1 bg-glass-bg backdrop-blur-sm border border-glass-border rounded-full text-sm text-muted-foreground animate-scale-in" style={{
-            animationDelay: `${0.4 + index * 0.1}s`
-          }}>
-                {feature}
-              </span>)}
-          </div>
+          
         </div>
         
         {/* Premium Content Container */}
