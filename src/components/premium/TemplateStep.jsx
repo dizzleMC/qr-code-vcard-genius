@@ -41,9 +41,15 @@ export const TemplateStep = ({
               initialSize={templateSettings.size}
               initialFgColor={templateSettings.fgColor}
               initialBgColor={templateSettings.bgColor}
+              initialLogo={templateSettings.logo}
+              initialLogoSize={templateSettings.logoSize}
+              initialLogoOpacity={templateSettings.logoOpacity}
               onSizeChange={(size) => onTemplateChange('size', size)}
               onFgColorChange={(color) => onTemplateChange('fgColor', color)}
               onBgColorChange={(color) => onTemplateChange('bgColor', color)}
+              onLogoChange={(logo) => onTemplateChange('logo', logo)}
+              onLogoSizeChange={(size) => onTemplateChange('logoSize', size)}
+              onLogoOpacityChange={(opacity) => onTemplateChange('logoOpacity', opacity)}
             />
           </TabsContent>
           

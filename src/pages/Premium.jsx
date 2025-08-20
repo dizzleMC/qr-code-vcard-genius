@@ -11,6 +11,9 @@ const Premium = () => {
     size: 200,
     fgColor: "#1A1F2C",
     bgColor: "#ffffff",
+    logo: null,
+    logoSize: 20,
+    logoOpacity: 1,
     nameTag: {
       enabled: false,
       template: "classic",
@@ -375,6 +378,34 @@ const Premium = () => {
             console.log(`Generating QR code for ${contact.firstName} ${contact.lastName}`);
 
             await toCanvas(canvas, vcard, options);
+
+            // Add logo overlay if logo exists
+            if (templateSettings.logo) {
+              const ctx = canvas.getContext('2d');
+              const img = new Image();
+              await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = templateSettings.logo;
+              }).catch(err => {
+                console.error("Error loading QR logo:", err);
+              });
+
+              if (img.complete && img.naturalWidth > 0) {
+                const logoSize = (templateSettings.logoSize / 100) * canvas.width;
+                const logoX = (canvas.width - logoSize) / 2;
+                const logoY = (canvas.height - logoSize) / 2;
+                
+                // Draw white background for logo
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(logoX - 4, logoY - 4, logoSize + 8, logoSize + 8);
+                
+                // Draw logo with opacity
+                ctx.globalAlpha = templateSettings.logoOpacity || 1;
+                ctx.drawImage(img, logoX, logoY, logoSize, logoSize);
+                ctx.globalAlpha = 1;
+              }
+            }
 
             const qrBlob = await new Promise((resolve, reject) => {
               canvas.toBlob(blob => {
