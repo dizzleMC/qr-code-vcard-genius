@@ -77,37 +77,59 @@ export const QRCodePreviewGrid = ({
     onGenerateSelected(selectedContactsData);
   };
   
-  const handleDownloadSingle = (contact, type = 'qrcode') => {
+  const handleDownloadSingle = async (contact, type = 'qrcode') => {
     if (type === 'qrcode') {
-      const svg = document.querySelector(`#qr-code-${contact.firstName}-${contact.lastName} svg`);
-      if (!svg) {
-        toast.error("QR-Code konnte nicht generiert werden.");
-        return;
-      }
-      
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        toast.error("Browser unterstützt keine Canvas-Funktionalität.");
-        return;
-      }
-      
-      const img = new Image();
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.fillStyle = templateSettings.bgColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
+      try {
+        const { toCanvas } = await import('qrcode');
+        const canvas = document.createElement("canvas");
+        
+        await toCanvas(canvas, generateVCardData(contact), {
+          width: templateSettings.size || 200,
+          margin: 4,
+          color: {
+            dark: templateSettings.fgColor || "#1A1F2C",
+            light: templateSettings.bgColor || "#ffffff"
+          },
+          errorCorrectionLevel: 'H'
+        });
+
+        // Add logo overlay if logo exists
+        if (templateSettings.logo) {
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = templateSettings.logo;
+          });
+
+          if (img.complete && img.naturalWidth > 0) {
+            const logoSizePx = ((templateSettings.logoSize || 20) / 100) * canvas.width;
+            const logoX = (canvas.width - logoSizePx) / 2;
+            const logoY = (canvas.height - logoSizePx) / 2;
+            
+            // Draw white background for logo
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(logoX - 4, logoY - 4, logoSizePx + 8, logoSizePx + 8);
+            
+            // Draw logo with opacity
+            ctx.globalAlpha = templateSettings.logoOpacity || 1;
+            ctx.drawImage(img, logoX, logoY, logoSizePx, logoSizePx);
+            ctx.globalAlpha = 1;
+          }
+        }
+        
         const pngFile = canvas.toDataURL("image/png");
         const downloadLink = document.createElement("a");
         downloadLink.download = `${contact.firstName || 'qrcode'}-${contact.lastName || 'contact'}-qr.png`;
         downloadLink.href = pngFile;
         downloadLink.click();
+        
         toast.success("QR-Code wurde heruntergeladen!");
-      };
-      img.src = "data:image/svg+xml;base64," + btoa(svgData);
+      } catch (error) {
+        console.error("Error generating QR code:", error);
+        toast.error("Fehler beim Erstellen des QR-Codes.");
+      }
     } else if (type === 'nametag' && templateSettings.nameTag?.enabled) {
       // For name tag download, we'll use the generateNameTag function from Premium.jsx
       // Since we can't directly access it, we'll recreate the basic functionality here
@@ -231,7 +253,7 @@ export const QRCodePreviewGrid = ({
                 <div className="grid grid-cols-1 gap-4">
                   {/* QR Code Preview */}
                   <div className="bg-[#F9FAFB] rounded-lg p-4 flex justify-center">
-                    <div id={`qr-code-${contact.firstName}-${contact.lastName}`} className="p-2 bg-white rounded-lg shadow-sm">
+                    <div id={`qr-code-${contact.firstName}-${contact.lastName}`} className="p-2 bg-white rounded-lg shadow-sm relative">
                       <QRCodeSVG 
                         value={generateVCardData(contact)} 
                         size={120} 
@@ -240,6 +262,22 @@ export const QRCodePreviewGrid = ({
                         fgColor={templateSettings.fgColor} 
                         bgColor={templateSettings.bgColor} 
                       />
+                      {templateSettings.logo && (
+                        <div 
+                          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded"
+                          style={{
+                            width: `${(templateSettings.logoSize / 100) * 120}px`,
+                            height: `${(templateSettings.logoSize / 100) * 120}px`,
+                            opacity: templateSettings.logoOpacity || 1
+                          }}
+                        >
+                          <img 
+                            src={templateSettings.logo} 
+                            alt="Logo" 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
