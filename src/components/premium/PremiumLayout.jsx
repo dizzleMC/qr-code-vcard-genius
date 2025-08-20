@@ -27,7 +27,7 @@ export const PremiumLayout = ({ children }) => {
               className="flex items-center gap-2 text-primary font-semibold relative group"
             >
               <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="bg-gradient-primary bg-clip-text text-transparent">Premium Bulk-Generator</span>
+              <span className="text-primary">Premium Bulk-Generator</span>
               <div className="absolute -bottom-2 left-0 right-0 h-0.5 bg-gradient-primary rounded-full"></div>
             </Link>
           </div>
