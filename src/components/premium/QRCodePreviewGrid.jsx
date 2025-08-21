@@ -181,13 +181,13 @@ export const QRCodePreviewGrid = ({
       switch(nameTagSettings.template) {
         case "modern":
           return {
-            logoX: width * 0.75,
+            logoX: width * 0.85,
             logoY: 25,
-            nameX: width * 0.65,
+            nameX: width * 0.85,
             nameY: height / 2 - 10,
-            titleX: width * 0.65,
+            titleX: width * 0.85,
             titleY: height / 2 + 15,
-            companyX: width * 0.65,
+            companyX: width * 0.85,
             companyY: height / 2 + 40,
             textAlign: "right"
           };
