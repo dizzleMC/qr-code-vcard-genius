@@ -85,12 +85,16 @@ export const QRCodePreviewGrid = ({
       throw new Error("Canvas context could not be created");
     }
     
+    // Get dimensions based on size setting - EXACTLY like NameTagPreview
     const getDimensions = () => {
       switch(nameTagSettings.size) {
-        case "small": return { width: 350, height: 175, fontSize: 18 };
-        case "large": return { width: 450, height: 225, fontSize: 26 };
+        case "small": 
+          return { width: 350, height: 175, qrSize: 110, fontSize: 18 };
+        case "large": 
+          return { width: 450, height: 225, qrSize: 160, fontSize: 26 };
         case "medium":
-        default: return { width: 400, height: 200, fontSize: 22 };
+        default: 
+          return { width: 400, height: 200, qrSize: 140, fontSize: 22 };
       }
     };
     
@@ -106,16 +110,32 @@ export const QRCodePreviewGrid = ({
       const borderColor = nameTagSettings.borderColor || "#e2e8f0";
       let gradient;
       
-      if (nameTagSettings.template === "modern" || nameTagSettings.template === "classic" || nameTagSettings.template === "minimal") {
-        gradient = ctx.createLinearGradient(0, 0, width, 0);
-        gradient.addColorStop(0, bgcolor);
-        gradient.addColorStop(0.85, bgcolor);
-        gradient.addColorStop(1, borderColor + "20");
-      } else {
-        gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, bgcolor);
-        gradient.addColorStop(0.85, bgcolor);
-        gradient.addColorStop(1, borderColor + "20");
+      // Match EXACT gradient positioning from NameTagPreview
+      switch(nameTagSettings.template) {
+        case "modern":
+          gradient = ctx.createLinearGradient(0, 0, width, 0);
+          gradient.addColorStop(0, bgcolor);
+          gradient.addColorStop(0.7, bgcolor);
+          gradient.addColorStop(1, borderColor + "20");
+          break;
+        case "business":
+          gradient = ctx.createLinearGradient(0, 0, 0, height);
+          gradient.addColorStop(0, bgcolor);
+          gradient.addColorStop(0.85, bgcolor);
+          gradient.addColorStop(1, borderColor + "20");
+          break;
+        case "minimal":
+          gradient = ctx.createLinearGradient(0, 0, width, 0);
+          gradient.addColorStop(0, bgcolor);
+          gradient.addColorStop(0.9, bgcolor);
+          gradient.addColorStop(1, borderColor + "10");
+          break;
+        case "classic":
+        default:
+          gradient = ctx.createLinearGradient(0, 0, width, 0);
+          gradient.addColorStop(0, bgcolor);
+          gradient.addColorStop(0.85, bgcolor);
+          gradient.addColorStop(1, borderColor + "15");
       }
       
       ctx.fillStyle = gradient;
@@ -143,7 +163,12 @@ export const QRCodePreviewGrid = ({
       }
     }
     
-    const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.trim() || "Name";
+    // Format name with academic title - EXACTLY like NameTagPreview
+    const academicTitle = contact.academicTitle || '';
+    const displayName = academicTitle ? 
+      `${academicTitle} ${contact.firstName || ''}`.trim() + ` ${contact.lastName || ''}`.trim() : 
+      `${contact.firstName || ''} ${contact.lastName || ''}`.trim();
+    const fullName = displayName || "Name";
     const company = (contact.company || '').trim();
     const title = (contact.title || '').trim();
     
@@ -151,15 +176,15 @@ export const QRCodePreviewGrid = ({
       switch(nameTagSettings.template) {
         case "modern":
           return {
-            logoX: width * 0.75,
-            logoY: 25,
-            nameX: width * 0.25,
+            logoX: 20,
+            logoY: 20,
+            nameX: 20,
             nameY: height / 2 - 10,
-            titleX: width * 0.25,
+            titleX: 20,
             titleY: height / 2 + 15,
-            companyX: width * 0.25,
+            companyX: 20,
             companyY: height / 2 + 40,
-            textAlign: "right"
+            textAlign: "left"
           };
         case "business":
           return {
@@ -283,7 +308,7 @@ export const QRCodePreviewGrid = ({
       ].filter(Boolean).join("\n");
       
       const qrCanvas = document.createElement("canvas");
-      const qrSize = height * 0.7;
+      const qrSize = dimensions.qrSize;
       
       await toCanvas(qrCanvas, vcard, {
         width: qrSize,
@@ -297,22 +322,23 @@ export const QRCodePreviewGrid = ({
       
       let qrX, qrY;
       
+      // Position QR code EXACTLY like in NameTagPreview
       switch(nameTagSettings.template) {
         case "modern":
-          qrX = width * 0.8;
+          qrX = width - qrSize/2 - 16; // Right side, centered vertically
           qrY = height / 2;
           break;
         case "business":
-          qrX = width - qrSize/2 - 15;
-          qrY = height - qrSize/2 - 15;
+          qrX = width - qrSize/2 - 10; // Bottom right corner
+          qrY = height - qrSize/2 - 10;
           break;
         case "minimal":
-          qrX = width * 0.8;
+          qrX = width - qrSize/2 - 16; // Right side, centered vertically  
           qrY = height / 2;
           break;
         case "classic":
         default:
-          qrX = width * 0.75;
+          qrX = width - qrSize/2 - 16; // Right side, centered vertically
           qrY = height / 2;
       }
       
