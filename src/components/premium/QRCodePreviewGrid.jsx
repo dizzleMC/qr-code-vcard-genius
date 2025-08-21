@@ -142,7 +142,9 @@ export const QRCodePreviewGrid = ({
       ctx.fillRect(0, 0, width, height);
     };
     
-    fillBackgroundWithGradient();
+    // Fill background with solid color (no gradient to match preview)
+    ctx.fillStyle = nameTagSettings.backgroundColor || "#ffffff";
+    ctx.fillRect(0, 0, width, height);
     
     ctx.strokeStyle = nameTagSettings.borderColor || "#e2e8f0";
     ctx.lineWidth = 2;
@@ -165,9 +167,9 @@ export const QRCodePreviewGrid = ({
     
     // Format name with academic title - EXACTLY like NameTagPreview
     const academicTitle = contact.academicTitle || '';
-    const displayName = academicTitle ? 
-      `${academicTitle} ${contact.firstName || ''}`.trim() + ` ${contact.lastName || ''}`.trim() : 
-      `${contact.firstName || ''} ${contact.lastName || ''}`.trim();
+    const firstName = contact.firstName || '';
+    const lastName = contact.lastName || '';
+    const displayName = academicTitle ? `${academicTitle} ${firstName} ${lastName}`.trim() : `${firstName} ${lastName}`.trim();
     const fullName = displayName || "Name";
     const company = (contact.company || '').trim();
     const title = (contact.title || '').trim();
@@ -176,15 +178,15 @@ export const QRCodePreviewGrid = ({
       switch(nameTagSettings.template) {
         case "modern":
           return {
-            logoX: 20,
-            logoY: 20,
-            nameX: 20,
+            logoX: width * 0.75,
+            logoY: 25,
+            nameX: width * 0.75,
             nameY: height / 2 - 10,
-            titleX: 20,
+            titleX: width * 0.75,
             titleY: height / 2 + 15,
-            companyX: 20,
+            companyX: width * 0.75,
             companyY: height / 2 + 40,
-            textAlign: "left"
+            textAlign: "right"
           };
         case "business":
           return {
@@ -284,7 +286,7 @@ export const QRCodePreviewGrid = ({
     try {
       const { toCanvas } = await import('qrcode');
       
-      // Generate vCard data with academicTitle support
+      // Generate vCard data with academicTitle support  
       const academicTitle = contact.academicTitle || '';
       const formattedFirstName = academicTitle ? `${academicTitle} ${contact.firstName || ''}`.trim() : contact.firstName || '';
       
