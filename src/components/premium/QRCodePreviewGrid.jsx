@@ -181,15 +181,15 @@ export const QRCodePreviewGrid = ({
       switch(nameTagSettings.template) {
         case "modern":
           return {
-            logoX: width * 0.25,
+            logoX: width * 0.75,
             logoY: 25,
-            nameX: width * 0.25,
+            nameX: width * 0.65,
             nameY: height / 2 - 10,
-            titleX: width * 0.25,
+            titleX: width * 0.65,
             titleY: height / 2 + 15,
-            companyX: width * 0.25,
+            companyX: width * 0.65,
             companyY: height / 2 + 40,
-            textAlign: "left"
+            textAlign: "right"
           };
         case "business":
           return {
@@ -330,7 +330,7 @@ export const QRCodePreviewGrid = ({
       // Position QR code EXACTLY like in NameTagPreview
       switch(nameTagSettings.template) {
         case "modern":
-          qrX = width - qrSize/2 - 16; // Right side, centered vertically
+          qrX = qrSize/2 + 16; // Left side, centered vertically
           qrY = height / 2;
           break;
         case "business":
