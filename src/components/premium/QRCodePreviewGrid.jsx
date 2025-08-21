@@ -169,7 +169,10 @@ export const QRCodePreviewGrid = ({
     const academicTitle = contact.academicTitle || '';
     const firstName = contact.firstName || '';
     const lastName = contact.lastName || '';
-    const displayName = academicTitle ? `${academicTitle} ${firstName} ${lastName}`.trim() : `${firstName} ${lastName}`.trim();
+    
+    // Ensure proper spacing between all parts
+    const nameParts = [academicTitle, firstName, lastName].filter(part => part.trim() !== '');
+    const displayName = nameParts.join(' ');
     const fullName = displayName || "Name";
     const company = (contact.company || '').trim();
     const title = (contact.title || '').trim();
@@ -178,15 +181,15 @@ export const QRCodePreviewGrid = ({
       switch(nameTagSettings.template) {
         case "modern":
           return {
-            logoX: width * 0.75,
+            logoX: width * 0.25,
             logoY: 25,
-            nameX: width * 0.75,
+            nameX: width * 0.25,
             nameY: height / 2 - 10,
-            titleX: width * 0.75,
+            titleX: width * 0.25,
             titleY: height / 2 + 15,
-            companyX: width * 0.75,
+            companyX: width * 0.25,
             companyY: height / 2 + 40,
-            textAlign: "right"
+            textAlign: "left"
           };
         case "business":
           return {
