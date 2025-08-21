@@ -142,8 +142,9 @@ export const QRCodePreviewGrid = ({
       ctx.fillRect(0, 0, width, height);
     };
     
-    // Fill background with gradient to match preview
-    fillBackgroundWithGradient();
+    // Fill background with solid color (no gradient to match preview)
+    ctx.fillStyle = nameTagSettings.backgroundColor || "#ffffff";
+    ctx.fillRect(0, 0, width, height);
     
     ctx.strokeStyle = nameTagSettings.borderColor || "#e2e8f0";
     ctx.lineWidth = 2;
@@ -180,13 +181,13 @@ export const QRCodePreviewGrid = ({
       switch(nameTagSettings.template) {
         case "modern":
           return {
-            logoX: width * 0.65,
+            logoX: width * 0.85,
             logoY: 25,
-            nameX: width * 0.65,
+            nameX: width * 0.85,
             nameY: height / 2 - 10,
-            titleX: width * 0.65,
+            titleX: width * 0.85,
             titleY: height / 2 + 15,
-            companyX: width * 0.65,
+            companyX: width * 0.85,
             companyY: height / 2 + 40,
             textAlign: "right"
           };
